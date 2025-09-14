@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+ 
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  capacity    Int
+  description String?
+
+x       Int?
+y       Int?
+width   Int?
+height  Int?
+
+
+    isUnderMaintenance Boolean @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  bookings    Booking[]
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id         Int            @id @default(autoincrement())
+  roomId     Int
+  room       Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  userId     Int
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  purpose    String?
+  startTime  DateTime
+  endTime    DateTime
+  status     BookingStatus  @default(PENDING) // starts as PENDING
+  
+  // Approval tracking
+  approvedBy Int?
+  approvedAt DateTime?
+  rejectedBy Int?
+  rejectedAt DateTime?
+  rejectionReason String?
+  
+  // Relations for approval tracking
+  approver   User?          @relation("BookingApprover", fields: [approvedBy], references: [id])
+  rejecter   User?          @relation("BookingRejecter", fields: [rejectedBy], references: [id])
+
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
+  password  String    // hashed password
+  role      UserRole  @default(USER)
+  
+  // Additional user fields
+  firstName String?
+  lastName  String?
+  department String?
+  isActive  Boolean   @default(true)
+  isApproved Boolean  @default(false)
+  
+  // Approval tracking
+  approvedBy Int?
+  approvedAt DateTime?
+  rejectedBy Int?
+  rejectedAt DateTime?
+  rejectionReason String?
+  
+  // Relations
+  bookings  Booking[]
+  approvedBookings Booking[] @relation("BookingApprover")
+  rejectedBookings Booking[] @relation("BookingRejecter")
+  
+  // Relations for user approval tracking
+  approver   User?          @relation("UserApprover", fields: [approvedBy], references: [id])
+  rejecter   User?          @relation("UserRejecter", fields: [rejectedBy], references: [id])
+  approvedUsers User[]      @relation("UserApprover")
+  rejectedUsers User[]      @relation("UserRejecter")
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

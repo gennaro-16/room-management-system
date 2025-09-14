@@ -1,0 +1,610 @@
+// API client for connecting to NestJS backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+// Authentication types
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  role?: UserRole;
+  firstName?: string;
+  lastName?: string;
+  department?: string;
+  isActive?: boolean;
+  isApproved?: boolean;
+  approvedBy?: number;
+  approvedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+export type RoomStatus = 'FREE' | 'BUSY' | 'MAINTENANCE' | 'RESERVED';
+
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+export interface RegisterDto {
+  username: string;
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  department?: string;
+  role?: UserRole;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  user: User;
+}
+
+// Types matching the NestJS API
+export interface Room {
+  id: number;
+  name: string;
+  capacity: number;
+  description?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  isUnderMaintenance: boolean;
+  isAvailable?: boolean;
+  currentBooking?: Booking;
+  createdAt: string;
+  updatedAt: string;
+  bookings?: Booking[];
+}
+
+export interface Booking {
+  id: number;
+  roomId: number;
+  room?: Room;
+  userId: number;
+  user?: User;
+  purpose?: string;
+  startTime: string;
+  endTime: string;
+  status: BookingStatus;
+  approvedBy?: number;
+  approvedAt?: string;
+  rejectedBy?: number;
+  rejectedAt?: string;
+  rejectionReason?: string;
+  approver?: User;
+  rejecter?: User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type BookingStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
+
+export interface CreateRoomDto {
+  name: string;
+  capacity: number;
+  description?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+export interface UpdateRoomDto {
+  name?: string;
+  capacity?: number;
+  description?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+export interface CreateBookingDto {
+  roomId: number;
+  purpose?: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface UpdateBookingDto {
+  roomId?: number;
+  purpose?: string;
+  startTime?: string;
+  endTime?: string;
+  status?: BookingStatus;
+}
+
+export interface UpdateUserDto {
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  department?: string;
+  role?: UserRole;
+  isActive?: boolean;
+  isApproved?: boolean;
+}
+
+export interface ApproveUserDto {
+  isApproved: boolean;
+  rejectionReason?: string;
+}
+
+export interface DashboardOverview {
+  totalRooms: number;
+  totalBookings: number;
+  activeBookings: number;
+  roomsByStatus: Array<{
+    status: RoomStatus;
+    count: number;
+  }>;
+  bookingsByStatus: Array<{
+    status: BookingStatus;
+    count: number;
+  }>;
+}
+
+export interface RoomSummary {
+  id: number;
+  name: string;
+  capacity: number;
+  status: RoomStatus;
+  currentBookings: number;
+  isAvailable: boolean;
+}
+
+export interface DashboardBookingItem {
+  id: number;
+  user: string;
+  room: string;
+  startTime: string;
+  endTime: string;
+  status: BookingStatus;
+  purpose?: string;
+}
+
+export interface BookingSummary {
+  todayBookings: DashboardBookingItem[];
+  upcomingBookings: DashboardBookingItem[];
+}
+
+// API Error class
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public statusText: string
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+// Token management
+let authToken: string | null = null;
+
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      localStorage.removeItem('auth_token');
+    }
+  }
+};
+
+export const getAuthToken = (): string | null => {
+  if (authToken) return authToken;
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('auth_token');
+  }
+  return null;
+};
+
+// Generic API request function
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const token = getAuthToken();
+  
+  const config: RequestInit = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  try {
+    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      
+      // Handle 401 Unauthorized - clear token and redirect to login
+      if (response.status === 401) {
+        setAuthToken(null);
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+      }
+      
+      throw new ApiError(
+        errorData.message || `HTTP ${response.status}: ${response.statusText}`,
+        response.status,
+        response.statusText
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Network error',
+      0,
+      'Network Error'
+    );
+  }
+}
+
+// Authentication API
+export const authApi = {
+  // Login
+  login: (data: LoginDto): Promise<AuthResponse> => {
+    console.log('authApi.login called with data:', data);
+    console.log('Sending to backend:', JSON.stringify(data));
+    return apiRequest<AuthResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Register
+  register: (data: RegisterDto): Promise<User> => {
+    return apiRequest<User>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get current user profile
+  getProfile: (): Promise<User> => {
+    return apiRequest<User>('/auth/profile');
+  },
+
+  // Logout (client-side only)
+  logout: () => {
+    setAuthToken(null);
+  },
+};
+
+// Users API (Admin only)
+export const usersApi = {
+  // Get all users
+  getAll: (): Promise<User[]> => {
+    return apiRequest<User[]>('/users');
+  },
+
+  // Get user by ID
+  getById: (id: number): Promise<User> => {
+    return apiRequest<User>(`/users/${id}`);
+  },
+
+  // Update user
+  update: (id: number, data: UpdateUserDto): Promise<User> => {
+    return apiRequest<User>(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Delete user
+  delete: (id: number): Promise<void> => {
+    return apiRequest<void>(`/users/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Deactivate user
+  deactivate: (id: number): Promise<User> => {
+    return apiRequest<User>(`/users/${id}/deactivate`, {
+      method: 'PATCH',
+    });
+  },
+
+  // Get pending users (Super Admin only)
+  getPending: (): Promise<User[]> => {
+    return apiRequest<User[]>('/users/pending');
+  },
+
+  // Approve or reject user (Super Admin only)
+  approve: (id: number, data: ApproveUserDto): Promise<User> => {
+    return apiRequest<User>(`/users/${id}/approve`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Rooms API
+export const roomsApi = {
+  // Get all rooms
+  getAll: (status?: RoomStatus): Promise<Room[]> => {
+    const params = status ? `?status=${status}` : '';
+    return apiRequest<Room[]>(`/rooms${params}`);
+  },
+
+  // Get room by ID
+  getById: (id: number): Promise<Room> => {
+    return apiRequest<Room>(`/rooms/${id}`);
+  },
+
+  // Get available rooms for time period
+  getAvailable: (startTime: string, endTime: string): Promise<Room[]> => {
+    return apiRequest<Room[]>(
+      `/rooms/available?startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`
+    );
+  },
+
+  // Create room
+  create: (data: CreateRoomDto): Promise<Room> => {
+    return apiRequest<Room>('/rooms', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Update room
+  update: (id: number, data: UpdateRoomDto): Promise<Room> => {
+    return apiRequest<Room>(`/rooms/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Toggle maintenance status
+  toggleMaintenance: (id: number): Promise<Room> => {
+    return apiRequest<Room>(`/rooms/${id}/maintenance`, {
+      method: 'PATCH',
+    });
+  },
+
+  // Check room availability
+  getAvailability: (id: number, startTime: string, endTime: string): Promise<{
+    isAvailable: boolean;
+    reason: string;
+    conflictingBooking?: Booking;
+  }> => {
+    return apiRequest<{
+      isAvailable: boolean;
+      reason: string;
+      conflictingBooking?: Booking;
+    }>(`/rooms/${id}/availability?startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`);
+  },
+
+  // Delete room
+  delete: (id: number): Promise<Room> => {
+    return apiRequest<Room>(`/rooms/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Bookings API
+export const bookingsApi = {
+  // Get all bookings with optional filters
+  getAll: (filters?: {
+    roomId?: number;
+    startDate?: string;
+    endDate?: string;
+    status?: 'approved' | 'upcoming' | 'pending';
+  }): Promise<Booking[]> => {
+    const params = new URLSearchParams();
+    if (filters?.roomId) params.append('roomId', filters.roomId.toString());
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    if (filters?.status) params.append('status', filters.status);
+
+    const queryString = params.toString();
+    return apiRequest<Booking[]>(`/bookings${queryString ? `?${queryString}` : ''}`);
+  },
+
+  // Get pending bookings (Admin only)
+  getPending: (): Promise<Booking[]> => {
+    return apiRequest<Booking[]>('/bookings/pending');
+  },
+
+  // Get booking by ID
+  getById: (id: number): Promise<Booking> => {
+    return apiRequest<Booking>(`/bookings/${id}`);
+  },
+
+  // Create booking
+  create: (data: CreateBookingDto): Promise<Booking> => {
+    return apiRequest<Booking>('/bookings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Update booking
+  update: (id: number, data: UpdateBookingDto): Promise<Booking> => {
+    return apiRequest<Booking>(`/bookings/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Approve booking (Admin only)
+  approve: (id: number): Promise<Booking> => {
+    return apiRequest<Booking>(`/bookings/${id}/approve`, {
+      method: 'PATCH',
+    });
+  },
+
+  // Reject booking (Admin only)
+  reject: (id: number, rejectionReason: string): Promise<Booking> => {
+    return apiRequest<Booking>(`/bookings/${id}/reject`, {
+      method: 'PATCH',
+      body: JSON.stringify({ rejectionReason }),
+    });
+  },
+
+  // Complete booking
+  complete: (id: number): Promise<Booking> => {
+    return apiRequest<Booking>(`/bookings/${id}/complete`, {
+      method: 'PATCH',
+    });
+  },
+
+  // Cancel booking
+  cancel: (id: number): Promise<Booking> => {
+    return apiRequest<Booking>(`/bookings/${id}/cancel`, {
+      method: 'PATCH',
+    });
+  },
+};
+
+// Dashboard API
+export const dashboardApi = {
+  // Get overview statistics
+  getOverview: (): Promise<DashboardOverview> => {
+    return apiRequest<DashboardOverview>('/dashboard/overview');
+  },
+
+  // Get rooms summary
+  getRoomsSummary: (): Promise<RoomSummary[]> => {
+    return apiRequest<RoomSummary[]>('/dashboard/rooms-summary');
+  },
+
+  // Get bookings summary
+  getBookingsSummary: (): Promise<BookingSummary> => {
+    return apiRequest<BookingSummary>('/dashboard/bookings-summary');
+  },
+};
+
+// Room Status API - Removed since room status is now calculated from bookings
+
+// Calendar API
+export const calendarApi = {
+  // Get bookings for a specific date range
+  getBookingsForDateRange: (startDate: string, endDate: string, roomId?: number): Promise<Booking[]> => {
+    const params = new URLSearchParams();
+    params.append('startDate', startDate);
+    params.append('endDate', endDate);
+    if (roomId) params.append('roomId', roomId.toString());
+    
+    return apiRequest<Booking[]>(`/bookings?${params.toString()}`);
+  },
+
+  // Get bookings for a specific month
+  getBookingsForMonth: (year: number, month: number, roomId?: number): Promise<Booking[]> => {
+    const startDate = new Date(year, month - 1, 1).toISOString();
+    const endDate = new Date(year, month, 0, 23, 59, 59).toISOString();
+    return calendarApi.getBookingsForDateRange(startDate, endDate, roomId);
+  },
+
+  // Get bookings for a specific week
+  getBookingsForWeek: (startOfWeek: string, roomId?: number): Promise<Booking[]> => {
+    const startDate = new Date(startOfWeek);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
+    
+    return calendarApi.getBookingsForDateRange(startDate.toISOString(), endDate.toISOString(), roomId);
+  },
+
+  // Get bookings for a specific day
+  getBookingsForDay: (date: string, roomId?: number): Promise<Booking[]> => {
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+    
+    return calendarApi.getBookingsForDateRange(startDate.toISOString(), endDate.toISOString(), roomId);
+  },
+
+  // Get room availability for a time slot
+  getRoomAvailability: (startTime: string, endTime: string): Promise<Room[]> => {
+    return apiRequest<Room[]>(
+      `/rooms/available?startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`
+    );
+  },
+};
+
+// Utility functions
+export const apiUtils = {
+  // Format date for API
+  formatDateForApi: (date: Date): string => {
+    return date.toISOString();
+  },
+
+  // Format date for display
+  formatDateForDisplay: (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString();
+  },
+
+  // Format time for display
+  formatTimeForDisplay: (dateString: string): string => {
+    return new Date(dateString).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  },
+
+  // Check if booking is active now
+  isBookingActive: (startTime: string, endTime: string): boolean => {
+    const now = new Date();
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    return now >= start && now <= end;
+  },
+
+  // Check if booking is upcoming
+  isBookingUpcoming: (startTime: string): boolean => {
+    const now = new Date();
+    const start = new Date(startTime);
+    return start > now;
+  },
+
+  // Get status color class using Al Baraka colors
+  getStatusColor: (status: BookingStatus): string => {
+    switch (status) {
+      case 'PENDING':
+        return 'status-pending bg-yellow-50 text-yellow-800 border-yellow-200';
+      case 'APPROVED':
+        return 'status-approved bg-green-50 text-green-800 border-green-200';
+      case 'REJECTED':
+        return 'status-rejected bg-red-50 text-red-800 border-red-200';
+      case 'CANCELLED':
+        return 'status-cancelled bg-gray-50 text-gray-800 border-gray-200';
+      case 'COMPLETED':
+        return 'status-completed bg-blue-50 text-blue-800 border-blue-200';
+      default:
+        return 'bg-gray-50 text-gray-800 border-gray-200';
+    }
+  },
+
+  // Get role color class using Al Baraka colors
+  getRoleColor: (role: UserRole): string => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+        return 'bg-purple-50 text-purple-800 border-purple-200';
+      case 'ADMIN':
+        return 'bg-blue-50 text-blue-800 border-blue-200';
+      case 'USER':
+        return 'bg-green-50 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-50 text-gray-800 border-gray-200';
+    }
+  },
+};
