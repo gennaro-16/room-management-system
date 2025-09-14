@@ -15,11 +15,13 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { LogOut, User, Settings, Shield, UserCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { apiUtils } from '@/lib/api';
 
 export function UserProfile() {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   if (!user) return null;
 
@@ -87,9 +89,13 @@ export function UserProfile() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => router.push('/profile')}>
+          <UserCircle className="mr-2 h-4 w-4" />
+          <span>Voir le profil</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={logout} className="text-red-600">
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>Se déconnecter</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

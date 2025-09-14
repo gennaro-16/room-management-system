@@ -19,11 +19,11 @@ export function TodaysBookings({ bookings, loading, error, onRetry }: TodaysBook
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Today's Bookings</CardTitle>
-          <CardDescription>Active and upcoming reservations</CardDescription>
+          <CardTitle>Réservations d'aujourd'hui</CardTitle>
+          <CardDescription>Réservations actives et à venir</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoadingSpinner text="Loading bookings..." />
+          <LoadingSpinner text="Chargement des réservations..." />
         </CardContent>
       </Card>
     );
@@ -37,11 +37,11 @@ export function TodaysBookings({ bookings, loading, error, onRetry }: TodaysBook
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Today's Bookings</CardTitle>
-          <CardDescription>Active and upcoming reservations</CardDescription>
+          <CardTitle>Réservations d'aujourd'hui</CardTitle>
+          <CardDescription>Réservations actives et à venir</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No bookings for today</p>
+          <p className="text-muted-foreground">Aucune réservation pour aujourd'hui</p>
         </CardContent>
       </Card>
     );
@@ -57,11 +57,11 @@ export function TodaysBookings({ bookings, loading, error, onRetry }: TodaysBook
         {bookings.map((booking) => (
           <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
             <div className="space-y-1">
-              <div className="font-medium">{booking.room || 'Unknown Room'}</div>
+              <div className="font-medium">{booking.room || 'Salle inconnue'}</div>
               <div className="text-sm text-muted-foreground">
-                {booking.user || 'Unknown User'}
+                {booking.user || 'Utilisateur inconnu'}
               </div>
-              <div className="text-sm text-primary">{booking.purpose || 'Meeting'}</div>
+              <div className="text-sm text-primary">{booking.purpose || 'Réunion'}</div>
             </div>
             <div className="text-right">
               <div className="text-sm font-medium">

@@ -19,11 +19,11 @@ export function RoomStatusOverview({ rooms, loading, error, onRetry }: RoomStatu
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Room Status Overview</CardTitle>
-          <CardDescription>Current status of all rooms</CardDescription>
+          <CardTitle>Aperçu du statut des salles</CardTitle>
+          <CardDescription>Statut actuel de toutes les salles</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoadingSpinner text="Loading rooms..." />
+          <LoadingSpinner text="Chargement des salles..." />
         </CardContent>
       </Card>
     );
@@ -37,11 +37,11 @@ export function RoomStatusOverview({ rooms, loading, error, onRetry }: RoomStatu
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Room Status Overview</CardTitle>
-          <CardDescription>Current status of all rooms</CardDescription>
+          <CardTitle>Aperçu du statut des salles</CardTitle>
+          <CardDescription>Statut actuel de toutes les salles</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No rooms found</p>
+          <p className="text-muted-foreground">Aucune salle trouvée</p>
         </CardContent>
       </Card>
     );
@@ -59,14 +59,14 @@ export function RoomStatusOverview({ rooms, loading, error, onRetry }: RoomStatu
             <div className="space-y-1">
               <div className="font-medium">{room.name}</div>
               <div className="text-sm text-muted-foreground">
-                Capacity: {room.capacity}
+                Capacité : {room.capacity}
               </div>
               {room.description && (
                 <div className="text-sm text-muted-foreground">{room.description}</div>
               )}
               {room.bookings && room.bookings.length > 0 && (
                 <div className="text-sm text-primary">
-                  Current: {room.bookings[0].purpose || 'Meeting'}
+                  Actuel : {room.bookings[0].purpose || 'Réunion'}
                 </div>
               )}
             </div>
@@ -75,7 +75,7 @@ export function RoomStatusOverview({ rooms, loading, error, onRetry }: RoomStatu
               room.isAvailable === false ? 'bg-red-50 text-red-800 border-red-200' :
               'bg-green-50 text-green-800 border-green-200'
             }>
-              {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'BUSY' : 'FREE'}
+              {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'OCCUPÉ' : 'LIBRE'}
             </Badge>
           </div>
         ))}

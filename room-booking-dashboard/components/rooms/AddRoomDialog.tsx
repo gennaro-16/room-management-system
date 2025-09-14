@@ -66,18 +66,18 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Room</DialogTitle>
-          <DialogDescription>Create a new room in the system</DialogDescription>
+          <DialogTitle>Ajouter une nouvelle salle</DialogTitle>
+          <DialogDescription>Créer une nouvelle salle dans le système</DialogDescription>
         </DialogHeader>
         
         {error && <ErrorAlert error={error} />}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="room-name">Room Name</Label>
+            <Label htmlFor="room-name">Nom de la salle</Label>
             <Input
               id="room-name"
-              placeholder="e.g., Conference Room A"
+              placeholder="ex: Salle de conférence A"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               required
@@ -86,7 +86,7 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="capacity">Capacity</Label>
+              <Label htmlFor="capacity">Capacité</Label>
               <Input
                 id="capacity"
                 type="number"
@@ -104,7 +104,7 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              placeholder="Room description and amenities"
+              placeholder="Description de la salle et équipements"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
             />
@@ -112,7 +112,7 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="x-coord">X Coordinate</Label>
+              <Label htmlFor="x-coord">Coordonnée X</Label>
               <Input
                 id="x-coord"
                 type="number"
@@ -122,7 +122,7 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="y-coord">Y Coordinate</Label>
+              <Label htmlFor="y-coord">Coordonnée Y</Label>
               <Input
                 id="y-coord"
                 type="number"
@@ -135,7 +135,7 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="width">Width</Label>
+              <Label htmlFor="width">Largeur</Label>
               <Input
                 id="width"
                 type="number"
@@ -145,7 +145,7 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="height">Height</Label>
+              <Label htmlFor="height">Hauteur</Label>
               <Input
                 id="height"
                 type="number"
@@ -163,10 +163,10 @@ export function AddRoomDialog({ open, onOpenChange, onSubmit, loading, error }: 
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <LoadingSpinner size="sm" /> : 'Create Room'}
+              {loading ? <LoadingSpinner size="sm" /> : 'Créer la salle'}
             </Button>
           </div>
         </form>

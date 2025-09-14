@@ -19,7 +19,7 @@ export function ErrorAlert({
   onDismiss, 
   onRetry, 
   className,
-  title = 'Error'
+  title = 'Erreur'
 }: ErrorAlertProps) {
   if (!error) return null;
 
@@ -39,7 +39,7 @@ export function ErrorAlert({
               className="h-6 px-2 text-xs"
             >
               <RefreshCw className="h-3 w-3 mr-1" />
-              Retry
+              Réessayer
             </Button>
           )}
           {onDismiss && (

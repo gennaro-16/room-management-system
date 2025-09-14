@@ -14,15 +14,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 const registerSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  username: z.string().min(3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères'),
+  email: z.string().email('Veuillez saisir une adresse e-mail valide'),
+  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
   confirmPassword: z.string(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   department: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
 });
 
@@ -49,7 +49,7 @@ export function RegisterForm() {
       clearError();
       const { confirmPassword, ...registerData } = data;
       await registerUser(registerData);
-      router.push('/login?message=Registration successful! Your account is pending approval from a super administrator. You will be notified once approved.');
+      router.push('/login?message=Inscription réussie ! Votre compte est en attente d'approbation d'un super administrateur. Vous serez notifié une fois approuvé.');
     } catch (error) {
       // Error is handled by the auth context
     }
@@ -58,9 +58,9 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md mx-auto card-albaraka">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center text-[var(--albaraka-primary)]">Create Account</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center text-[var(--albaraka-primary)]">Créer un compte</CardTitle>
         <CardDescription className="text-center text-[var(--albaraka-muted)]">
-          Register for access to the room management system
+          Inscrivez-vous pour accéder au système de gestion des salles
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,10 +73,10 @@ export function RegisterForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">Prénom</Label>
               <Input
                 id="firstName"
-                placeholder="John"
+                placeholder="Jean"
                 {...register('firstName')}
                 disabled={isLoading}
               />
@@ -86,10 +86,10 @@ export function RegisterForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">Nom</Label>
               <Input
                 id="lastName"
-                placeholder="Doe"
+                placeholder="Dupont"
                 {...register('lastName')}
                 disabled={isLoading}
               />
@@ -100,10 +100,10 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">Nom d'utilisateur</Label>
             <Input
               id="username"
-              placeholder="johndoe"
+              placeholder="jeandupont"
               {...register('username')}
               disabled={isLoading}
             />
@@ -113,11 +113,11 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">E-mail</Label>
             <Input
               id="email"
               type="email"
-              placeholder="john@company.com"
+              placeholder="jean@company.com"
               {...register('email')}
               disabled={isLoading}
             />
@@ -127,10 +127,10 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="department">Department</Label>
+            <Label htmlFor="department">Département</Label>
             <Input
               id="department"
-              placeholder="Engineering"
+              placeholder="Ingénierie"
               {...register('department')}
               disabled={isLoading}
             />
@@ -140,12 +140,12 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Mot de passe</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder="Saisissez votre mot de passe"
                 {...register('password')}
                 disabled={isLoading}
               />
@@ -170,12 +170,12 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="Confirm your password"
+                placeholder="Confirmez votre mot de passe"
                 {...register('confirmPassword')}
                 disabled={isLoading}
               />
@@ -201,15 +201,15 @@ export function RegisterForm() {
 
           <Button type="submit" className="w-full btn-albaraka-primary" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create Account
+Créer le compte
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm">
           <p className="text-muted-foreground">
-            Already have an account?{' '}
+            Vous avez déjà un compte ?{' '}
             <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/login')}>
-              Sign in
+              Se connecter
             </Button>
           </p>
         </div>

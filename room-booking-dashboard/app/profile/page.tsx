@@ -67,15 +67,15 @@ export default function ProfilePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-[var(--albaraka-primary)]">Profile</h1>
-              <p className="text-[var(--albaraka-muted)] mt-2">Manage your account and preferences</p>
+              <h1 className="text-3xl font-bold text-[var(--albaraka-primary)]">Profil</h1>
+              <p className="text-[var(--albaraka-muted)] mt-2">Gérez votre compte et vos préférences</p>
             </div>
             <Button
               onClick={() => router.push('/dashboard')}
               variant="outline"
               className="btn-albaraka-secondary"
             >
-              Back to Dashboard
+Retour au tableau de bord
             </Button>
           </div>
         </div>
@@ -87,16 +87,16 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-[var(--albaraka-primary)]">
                   <User className="h-5 w-5" />
-                  Personal Information
+Informations personnelles
                 </CardTitle>
                 <CardDescription className="text-[var(--albaraka-muted)]">
-                  Your account details and personal information
+Vos détails de compte et informations personnelles
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Full Name</label>
+                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Nom complet</label>
                     <p className="text-lg font-semibold text-[var(--albaraka-primary)]">
                       {user.firstName && user.lastName 
                         ? `${user.firstName} ${user.lastName}`
@@ -106,36 +106,36 @@ export default function ProfilePage() {
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Email Address</label>
+                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Adresse e-mail</label>
                     <p className="text-lg text-[var(--albaraka-primary)]">{user.email}</p>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Username</label>
+                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Nom d'utilisateur</label>
                     <p className="text-lg text-[var(--albaraka-primary)]">{user.username}</p>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Department</label>
+                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Département</label>
                     <p className="text-lg text-[var(--albaraka-primary)]">
-                      {user.department || 'Not specified'}
+                      {user.department || 'Non spécifié'}
                     </p>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Account Status</label>
+                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Statut du compte</label>
                     <div className="flex items-center gap-2">
                       <Badge 
                         variant={user.isActive ? "default" : "secondary"}
                         className={user.isActive ? "bg-green-50 text-green-800 border-green-200" : "bg-gray-50 text-gray-800 border-gray-200"}
                       >
-                        {user.isActive ? 'Active' : 'Inactive'}
+                        {user.isActive ? 'Actif' : 'Inactif'}
                       </Badge>
                     </div>
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Member Since</label>
+                    <label className="text-sm font-medium text-[var(--albaraka-muted)]">Membre depuis</label>
                     <p className="text-lg text-[var(--albaraka-primary)]">
                       {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                     </p>
@@ -151,15 +151,15 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-[var(--albaraka-primary)]">
                   {getRoleIcon(user.role)}
-                  Role & Permissions
+Rôle et permissions
                 </CardTitle>
                 <CardDescription className="text-[var(--albaraka-muted)]">
-                  Your current role and system permissions
+Votre rôle actuel et permissions système
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-[var(--albaraka-muted)]">Current Role</label>
+                  <label className="text-sm font-medium text-[var(--albaraka-muted)]">Rôle actuel</label>
                   <div className="mt-2">
                     <Badge 
                       variant="secondary" 
@@ -177,28 +177,28 @@ export default function ProfilePage() {
                   <div className="mt-2 space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Building2 className="h-4 w-4 text-green-600" />
-                      <span>View Rooms</span>
+                      <span>Voir les salles</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar className="h-4 w-4 text-green-600" />
-                      <span>Create Bookings</span>
+                      <span>Créer des réservations</span>
                     </div>
                     {user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? (
                       <>
                         <div className="flex items-center gap-2 text-sm">
                           <Shield className="h-4 w-4 text-blue-600" />
-                          <span>Manage Rooms</span>
+                          <span>Gérer les salles</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <User className="h-4 w-4 text-blue-600" />
-                          <span>Approve Bookings</span>
+                          <span>Approuver les réservations</span>
                         </div>
                       </>
                     ) : null}
                     {user.role === 'SUPER_ADMIN' ? (
                       <div className="flex items-center gap-2 text-sm">
                         <Shield className="h-4 w-4 text-red-600" />
-                        <span>Manage Users</span>
+                        <span>Gérer les utilisateurs</span>
                       </div>
                     ) : null}
                   </div>
@@ -209,14 +209,14 @@ export default function ProfilePage() {
             {/* Quick Actions */}
             <Card className="card-albaraka">
               <CardHeader>
-                <CardTitle className="text-[var(--albaraka-primary)]">Quick Actions</CardTitle>
+                <CardTitle className="text-[var(--albaraka-primary)]">Actions rapides</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button
                   onClick={() => router.push('/dashboard')}
                   className="w-full btn-albaraka-primary"
                 >
-                  Go to Dashboard
+Aller au tableau de bord
                 </Button>
                 <Button
                   onClick={handleLogout}
@@ -224,7 +224,7 @@ export default function ProfilePage() {
                   className="w-full"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  Se déconnecter
                 </Button>
               </CardContent>
             </Card>

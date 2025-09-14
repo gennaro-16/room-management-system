@@ -90,8 +90,8 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create New Booking</DialogTitle>
-          <DialogDescription>Schedule a room reservation with date and time range</DialogDescription>
+          <DialogTitle>Créer une nouvelle réservation</DialogTitle>
+          <DialogDescription>Planifiez une réservation de salle avec une plage de date et d'heure</DialogDescription>
         </DialogHeader>
         
         {error && <ErrorAlert error={error} />}
@@ -109,15 +109,15 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="booking-room">Room</Label>
+              <Label htmlFor="booking-room">Salle</Label>
               <Select value={formData.roomId.toString()} onValueChange={(value) => handleInputChange('roomId', parseInt(value))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a room" />
+                  <SelectValue placeholder="Sélectionner une salle" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableRooms.map((room) => (
                     <SelectItem key={room.id} value={room.id.toString()}>
-                      {room.name} (Capacity: {room.capacity})
+                      {room.name} (Capacité : {room.capacity})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -127,7 +127,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start-time">Start Time</Label>
+              <Label htmlFor="start-time">Heure de début</Label>
               <Input 
                 id="start-time" 
                 type="time" 
@@ -137,7 +137,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="end-time">End Time</Label>
+              <Label htmlFor="end-time">Heure de fin</Label>
               <Input 
                 id="end-time" 
                 type="time" 
@@ -150,7 +150,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
 
 
           <div className="space-y-2">
-            <Label htmlFor="booking-purpose">Meeting Purpose</Label>
+            <Label htmlFor="booking-purpose">Objectif de la réunion</Label>
             <Input 
               id="booking-purpose" 
               placeholder="e.g., Team Meeting, Client Presentation" 
@@ -160,10 +160,10 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="booking-description">Description (Optional)</Label>
+            <Label htmlFor="booking-description">Description (optionnelle)</Label>
             <Textarea 
               id="booking-description" 
-              placeholder="Additional details about the meeting" 
+              placeholder="Détails supplémentaires sur la réunion" 
               rows={3} 
             />
           </div>
@@ -175,10 +175,10 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <LoadingSpinner size="sm" /> : 'Create Booking'}
+              {loading ? <LoadingSpinner size="sm" /> : 'Créer la réservation'}
             </Button>
           </div>
         </form>

@@ -19,10 +19,6 @@ export function MainDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
 
-  const handleNewBooking = () => {
-    // TODO: Implement new booking functionality
-    console.log('New booking clicked');
-  };
 
   const renderContent = () => {
     // Check user role and show appropriate content
@@ -45,11 +41,11 @@ export function MainDashboard() {
           return (
             <Card>
               <CardHeader>
-                <CardTitle>Access Denied</CardTitle>
-                <CardDescription>You don't have permission to access this section</CardDescription>
+                <CardTitle>Accès refusé</CardTitle>
+                <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Only administrators can access booking approvals.</p>
+                <p className="text-muted-foreground">Seuls les administrateurs peuvent accéder aux approbations de réservation.</p>
               </CardContent>
             </Card>
           );
@@ -60,11 +56,11 @@ export function MainDashboard() {
           return (
             <Card>
               <CardHeader>
-                <CardTitle>Access Denied</CardTitle>
-                <CardDescription>You don't have permission to access this section</CardDescription>
+                <CardTitle>Accès refusé</CardTitle>
+                <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Only super administrators can access user management.</p>
+                <p className="text-muted-foreground">Seuls les super administrateurs peuvent accéder à la gestion des utilisateurs.</p>
               </CardContent>
             </Card>
           );
@@ -75,11 +71,11 @@ export function MainDashboard() {
           return (
             <Card>
               <CardHeader>
-                <CardTitle>Access Denied</CardTitle>
-                <CardDescription>You don't have permission to access this section</CardDescription>
+                <CardTitle>Accès refusé</CardTitle>
+                <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Only administrators can access reports.</p>
+                <p className="text-muted-foreground">Seuls les administrateurs peuvent accéder aux rapports.</p>
               </CardContent>
             </Card>
           );
@@ -87,11 +83,11 @@ export function MainDashboard() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Reports</CardTitle>
-              <CardDescription>Analytics and reporting</CardDescription>
+              <CardTitle>Rapports</CardTitle>
+              <CardDescription>Analyses et rapports</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Reports section coming soon...</p>
+              <p className="text-muted-foreground">Section des rapports à venir...</p>
             </CardContent>
           </Card>
         );
@@ -101,11 +97,11 @@ export function MainDashboard() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Settings</CardTitle>
-              <CardDescription>System configuration</CardDescription>
+            <CardTitle>Paramètres</CardTitle>
+            <CardDescription>Configuration système</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Settings section coming soon...</p>
+              <p className="text-muted-foreground">Section des paramètres à venir...</p>
             </CardContent>
           </Card>
         );
@@ -128,7 +124,6 @@ export function MainDashboard() {
         <Header
           activeSection={activeSection}
           onSidebarToggle={() => setSidebarOpen(true)}
-          onNewBooking={handleNewBooking}
         />
 
         {/* Dashboard Content */}

@@ -46,30 +46,30 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
-              <CardTitle className="text-xl">Something went wrong</CardTitle>
+              <CardTitle className="text-xl">Quelque chose s'est mal passé</CardTitle>
               <CardDescription>
-                An unexpected error occurred. Please try refreshing the page.
+                Une erreur inattendue s'est produite. Veuillez essayer de rafraîchir la page.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {this.state.error && (
                 <div className="rounded-md bg-red-50 p-3">
                   <p className="text-sm text-red-800">
-                    <strong>Error:</strong> {this.state.error.message}
+                    <strong>Erreur :</strong> {this.state.error.message}
                   </p>
                 </div>
               )}
               <div className="flex gap-2">
                 <Button onClick={this.handleReset} className="flex-1">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Try Again
+                  Réessayer
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => window.location.reload()} 
                   className="flex-1"
                 >
-                  Refresh Page
+                  Actualiser la page
                 </Button>
               </div>
             </CardContent>

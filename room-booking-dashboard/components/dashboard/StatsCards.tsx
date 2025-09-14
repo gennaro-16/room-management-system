@@ -43,36 +43,36 @@ export function StatsCards({ data, loading, error, onRetry }: StatsCardsProps) {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Rooms</CardTitle>
+          <CardTitle className="text-sm font-medium">Total des salles</CardTitle>
           <Building2 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{data.totalRooms}</div>
-          <p className="text-xs text-muted-foreground">Across all floors</p>
+          <p className="text-xs text-muted-foreground">Sur tous les étages</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Available Now</CardTitle>
+          <CardTitle className="text-sm font-medium">Disponibles maintenant</CardTitle>
           <div className="h-2 w-2 bg-green-500 rounded-full" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">
             {data.totalRooms - data.activeBookings - data.maintenanceRooms}
           </div>
-          <p className="text-xs text-muted-foreground">Ready to book</p>
+          <p className="text-xs text-muted-foreground">Prêtes à réserver</p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Active Bookings</CardTitle>
+          <CardTitle className="text-sm font-medium">Réservations actives</CardTitle>
           <BookOpen className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">{data.activeBookings}</div>
-          <p className="text-xs text-muted-foreground">Currently in use</p>
+          <p className="text-xs text-muted-foreground">Actuellement en cours d'utilisation</p>
         </CardContent>
       </Card>
 
@@ -83,7 +83,7 @@ export function StatsCards({ data, loading, error, onRetry }: StatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-secondary">{data.maintenanceRooms}</div>
-          <p className="text-xs text-muted-foreground">Under maintenance</p>
+          <p className="text-xs text-muted-foreground">En maintenance</p>
         </CardContent>
       </Card>
     </div>

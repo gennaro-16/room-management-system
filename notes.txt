@@ -1,0 +1,93 @@
+fix header for profile logout button 
+dcr we get a booking for room with user 
+purpose
+date 
+and room 
+can we book a booked room ...
+the assignement of user to booking is automatic 
+get all users they have a pending field to accept or refuse the sign up 
+is it worth a sign up or not worth it with pending 
+someone books a room and he gets a pending state for that room ..
+
+users have a pending state 
+sign up 
+admin approves user 
+--------------------------------------------
+
+i want to add a booking with a room 
+but now since the project is fcukd 
+we will try to make some other dev project for some other purposes for example what !! 
+
+live chat module portfolio telegram bot 
+
+--------------------------------------------
+add departments 
+so the admin in each department can book 
+room /salle , 
+approve book request to his department 
+
+la recepctioniste can approve bookings user from it book a room in it department 
+
+------------------------------------------------
+monsier salem a un reunion at 10 am he books the salle a1 from 10 am to 12 am 
+---------------------------------------
+
+il recevoir un email sur une reunion il fait booking de la salle , 
+
+-----------------------------------------
+migration dyal les departements 
+pour approver un booking dans un departement specifique 
+--------------------------------------------
+qui va acceder au sites 
+les chefs departements et sous chefs 
+
+quand 2 veut prendre la meme salle qui va gerer 
+la capacite b1 sur a utiliser systeme de test 
+donc la reunion combien de personnes
+
+
+esque on donne la salle selon la reunion selon l ordre ou selon le manager 
+esque on peut manager les bookings et suggerer de salles 
+
+soma cases 
+departemnts 
+lats say 
+in each departmetn i have 3 users 
+and their boss 
+4 
+la concurrence sur les salles ...
+order of requests 
+whos first to last 
+and alsaw prioritize them by the guy who is requesting but the guy 
+just 2 priorities the boss then others 
+
+i think they wont be done by a system they will be done manualy the admin just sees the quests then treat them ..
+
+i dont fckng know this dashboard is shitting in my head brruuh 
+what to do 
+what to do 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

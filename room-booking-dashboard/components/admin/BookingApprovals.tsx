@@ -105,7 +105,7 @@ export function BookingApprovals() {
       <CardContent>
         <div className="space-y-4">
           {pendingBookings.map((booking) => (
-            <Card key={booking.id} className="border-l-4 border-l-yellow-500">
+            <Card key={booking.id} >
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2 flex-1">

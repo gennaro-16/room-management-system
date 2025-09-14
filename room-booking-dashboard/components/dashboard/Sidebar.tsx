@@ -19,22 +19,22 @@ import {
 } from 'lucide-react';
 
 const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
-  { icon: Home, label: 'Dashboard', id: 'dashboard' },
-  { icon: Building2, label: 'Rooms', id: 'rooms' },
-  { icon: BookOpen, label: 'Bookings', id: 'bookings' },
-  { icon: Calendar, label: 'Calendar', id: 'calendar' },
-  { icon: Map, label: 'Room Map', id: 'map' },
+  { icon: Home, label: 'Tableau de bord', id: 'dashboard' },
+  { icon: Building2, label: 'Salles', id: 'rooms' },
+  { icon: BookOpen, label: 'Réservations', id: 'bookings' },
+  { icon: Calendar, label: 'Calendrier', id: 'calendar' },
+  { icon: Map, label: 'Plan des salles', id: 'map' },
   ...(isAdmin ? [
-    { icon: CheckCircle, label: 'Approvals', id: 'approvals' },
+    { icon: CheckCircle, label: 'Approbations', id: 'approvals' },
   ] : []),
   ...(isSuperAdmin ? [
-    { icon: Users, label: 'User Management', id: 'users' }
+    { icon: Users, label: 'Gestion des utilisateurs', id: 'users' }
   ] : []),
   ...(isAdmin ? [
-    { icon: BarChart3, label: 'Reports', id: 'reports' },
+    { icon: BarChart3, label: 'Rapports', id: 'reports' },
   ] : []),
-  { icon: UserCircle, label: 'Profile', id: 'profile' },
-  { icon: Settings, label: 'Settings', id: 'settings' },
+  { icon: UserCircle, label: 'Profil', id: 'profile' },
+  { icon: Settings, label: 'Paramètres', id: 'settings' },
 ];
 
 interface SidebarProps {

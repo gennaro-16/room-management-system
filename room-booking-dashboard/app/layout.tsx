@@ -8,8 +8,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Al Baraka Room Management',
-  description: 'Room booking and management system for Al Baraka',
+  title: 'Gestion des salles Al Baraka',
+  description: 'Système de réservation et de gestion des salles pour Al Baraka',
   generator: 'Next.js',
 }
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <ErrorBoundary>
           <AuthProvider>

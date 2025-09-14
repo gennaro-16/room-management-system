@@ -56,9 +56,9 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto card-albaraka">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center text-[var(--albaraka-primary)]">Sign In</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center text-[var(--albaraka-primary)]">Se connecter</CardTitle>
         <CardDescription className="text-center text-[var(--albaraka-muted)]">
-          Enter your credentials to access the room management system
+          Saisissez vos identifiants pour accéder au système de gestion des salles
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -70,13 +70,13 @@ export function LoginForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">E-mail</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Saisissez votre e-mail"
               {...register('email', { 
-                required: 'Email is required'
+                required: 'L'e-mail est requis'
               })}
               disabled={isLoading}
             />
@@ -86,14 +86,14 @@ export function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Mot de passe</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder="Saisissez votre mot de passe"
                 {...register('password', { 
-                  required: 'Password is required'
+                  required: 'Le mot de passe est requis'
                 })}
                 disabled={isLoading}
               />
@@ -119,7 +119,7 @@ export function LoginForm() {
 
           <Button type="submit" className="w-full btn-albaraka-primary" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In
+            Se connecter
           </Button>
         </form>
 

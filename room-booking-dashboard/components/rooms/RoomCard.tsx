@@ -43,7 +43,7 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
             room.isAvailable === false ? 'bg-red-50 text-red-800 border-red-200' :
             'bg-green-50 text-green-800 border-green-200'
           }>
-            {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'BUSY' : 'FREE'}
+            {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'OCCUPÉ' : 'LIBRE'}
           </Badge>
         </div>
       </CardHeader>
@@ -52,14 +52,14 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
           <div className="p-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2 text-sm">
               <Clock className="h-3 w-3 text-primary" />
-              <span className="font-medium">Current: {currentBooking.purpose || 'Meeting'}</span>
+              <span className="font-medium">Actuel : {currentBooking.purpose || 'Réunion'}</span>
             </div>
           </div>
         )}
 
         {/* Quick Status Actions */}
         <div className="space-y-2">
-          <Label className="text-xs font-medium text-muted-foreground">QUICK ACTIONS</Label>
+          <Label className="text-xs font-medium text-muted-foreground">ACTIONS RAPIDES</Label>
           <div className="grid grid-cols-1 gap-2">
             <Button
               variant={room.isUnderMaintenance ? "destructive" : "outline"}
@@ -69,7 +69,7 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
               className="text-xs"
             >
               <Wrench className="h-3 w-3 mr-1" />
-              {room.isUnderMaintenance ? "Under Maintenance" : "Set Maintenance"}
+              {room.isUnderMaintenance ? "En maintenance" : "Mettre en maintenance"}
             </Button>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
               onClick={() => onEdit(room)}
             >
               <Edit className="h-3 w-3 mr-1" />
-              Edit
+Modifier
             </Button>
           )}
           <Button 
@@ -94,7 +94,7 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
             onClick={() => onBook(room)}
           >
             <BookOpen className="h-3 w-3 mr-1" />
-            Book
+Réserver
           </Button>
           {isAdmin() && (
             <Button

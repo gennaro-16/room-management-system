@@ -95,11 +95,11 @@ export function RoomsSection() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-balance">Room Management</h2>
-            <p className="text-muted-foreground">Manage room availability, status, and settings</p>
+            <h2 className="text-2xl font-bold text-balance">Gestion des salles</h2>
+            <p className="text-muted-foreground">Gérer la disponibilité, le statut et les paramètres des salles</p>
           </div>
         </div>
-        <LoadingSpinner text="Loading rooms..." />
+        <LoadingSpinner text="Chargement des salles..." />
       </div>
     );
   }
@@ -109,8 +109,8 @@ export function RoomsSection() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-balance">Room Management</h2>
-            <p className="text-muted-foreground">Manage room availability, status, and settings</p>
+            <h2 className="text-2xl font-bold text-balance">Gestion des salles</h2>
+            <p className="text-muted-foreground">Gérer la disponibilité, le statut et les paramètres des salles</p>
           </div>
         </div>
         <ErrorAlert error={error} onRetry={refetch} />
@@ -124,19 +124,19 @@ export function RoomsSection() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-balance">
-            {isAdmin() ? 'Room Management' : 'Available Rooms'}
+            {isAdmin() ? 'Gestion des salles' : 'Salles disponibles'}
           </h2>
           <p className="text-muted-foreground">
             {isAdmin() 
-              ? 'Manage room availability, status, and settings' 
-              : 'Browse and book available rooms'
+              ? 'Gérer la disponibilité, le statut et les paramètres des salles' 
+              : 'Parcourir et réserver les salles disponibles'
             }
           </p>
         </div>
         {isAdmin() && (
           <Button onClick={() => setIsAddRoomOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Room
+            Ajouter une salle
           </Button>
         )}
       </div>
@@ -168,9 +168,9 @@ export function RoomsSection() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No rooms found</h3>
+            <h3 className="text-lg font-medium mb-2">Aucune salle trouvée</h3>
             <p className="text-muted-foreground text-center mb-4">
-              No rooms match your current filters. Try adjusting your search criteria.
+              Aucune salle ne correspond à vos filtres actuels. Essayez d'ajuster vos critères de recherche.
             </p>
             <Button
               variant="outline"
@@ -179,7 +179,7 @@ export function RoomsSection() {
                 setStatusFilter('all');
               }}
             >
-              Clear Filters
+              Effacer les filtres
             </Button>
           </CardContent>
         </Card>

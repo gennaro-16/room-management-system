@@ -30,15 +30,15 @@ export function SimpleLoginForm() {
     const newErrors: { email?: string; password?: string } = {};
     
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'L'e-mail est requis';
     } else if (!email.includes('@')) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = 'Veuillez saisir une adresse e-mail valide';
     }
     
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Le mot de passe est requis';
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
     }
     
     if (Object.keys(newErrors).length > 0) {
@@ -57,9 +57,9 @@ export function SimpleLoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto card-albaraka">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center text-[var(--albaraka-primary)]">Sign In</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center text-[var(--albaraka-primary)]">Se connecter</CardTitle>
         <CardDescription className="text-center text-[var(--albaraka-muted)]">
-          Enter your credentials to access the room management system
+          Saisissez vos identifiants pour accéder au système de gestion des salles
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -71,12 +71,12 @@ export function SimpleLoginForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">E-mail</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Saisissez votre e-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
@@ -87,13 +87,13 @@ export function SimpleLoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Mot de passe</Label>
             <div className="relative">
               <Input
                 id="password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder="Saisissez votre mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -120,18 +120,18 @@ export function SimpleLoginForm() {
 
           <Button type="submit" className="w-full btn-albaraka-primary" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Sign In
+            Se connecter
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm">
           <p className="text-muted-foreground">
-            Demo credentials:
+            Identifiants de démonstration :
           </p>
           <div className="mt-2 space-y-1 text-xs">
-            <p><strong>Super Admin:</strong> admin@company.com / password123</p>
-            <p><strong>Manager:</strong> manager@company.com / password123</p>
-            <p><strong>User:</strong> john@company.com / password123</p>
+            <p><strong>Super Admin :</strong> admin@company.com / password123</p>
+            <p><strong>Manager :</strong> manager@company.com / password123</p>
+            <p><strong>Utilisateur :</strong> john@company.com / password123</p>
           </div>
         </div>
       </CardContent>

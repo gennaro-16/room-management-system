@@ -29,7 +29,7 @@ export function RoomFilters({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search rooms..."
+                placeholder="Rechercher des salles..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-10"
@@ -39,13 +39,13 @@ export function RoomFilters({
           <Select value={statusFilter} onValueChange={onStatusFilterChange}>
             <SelectTrigger className="w-full sm:w-40">
               <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="FREE">Free</SelectItem>
-              <SelectItem value="BUSY">Busy</SelectItem>
-              <SelectItem value="RESERVED">Reserved</SelectItem>
+              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="FREE">Libre</SelectItem>
+              <SelectItem value="BUSY">Occupé</SelectItem>
+              <SelectItem value="RESERVED">Réservé</SelectItem>
               <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
             </SelectContent>
           </Select>

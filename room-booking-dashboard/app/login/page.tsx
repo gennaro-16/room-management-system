@@ -42,9 +42,9 @@ export default function LoginPage() {
               className="h-12 w-auto"
             />
           </div>
-          <h1 className="text-3xl font-bold text-[var(--albaraka-primary)]">Room Management</h1>
+          <h1 className="text-3xl font-bold text-[var(--albaraka-primary)]">Gestion des salles</h1>
           <p className="mt-2 text-sm text-[var(--albaraka-muted)]">
-            Sign in to your account
+            Connectez-vous à votre compte
           </p>
         </div>
 
