@@ -20,6 +20,12 @@ export class UsersController {
     return this.usersService.findAll(user);
   }
 
+  @Get('pending')
+  @Roles(UserRole.SUPER_ADMIN)
+  getPendingUsers(@CurrentUser() user: User) {
+    return this.usersService.getPendingUsers(user);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
     return this.usersService.findOne(id, user);
@@ -44,12 +50,6 @@ export class UsersController {
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   deactivate(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
     return this.usersService.deactivate(id, user);
-  }
-
-  @Get('pending')
-  @Roles(UserRole.SUPER_ADMIN)
-  getPendingUsers(@CurrentUser() user: User) {
-    return this.usersService.getPendingUsers(user);
   }
 
   @Patch(':id/approve')
