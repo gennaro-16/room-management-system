@@ -84,6 +84,10 @@ export function RegisterForm() {
       newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
     }
 
+    if (!formData.departmentId) {
+      newErrors.departmentId = "Le département est requis";
+    }
+
     return newErrors;
   };
 
@@ -226,19 +230,23 @@ export function RegisterForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="departmentId">Département (optionnel)</Label>
+            <Label htmlFor="departmentId">Département *</Label>
             <select
               id="departmentId"
               className="border rounded h-9 px-3"
               value={formData.departmentId}
               onChange={(e) => handleInputChange('departmentId', e.target.value)}
               disabled={isLoading}
+              required
             >
-              <option value="">Sélectionner...</option>
+              <option value="">Sélectionner un département...</option>
               {departments.map((d) => (
                 <option key={d.id} value={d.id}>{d.name}{d.floor ? ` (Etage ${d.floor})` : ''}</option>
               ))}
             </select>
+            {errors.departmentId && (
+              <p className="text-sm text-red-600">{errors.departmentId}</p>
+            )}
           </div>
 
           <div className="space-y-2">

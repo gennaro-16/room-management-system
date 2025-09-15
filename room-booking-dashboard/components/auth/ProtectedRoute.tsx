@@ -86,7 +86,7 @@ export function SuperAdminOnly({ children, fallback }: { children: React.ReactNo
 
 export function UserOnly({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   return (
-    <ProtectedRoute requiredRoles="USER" fallback={fallback}>
+    <ProtectedRoute requiredRoles="EMPLOYEE" fallback={fallback}>
       {children}
     </ProtectedRoute>
   );

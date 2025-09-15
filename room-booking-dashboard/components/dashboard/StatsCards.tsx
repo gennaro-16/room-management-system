@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, BookOpen, Settings } from 'lucide-react';
+import { Building2, BookOpen, Settings, CheckCircle } from 'lucide-react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
 
@@ -21,9 +21,9 @@ interface StatsCardsProps {
 export function StatsCards({ data, loading, error, onRetry }: StatsCardsProps) {
   if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="card-albaraka">
             <CardContent className="p-6">
               <LoadingSpinner size="sm" />
             </CardContent>
@@ -39,51 +39,59 @@ export function StatsCards({ data, loading, error, onRetry }: StatsCardsProps) {
 
   if (!data) return null;
 
+  const availableRooms = data.totalRooms - data.activeBookings - data.maintenanceRooms;
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total des salles</CardTitle>
-          <Building2 className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{data.totalRooms}</div>
-          <p className="text-xs text-muted-foreground">Sur tous les étages</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Disponibles maintenant</CardTitle>
-          <div className="h-2 w-2 bg-green-500 rounded-full" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">
-            {data.totalRooms - data.activeBookings - data.maintenanceRooms}
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <Card className="card-albaraka group hover:shadow-lg transition-all duration-300">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Total des salles</CardTitle>
+          <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+            <Building2 className="h-4 w-4 text-primary" />
           </div>
-          <p className="text-xs text-muted-foreground">Prêtes à réserver</p>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold text-foreground mb-1">{data.totalRooms}</div>
+          <p className="text-sm text-muted-foreground">Sur tous les étages</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Réservations actives</CardTitle>
-          <BookOpen className="h-4 w-4 text-muted-foreground" />
+      <Card className="card-albaraka group hover:shadow-lg transition-all duration-300">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Disponibles maintenant</CardTitle>
+          <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-primary">{data.activeBookings}</div>
-          <p className="text-xs text-muted-foreground">Actuellement en cours d'utilisation</p>
+          <div className="text-3xl font-bold text-green-600 mb-1">{availableRooms}</div>
+          <p className="text-sm text-muted-foreground">Prêtes à réserver</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Maintenance</CardTitle>
-          <Settings className="h-4 w-4 text-muted-foreground" />
+      <Card className="card-albaraka group hover:shadow-lg transition-all duration-300">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Réservations actives</CardTitle>
+          <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+            <BookOpen className="h-4 w-4 text-orange-600" />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-secondary">{data.maintenanceRooms}</div>
-          <p className="text-xs text-muted-foreground">En maintenance</p>
+          <div className="text-3xl font-bold text-orange-600 mb-1">{data.activeBookings}</div>
+          <p className="text-sm text-muted-foreground">Actuellement en cours d'utilisation</p>
+        </CardContent>
+      </Card>
+
+      <Card className="card-albaraka group hover:shadow-lg transition-all duration-300">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-sm font-semibold text-foreground">Maintenance</CardTitle>
+          <div className="p-2 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors">
+            <Settings className="h-4 w-4 text-amber-600" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold text-amber-600 mb-1">{data.maintenanceRooms}</div>
+          <p className="text-sm text-muted-foreground">En maintenance</p>
         </CardContent>
       </Card>
     </div>

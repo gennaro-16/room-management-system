@@ -59,13 +59,15 @@ export interface Room {
   description?: string;
   amenities: string[];
   floor: number;
-  building?: string;
+  building?: string; // Optional - excluded from API responses
   departmentId?: number | null;
+  department?: Department;
   x?: number;
   y?: number;
   width?: number;
   height?: number;
   isUnderMaintenance: boolean;
+  maintenanceNotes?: string;
   isAvailable?: boolean;
   currentBooking?: Booking;
   createdAt: string;

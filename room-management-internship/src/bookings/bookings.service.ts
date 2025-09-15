@@ -327,14 +327,27 @@ export class BookingsService {
   async update(id: number, updateBookingDto: UpdateBookingDto, currentUser: User) {
     const existingBooking = await this.findOne(id, currentUser);
 
-    // Only users can update their own pending bookings
-    if (currentUser.role === UserRole.EMPLOYEE && existingBooking.organizerId !== currentUser.id) {
+    // Check permissions based on user role and booking status
+    const isAdminRole = currentUser.role === UserRole.ADMIN || 
+                       currentUser.role === UserRole.SUPER_ADMIN || 
+                       currentUser.role === UserRole.DIRECTOR;
+    const isOwner = existingBooking.organizerId === currentUser.id;
+    
+    if (currentUser.role === UserRole.EMPLOYEE) {
+      // Employees can only update their own pending bookings
+      if (!isOwner) {
+        throw new ForbiddenException('Insufficient permissions');
+      }
+      if (existingBooking.status !== BookingStatus.PENDING) {
+        throw new BadRequestException('Only pending bookings can be updated');
+      }
+    } else if (isAdminRole) {
+      // Admins, Super Admins, and Directors can update approved bookings
+      if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED) {
+        throw new BadRequestException('Cannot update rejected or cancelled bookings');
+      }
+    } else {
       throw new ForbiddenException('Insufficient permissions');
-    }
-
-    // Only pending bookings can be updated
-    if (existingBooking.status !== BookingStatus.PENDING) {
-      throw new BadRequestException('Only pending bookings can be updated');
     }
 
     // If updating time, check for conflicts
@@ -460,17 +473,18 @@ export class BookingsService {
     });
   }
 
-  async getBookingsByDateRange(startDate: Date, endDate: Date, currentUser: User) {
+  async getBookingsByDateRange(startDate: Date, endDate: Date, currentUser: User, organizerId?: number) {
     // Users can only see their own bookings in date range
     const whereClause = currentUser.role === UserRole.EMPLOYEE 
       ? { 
-          userId: currentUser.id,
+          organizerId: currentUser.id,
           startTime: { gte: startDate },
           endTime: { lte: endDate }
         }
       : {
           startTime: { gte: startDate },
-          endTime: { lte: endDate }
+          endTime: { lte: endDate },
+          ...(organizerId && { organizerId })
         };
 
     return this.prisma.booking.findMany({

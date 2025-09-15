@@ -182,7 +182,23 @@ export function useCreateBooking() {
       const result = await bookingsApi.create(data);
       return result;
     } catch (err) {
-      const errorMessage = err instanceof ApiError ? err.message : 'Failed to create booking';
+      let errorMessage = 'Échec de la création de la réservation';
+      
+      if (err instanceof ApiError) {
+        // Translate specific error messages to French
+        if (err.message.includes('Room is already booked for this time period')) {
+          errorMessage = 'Il y a une réservation dans ce temps choisi, choisissez un autre svp';
+        } else if (err.message.includes('Room is under maintenance')) {
+          errorMessage = 'La salle est en maintenance et ne peut pas être réservée';
+        } else if (err.message.includes('End time must be after start time')) {
+          errorMessage = 'L\'heure de fin doit être après l\'heure de début';
+        } else if (err.message.includes('Cannot book rooms in the past')) {
+          errorMessage = 'Impossible de réserver des salles dans le passé';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
       setError(errorMessage);
       throw err;
     } finally {

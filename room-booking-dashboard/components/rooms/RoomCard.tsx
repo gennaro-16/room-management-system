@@ -25,32 +25,34 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
   );
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
+    <Card className="card-albaraka group hover:shadow-lg transition-all duration-300">
+      <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-lg">{room.name}</CardTitle>
+          <div className="space-y-2 flex-1">
+            <CardTitle className="text-lg font-semibold text-foreground">{room.name}</CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <UserCheck className="h-3 w-3" />
-              {room.capacity} people
+              <UserCheck className="h-4 w-4" />
+              <span>{room.capacity} personnes</span>
             </div>
             {room.description && (
-              <div className="text-sm text-muted-foreground">{room.description}</div>
+              <div className="text-sm text-muted-foreground line-clamp-2">{room.description}</div>
             )}
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1"><Building2 className="h-3 w-3" />{room.building || 'Main'}</span>
-              <span className="inline-flex items-center gap-1"><Layers className="h-3 w-3" />Etage {room.floor}</span>
+              <span className="inline-flex items-center gap-1">
+                <Layers className="h-3 w-3" />
+                Étage {room.floor}
+              </span>
               {room.department && (
-                <Badge variant="outline" className="text-[10px]">
+                <Badge variant="outline" className="text-xs badge-albaraka">
                   {typeof room.department === 'string' ? room.department : (room.department as any)?.name}
                 </Badge>
               )}
             </div>
           </div>
           <Badge className={
-            room.isUnderMaintenance ? 'bg-amber-50 text-amber-800 border-amber-200' :
-            room.isAvailable === false ? 'bg-red-50 text-red-800 border-red-200' :
-            'bg-green-50 text-green-800 border-green-200'
+            room.isUnderMaintenance ? 'status-maintenance' :
+            room.isAvailable === false ? 'status-busy' :
+            'status-free'
           }>
             {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'OCCUPÉ' : 'LIBRE'}
           </Badge>
@@ -58,21 +60,21 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
       </CardHeader>
       <CardContent className="space-y-4">
         {currentBooking && (
-          <div className="p-3 bg-muted rounded-lg">
+          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-3 w-3 text-primary" />
-              <span className="font-medium">Actuel : {currentBooking.purpose || 'Réunion'}</span>
+              <Clock className="h-4 w-4 text-primary" />
+              <span className="font-medium text-primary">Actuel : {currentBooking.purpose || 'Réunion'}</span>
             </div>
           </div>
         )}
 
         {/* Amenities */}
         {room.amenities && room.amenities.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground">ÉQUIPEMENTS</Label>
+          <div className="space-y-3">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Équipements</Label>
             <div className="flex flex-wrap gap-2">
               {room.amenities.map((a, idx) => (
-                <Badge key={idx} variant="secondary" className="text-[10px]">
+                <Badge key={idx} variant="secondary" className="text-xs badge-albaraka">
                   {a}
                 </Badge>
               ))}
@@ -81,21 +83,21 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
         )}
 
         {/* Quick Status Actions */}
-        <div className="space-y-2">
-          <Label className="text-xs font-medium text-muted-foreground">ACTIONS RAPIDES</Label>
+        <div className="space-y-3">
+          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Actions rapides</Label>
           <div className="grid grid-cols-1 gap-2">
             <Button
               variant={room.isUnderMaintenance ? "destructive" : "outline"}
               size="sm"
               onClick={() => onToggleMaintenance?.(room.id)}
               disabled={isMaintenanceLoading}
-              className="text-xs"
+              className="text-xs h-8"
             >
-              <Wrench className="h-3 w-3 mr-1" />
+              <Wrench className="h-3 w-3 mr-2" />
               {room.isUnderMaintenance ? "En maintenance" : "Mettre en maintenance"}
             </Button>
             {room.isUnderMaintenance && room.maintenanceNotes && (
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
                 {room.maintenanceNotes}
               </div>
             )}
@@ -103,32 +105,32 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
         </div>
 
         {/* Room Actions */}
-        <div className="flex gap-2 pt-2 border-t">
+        <div className="flex gap-2 pt-3 border-t border-border">
           {isAdmin() && (
             <Button 
               variant="outline" 
               size="sm" 
-              className="flex-1 bg-transparent"
+              className="flex-1 h-8 text-xs"
               onClick={() => onEdit(room)}
             >
-              <Edit className="h-3 w-3 mr-1" />
-Modifier
+              <Edit className="h-3 w-3 mr-2" />
+              Modifier
             </Button>
           )}
           <Button 
             variant="outline" 
             size="sm" 
-            className="flex-1 bg-transparent"
+            className="flex-1 h-8 text-xs"
             onClick={() => onBook(room)}
           >
-            <BookOpen className="h-3 w-3 mr-1" />
-Réserver
+            <BookOpen className="h-3 w-3 mr-2" />
+            Réserver
           </Button>
           {isAdmin() && (
             <Button
               variant="outline"
               size="sm"
-              className="text-destructive hover:text-destructive bg-transparent"
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={() => onDelete(room.id)}
             >
               <Trash2 className="h-3 w-3" />

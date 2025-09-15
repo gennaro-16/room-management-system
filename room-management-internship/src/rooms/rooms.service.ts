@@ -30,7 +30,24 @@ export class RoomsService {
 
   async findAll() {
     const rooms = await this.prisma.room.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        description: true,
+        amenities: true,
+        floor: true,
+        // building: true, // Excluded from response
+        x: true,
+        y: true,
+        width: true,
+        height: true,
+        departmentId: true,
+        department: true,
+        isUnderMaintenance: true,
+        maintenanceNotes: true,
+        createdAt: true,
+        updatedAt: true,
         bookings: {
           where: {
             status: BookingStatus.APPROVED,
@@ -68,7 +85,24 @@ export class RoomsService {
   async findOne(id: number) {
     const room = await this.prisma.room.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        description: true,
+        amenities: true,
+        floor: true,
+        // building: true, // Excluded from response
+        x: true,
+        y: true,
+        width: true,
+        height: true,
+        departmentId: true,
+        department: true,
+        isUnderMaintenance: true,
+        maintenanceNotes: true,
+        createdAt: true,
+        updatedAt: true,
         bookings: {
           where: {
             status: BookingStatus.APPROVED,
@@ -193,6 +227,25 @@ export class RoomsService {
           notIn: conflictingRoomIds
         },
         isUnderMaintenance: false
+      },
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        description: true,
+        amenities: true,
+        floor: true,
+        // building: true, // Excluded from response
+        x: true,
+        y: true,
+        width: true,
+        height: true,
+        departmentId: true,
+        department: true,
+        isUnderMaintenance: true,
+        maintenanceNotes: true,
+        createdAt: true,
+        updatedAt: true,
       },
       orderBy: [
         { name: 'asc' }

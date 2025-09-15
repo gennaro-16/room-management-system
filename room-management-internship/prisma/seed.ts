@@ -69,7 +69,7 @@ async function main() {
         lastName: 'Doe',
         title: 'Chief Executive Officer',
         phone: '+1-555-0101',
-        departmentId: executiveDept?.id,
+        departmentId: executiveDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -83,7 +83,7 @@ async function main() {
         lastName: 'Johnson',
         title: 'Chief Financial Officer',
         phone: '+1-555-0102',
-        departmentId: executiveDept?.id,
+        departmentId: executiveDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -97,7 +97,7 @@ async function main() {
         lastName: 'Williams',
         title: 'Chief Operations Officer',
         phone: '+1-555-0103',
-        departmentId: executiveDept?.id,
+        departmentId: executiveDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -113,7 +113,7 @@ async function main() {
         lastName: 'Brown',
         title: 'Director of Commercial Banking',
         phone: '+1-555-0201',
-        departmentId: commercialDept?.id,
+        departmentId: commercialDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -127,7 +127,7 @@ async function main() {
         lastName: 'Davis',
         title: 'Senior Commercial Manager',
         phone: '+1-555-0202',
-        departmentId: commercialDept?.id,
+        departmentId: commercialDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -141,7 +141,7 @@ async function main() {
         lastName: 'Miller',
         title: 'Commercial Loan Officer',
         phone: '+1-555-0203',
-        departmentId: commercialDept?.id,
+        departmentId: commercialDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -157,7 +157,7 @@ async function main() {
         lastName: 'Wilson',
         title: 'Director of Retail Banking',
         phone: '+1-555-0301',
-        departmentId: retailDept?.id,
+        departmentId: retailDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -171,7 +171,7 @@ async function main() {
         lastName: 'Moore',
         title: 'Branch Network Manager',
         phone: '+1-555-0302',
-        departmentId: retailDept?.id,
+        departmentId: retailDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -185,7 +185,7 @@ async function main() {
         lastName: 'Taylor',
         title: 'Personal Banker',
         phone: '+1-555-0303',
-        departmentId: retailDept?.id,
+        departmentId: retailDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -201,7 +201,7 @@ async function main() {
         lastName: 'Anderson',
         title: 'Chief Risk Officer',
         phone: '+1-555-0401',
-        departmentId: riskDept?.id,
+        departmentId: riskDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -215,7 +215,7 @@ async function main() {
         lastName: 'Jackson',
         title: 'Compliance Manager',
         phone: '+1-555-0402',
-        departmentId: riskDept?.id,
+        departmentId: riskDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -231,7 +231,7 @@ async function main() {
         lastName: 'White',
         title: 'Chief Information Officer',
         phone: '+1-555-0501',
-        departmentId: itDept?.id,
+        departmentId: itDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -245,7 +245,7 @@ async function main() {
         lastName: 'Harris',
         title: 'IT Infrastructure Manager',
         phone: '+1-555-0502',
-        departmentId: itDept?.id,
+        departmentId: itDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -259,7 +259,7 @@ async function main() {
         lastName: 'Martin',
         title: 'Software Developer',
         phone: '+1-555-0503',
-        departmentId: itDept?.id,
+        departmentId: itDept!.id,
         isApproved: true,
         isActive: true
       },
@@ -275,6 +275,7 @@ async function main() {
         lastName: 'Administrator',
         title: 'System Administrator',
         phone: '+1-555-0000',
+        departmentId: executiveDept!.id,
         isApproved: true,
         isActive: true
       }
@@ -283,11 +284,11 @@ async function main() {
 
   // Get created users for relationships
   const adminUser = await prisma.user.findFirst({ where: { username: 'admin' } });
-  const executives = await prisma.user.findMany({ where: { departmentId: executiveDept?.id } });
-  const commercialUsers = await prisma.user.findMany({ where: { departmentId: commercialDept?.id } });
-  const retailUsers = await prisma.user.findMany({ where: { departmentId: retailDept?.id } });
-  const riskUsers = await prisma.user.findMany({ where: { departmentId: riskDept?.id } });
-  const itUsers = await prisma.user.findMany({ where: { departmentId: itDept?.id } });
+  const executives = await prisma.user.findMany({ where: { departmentId: executiveDept!.id } });
+  const commercialUsers = await prisma.user.findMany({ where: { departmentId: commercialDept!.id } });
+  const retailUsers = await prisma.user.findMany({ where: { departmentId: retailDept!.id } });
+  const riskUsers = await prisma.user.findMany({ where: { departmentId: riskDept!.id } });
+  const itUsers = await prisma.user.findMany({ where: { departmentId: itDept!.id } });
 
   // Create Rooms
   const rooms = await prisma.room.createMany({
@@ -300,7 +301,7 @@ async function main() {
         amenities: ['projector', 'video-conference', 'whiteboard', 'teleconference'],
         floor: 10,
         building: 'Main Tower',
-        departmentId: executiveDept?.id,
+        departmentId: executiveDept!.id,
         isUnderMaintenance: false
       },
       {
@@ -310,7 +311,7 @@ async function main() {
         amenities: ['projector', 'video-conference'],
         floor: 10,
         building: 'Main Tower',
-        departmentId: executiveDept?.id,
+        departmentId: executiveDept!.id,
         isUnderMaintenance: false
       },
       {
@@ -320,7 +321,7 @@ async function main() {
         amenities: ['teleconference'],
         floor: 10,
         building: 'Main Tower',
-        departmentId: executiveDept?.id,
+        departmentId: executiveDept!.id,
         isUnderMaintenance: false
       },
 
@@ -332,7 +333,7 @@ async function main() {
         amenities: ['projector', 'whiteboard'],
         floor: 7,
         building: 'Main Tower',
-        departmentId: commercialDept?.id,
+        departmentId: commercialDept!.id,
         isUnderMaintenance: false
       },
       {
@@ -342,7 +343,7 @@ async function main() {
         amenities: ['teleconference'],
         floor: 7,
         building: 'Main Tower',
-        departmentId: commercialDept?.id,
+        departmentId: commercialDept!.id,
         isUnderMaintenance: false
       },
 
@@ -354,7 +355,7 @@ async function main() {
         amenities: ['projector', 'whiteboard'],
         floor: 3,
         building: 'Main Tower',
-        departmentId: retailDept?.id,
+        departmentId: retailDept!.id,
         isUnderMaintenance: false
       },
       {
@@ -364,7 +365,7 @@ async function main() {
         amenities: [],
         floor: 3,
         building: 'Main Tower',
-        departmentId: retailDept?.id,
+        departmentId: retailDept!.id,
         isUnderMaintenance: false
       },
 
@@ -376,7 +377,7 @@ async function main() {
         amenities: ['projector', 'whiteboard'],
         floor: 8,
         building: 'Main Tower',
-        departmentId: riskDept?.id,
+        departmentId: riskDept!.id,
         isUnderMaintenance: false
       },
 
@@ -388,7 +389,7 @@ async function main() {
         amenities: ['projector', 'multiple-screens', 'whiteboard'],
         floor: 9,
         building: 'Main Tower',
-        departmentId: itDept?.id,
+        departmentId: itDept!.id,
         isUnderMaintenance: false
       },
       {
@@ -398,7 +399,7 @@ async function main() {
         amenities: ['secure-access'],
         floor: 9,
         building: 'Main Tower',
-        departmentId: itDept?.id,
+        departmentId: itDept!.id,
         isUnderMaintenance: true,
         maintenanceNotes: 'HVAC upgrade in progress'
       },
@@ -411,6 +412,7 @@ async function main() {
         amenities: ['projector', 'stage', 'sound-system'],
         floor: 1,
         building: 'Main Tower',
+        departmentId: executiveDept!.id,
         isUnderMaintenance: false
       },
       {
@@ -420,6 +422,7 @@ async function main() {
         amenities: ['projector', 'whiteboard'],
         floor: 2,
         building: 'Main Tower',
+        departmentId: retailDept!.id,
         isUnderMaintenance: false
       }
     ]

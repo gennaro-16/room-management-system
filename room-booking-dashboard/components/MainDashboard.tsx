@@ -7,7 +7,6 @@ import { DashboardSection } from './dashboard/DashboardSection';
 import { RoomsSection } from './rooms/RoomsSection';
 import { BookingsSection } from './bookings/BookingsSection';
 import { CalendarSection } from './calendar/CalendarSection';
-import { RoomMapSection } from './dashboard/RoomMapSection';
 import { BookingApprovals } from './admin/BookingApprovals';
 import { UserManagement } from './admin/UserManagement';
 import { DashboardProfile } from './dashboard/DashboardProfile';
@@ -35,8 +34,6 @@ export function MainDashboard() {
         return <BookingsSection />;
       case 'calendar':
         return <CalendarSection />;
-      case 'map':
-        return <RoomMapSection />;
       case 'approvals':
         if (!isAdmin) {
           return (

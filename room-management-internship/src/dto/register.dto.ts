@@ -36,8 +36,7 @@ export class RegisterDto {
   phone?: string;
 
   @IsInt()
-  @IsOptional()
-  departmentId?: number;
+  departmentId: number;
 
   @IsEnum(UserRole)
   @IsOptional()

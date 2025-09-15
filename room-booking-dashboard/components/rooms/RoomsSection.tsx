@@ -25,6 +25,9 @@ export function RoomsSection() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<RoomStatus | 'all'>('all');
+  const [departmentFilter, setDepartmentFilter] = useState<number | 'all'>('all');
+  const [capacityFilter, setCapacityFilter] = useState<string | 'all'>('all');
+  const [floorFilter, setFloorFilter] = useState<number | 'all'>('all');
   const { isAdmin } = useAuth();
 
   const { data: rooms, loading, error, refetch } = useRooms();
@@ -39,17 +42,46 @@ export function RoomsSection() {
     if (!rooms) return [];
     
     return rooms.filter((room) => {
+      // Search filter
       const matchesSearch = room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            room.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Status filter
       const matchesStatus = statusFilter === 'all' || 
         (statusFilter === 'MAINTENANCE' && room.isUnderMaintenance) ||
         (statusFilter === 'BUSY' && room.isAvailable === false) ||
         (statusFilter === 'FREE' && !room.isUnderMaintenance && room.isAvailable !== false);
-      // Note: Floor filtering would need to be added to the API or derived from room data
-      return matchesSearch && matchesStatus;
+      
+      // Department filter
+      const matchesDepartment = departmentFilter === 'all' || room.departmentId === departmentFilter;
+      
+      // Capacity filter
+      const matchesCapacity = capacityFilter === 'all' || (() => {
+        switch (capacityFilter) {
+          case '1-5': return room.capacity >= 1 && room.capacity <= 5;
+          case '6-10': return room.capacity >= 6 && room.capacity <= 10;
+          case '11-20': return room.capacity >= 11 && room.capacity <= 20;
+          case '21-50': return room.capacity >= 21 && room.capacity <= 50;
+          case '50+': return room.capacity > 50;
+          default: return true;
+        }
+      })();
+      
+      // Floor filter
+      const matchesFloor = floorFilter === 'all' || room.floor === floorFilter;
+      
+      return matchesSearch && matchesStatus && matchesDepartment && matchesCapacity && matchesFloor;
     });
-  }, [rooms, searchTerm, statusFilter]);
+  }, [rooms, searchTerm, statusFilter, departmentFilter, capacityFilter, floorFilter]);
 
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setDepartmentFilter('all');
+    setCapacityFilter('all');
+    setFloorFilter('all');
+  };
 
   const handleCreateRoom = async (data: CreateRoomDto) => {
     await createRoom(data);
@@ -147,7 +179,26 @@ export function RoomsSection() {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
+        departmentFilter={departmentFilter}
+        onDepartmentFilterChange={setDepartmentFilter}
+        capacityFilter={capacityFilter}
+        onCapacityFilterChange={setCapacityFilter}
+        floorFilter={floorFilter}
+        onFloorFilterChange={setFloorFilter}
+        onClearFilters={clearFilters}
       />
+
+      {/* Results Counter */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {filteredRooms.length} salle{filteredRooms.length !== 1 ? 's' : ''} trouvée{filteredRooms.length !== 1 ? 's' : ''}
+          {rooms && rooms.length !== filteredRooms.length && (
+            <span className="ml-1">
+              sur {rooms.length} au total
+            </span>
+          )}
+        </p>
+      </div>
 
       {/* Room Grid */}
       {filteredRooms.length > 0 ? (

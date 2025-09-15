@@ -86,7 +86,7 @@ export class UsersController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   updateUserDepartment(
     @Param('id', ParseIntPipe) userId: number,
-    @Body('departmentId') departmentId: number | null,
+    @Body('departmentId') departmentId: number,
     @CurrentUser() user: User
   ) {
     return this.usersService.updateUserDepartment(userId, departmentId, user);

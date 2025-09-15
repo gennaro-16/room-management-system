@@ -40,9 +40,8 @@ export class CreateRoomDto {
   @IsInt()
   height?: number;
 
-  @IsOptional()
   @IsInt()
-  departmentId?: number;
+  departmentId: number;
 
   @IsOptional()
   @IsBoolean()

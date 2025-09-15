@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter, Calendar, Clock, User, MapPin, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, Clock, User, MapPin, Edit, Trash2, ChevronDown, ChevronUp, Users, Building2, Layers, Phone, Mail, FileText, Wifi, Coffee, Monitor, Presentation, Video, Settings, Wrench, AlertTriangle, Repeat, UserCheck, ExternalLink, Timer } from 'lucide-react';
 import { useBookings, useCreateBooking, useUpdateBooking, useCancelBooking } from '@/hooks/useApi';
 import { Booking, BookingStatus, CreateBookingDto, UpdateBookingDto } from '@/lib/api';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -20,6 +20,7 @@ export function BookingsSection() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
+  const [expandedBookings, setExpandedBookings] = useState<Set<number>>(new Set());
 
   const { data: bookings, loading, error, refetch } = useBookings();
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
@@ -31,11 +32,11 @@ export function BookingsSection() {
     if (!bookings) return [];
     
     return bookings.filter(booking => {
-      const userName = booking.user && typeof booking.user === 'object' 
+      const userName = booking.organizer && typeof booking.organizer === 'object' 
         ? (booking.organizer.firstName && booking.organizer.lastName 
             ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
             : booking.organizer.username)
-        : booking.user || '';
+        : '';
         
       const matchesSearch = 
         userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -66,6 +67,18 @@ export function BookingsSection() {
   const handleEditClick = (booking: Booking) => {
     setSelectedBooking(booking);
     setIsEditBookingOpen(true);
+  };
+
+  const toggleExpanded = (bookingId: number) => {
+    setExpandedBookings(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bookingId)) {
+        newSet.delete(bookingId);
+      } else {
+        newSet.add(bookingId);
+      }
+      return newSet;
+    });
   };
 
   const getStatusColor = (status: BookingStatus) => {
@@ -176,67 +189,415 @@ export function BookingsSection() {
           {filteredBookings.map((booking) => {
             const startTime = formatDateTime(booking.startTime);
             const endTime = formatDateTime(booking.endTime);
+            const isExpanded = expandedBookings.has(booking.id);
             
             return (
               <Card key={booking.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-3 flex-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold">{booking.purpose}</h3>
-                        <Badge className={getStatusColor(booking.status)}>
-                          {booking.status}
-                        </Badge>
+                  <div className="space-y-4">
+                    {/* Main Booking Info - Always Visible */}
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-3 flex-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-semibold">{booking.purpose}</h3>
+                          <Badge className={getStatusColor(booking.status)}>
+                            {booking.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{booking.room?.name || 'Room not found'}</span>
+                            <span className="text-muted-foreground">({booking.room?.capacity || 0} people)</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {booking.organizer && typeof booking.organizer === 'object' 
+                                ? (booking.organizer.firstName && booking.organizer.lastName 
+                                    ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                    : booking.organizer.username)
+                                : 'Unknown User'}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>{startTime.date}</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span>{startTime.time} - {endTime.time}</span>
+                          </div>
+                        </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{booking.room?.name || 'Room not found'}</span>
-                          <span className="text-muted-foreground">({booking.room?.capacity || 0} people)</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {booking.user && typeof booking.user === 'object' 
-                              ? (booking.organizer.firstName && booking.organizer.lastName 
-                                  ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
-                                  : booking.organizer.username)
-                              : booking.user || 'Unknown User'}
-                          </span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{startTime.date}</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{startTime.time} - {endTime.time}</span>
-                        </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => toggleExpanded(booking.id)}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="h-3 w-3 mr-1" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3 mr-1" />
+                          )}
+                          {isExpanded ? 'Less' : 'Details'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditClick(booking)}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteBooking(booking.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2 ml-4">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleEditClick(booking)}
-                      >
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteBooking(booking.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
+
+                    {/* Expanded Details */}
+                    {isExpanded && (
+                      <div className="space-y-4 pt-4 border-t border-gray-100">
+                        {/* Room Details */}
+                        <div className="space-y-2">
+                          <div className="font-medium text-sm flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
+                            Room Information
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                            {booking.room?.floor && (
+                              <div className="flex items-center gap-1">
+                                <Layers className="h-3 w-3" />
+                                <span>Floor {booking.room.floor}</span>
+                              </div>
+                            )}
+                            {booking.room?.department && (
+                              <div className="flex items-center gap-1">
+                                <Building2 className="h-3 w-3" />
+                                <span>{typeof booking.room.department === 'string' 
+                                  ? booking.room.department 
+                                  : booking.room.department?.name}
+                                </span>
+                              </div>
+                            )}
+                            {booking.room?.description && (
+                              <div className="col-span-2 text-xs">
+                                {booking.room.description}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Meeting Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            {booking.title && (
+                              <div className="flex items-start gap-2">
+                                <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                  <div className="font-medium text-sm">Meeting Title</div>
+                                  <div className="text-sm text-muted-foreground">{booking.title}</div>
+                                </div>
+                              </div>
+                            )}
+
+                            {booking.agenda && (
+                              <div className="flex items-start gap-2">
+                                <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                  <div className="font-medium text-sm">Agenda</div>
+                                  <div className="text-sm text-muted-foreground whitespace-pre-wrap">{booking.agenda}</div>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2">
+                              <Timer className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <div className="font-medium text-sm">Duration</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {(() => {
+                                    const start = new Date(booking.startTime);
+                                    const end = new Date(booking.endTime);
+                                    const durationMs = end.getTime() - start.getTime();
+                                    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+                                    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+                                    return `${hours}h ${minutes}m`;
+                                  })()}
+                                </div>
+                              </div>
+                            </div>
+
+                            {booking.isRecurring && (
+                              <div className="flex items-center gap-2">
+                                <Repeat className="h-4 w-4 text-muted-foreground" />
+                                <div>
+                                  <div className="font-medium text-sm">Recurrence</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {booking.recurrenceRule ? (
+                                      <Badge variant="outline" className="text-xs">
+                                        {booking.recurrenceRule.includes('WEEKLY') ? 'Weekly' : 
+                                         booking.recurrenceRule.includes('DAILY') ? 'Daily' :
+                                         booking.recurrenceRule.includes('MONTHLY') ? 'Monthly' : 'Custom'}
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline" className="text-xs">Recurring</Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-3">
+                            {/* Organizer Info */}
+                            <div className="flex items-start gap-2">
+                              <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm">Organizer</div>
+                                <div className="text-sm">
+                                  {booking.organizer && typeof booking.organizer === 'object' 
+                                    ? (booking.organizer.firstName && booking.organizer.lastName 
+                                        ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                        : booking.organizer.username)
+                                    : 'Unknown User'}
+                                  {booking.organizer && typeof booking.organizer === 'object' && booking.organizer.title && (
+                                    <div className="text-xs text-muted-foreground">{booking.organizer.title}</div>
+                                  )}
+                                </div>
+                                {booking.organizer && typeof booking.organizer === 'object' && booking.organizer.department && (
+                                  <Badge variant="secondary" className="text-xs mt-1">
+                                    {typeof booking.organizer.department === 'string' 
+                                      ? booking.organizer.department 
+                                      : booking.organizer.department?.name}
+                                  </Badge>
+                                )}
+                                {booking.organizer && typeof booking.organizer === 'object' && booking.organizer.email && (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                    <Mail className="h-3 w-3" />
+                                    {booking.organizer.email}
+                                  </div>
+                                )}
+                                {booking.organizer && typeof booking.organizer === 'object' && booking.organizer.phone && (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <Phone className="h-3 w-3" />
+                                    {booking.organizer.phone}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Attendees Info */}
+                            <div className="flex items-start gap-2">
+                              <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                              <div>
+                                <div className="font-medium text-sm">Expected Attendees</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {booking.expectedAttendees} people
+                                </div>
+                                {booking.internalAttendees && booking.internalAttendees.length > 0 && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    {booking.internalAttendees.length} internal attendees
+                                  </div>
+                                )}
+                                {booking.externalAttendees && booking.externalAttendees.length > 0 && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {booking.externalAttendees.length} external attendees
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Room Amenities */}
+                        {booking.room?.amenities && booking.room.amenities.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="font-medium text-sm">Room Amenities</div>
+                            <div className="flex flex-wrap gap-1">
+                              {booking.room.amenities.map((amenity, index) => {
+                                const getAmenityIcon = (amenity: string) => {
+                                  const lowerAmenity = amenity.toLowerCase();
+                                  if (lowerAmenity.includes('wifi') || lowerAmenity.includes('internet')) return <Wifi className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('coffee') || lowerAmenity.includes('café')) return <Coffee className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('monitor') || lowerAmenity.includes('screen')) return <Monitor className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('presentation') || lowerAmenity.includes('projector')) return <Presentation className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('video') || lowerAmenity.includes('conference')) return <Video className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('tool') || lowerAmenity.includes('equipment')) return <Wrench className="h-3 w-3" />;
+                                  return <Settings className="h-3 w-3" />;
+                                };
+
+                                return (
+                                  <Badge key={index} variant="outline" className="text-xs flex items-center gap-1">
+                                    {getAmenityIcon(amenity)}
+                                    {amenity}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Required Amenities */}
+                        {booking.requiredAmenities && booking.requiredAmenities.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="font-medium text-sm flex items-center gap-2">
+                              <Settings className="h-4 w-4" />
+                              Required Amenities & Tools
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {booking.requiredAmenities.map((amenity, index) => {
+                                const getAmenityIcon = (amenity: string) => {
+                                  const lowerAmenity = amenity.toLowerCase();
+                                  if (lowerAmenity.includes('wifi') || lowerAmenity.includes('internet')) return <Wifi className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('coffee') || lowerAmenity.includes('café')) return <Coffee className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('monitor') || lowerAmenity.includes('screen')) return <Monitor className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('presentation') || lowerAmenity.includes('projector')) return <Presentation className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('video') || lowerAmenity.includes('conference')) return <Video className="h-3 w-3" />;
+                                  if (lowerAmenity.includes('tool') || lowerAmenity.includes('equipment')) return <Wrench className="h-3 w-3" />;
+                                  return <Settings className="h-3 w-3" />;
+                                };
+
+                                return (
+                                  <Badge key={index} variant="secondary" className="text-xs flex items-center gap-1">
+                                    {getAmenityIcon(amenity)}
+                                    {amenity}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Capacity Analysis */}
+                        <div className="space-y-2">
+                          <div className="font-medium text-sm flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Capacity Analysis
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span>Room Capacity:</span>
+                              <span className="font-medium">{booking.room?.capacity} seats</span>
+                            </div>
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span>Expected Attendees:</span>
+                              <span className="font-medium">{booking.expectedAttendees} people</span>
+                            </div>
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span>Capacity Usage:</span>
+                              <span className={`font-medium ${booking.expectedAttendees > (booking.room?.capacity || 0) ? 'text-red-600' : 'text-green-600'}`}>
+                                {Math.round((booking.expectedAttendees / (booking.room?.capacity || 1)) * 100)}%
+                              </span>
+                            </div>
+                          </div>
+                          {booking.expectedAttendees > (booking.room?.capacity || 0) && (
+                            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                              <AlertTriangle className="h-4 w-4" />
+                              <span>Warning: Expected attendees exceed room capacity!</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Internal Attendees Details */}
+                        {booking.internalAttendees && booking.internalAttendees.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="font-medium text-sm flex items-center gap-2">
+                              <UserCheck className="h-4 w-4" />
+                              Internal Attendees ({booking.internalAttendees.length})
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {booking.internalAttendees.map((attendee, index) => (
+                                <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-sm">
+                                  <User className="h-3 w-3 text-muted-foreground" />
+                                  <div className="flex-1">
+                                    <div className="font-medium">
+                                      {attendee.firstName && attendee.lastName
+                                        ? `${attendee.firstName} ${attendee.lastName}`
+                                        : attendee.username
+                                      }
+                                    </div>
+                                    {attendee.title && (
+                                      <div className="text-xs text-muted-foreground">{attendee.title}</div>
+                                    )}
+                                  </div>
+                                  {attendee.department && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {typeof attendee.department === 'string' 
+                                        ? attendee.department 
+                                        : attendee.department?.name}
+                                    </Badge>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* External Attendees */}
+                        {booking.externalAttendees && booking.externalAttendees.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="font-medium text-sm flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4" />
+                              External Attendees ({booking.externalAttendees.length})
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {booking.externalAttendees.map((attendee, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {attendee}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Room Status & Maintenance */}
+                        {booking.room?.isUnderMaintenance && (
+                          <div className="space-y-2">
+                            <div className="font-medium text-sm flex items-center gap-2 text-orange-600">
+                              <AlertTriangle className="h-4 w-4" />
+                              Room Maintenance Alert
+                            </div>
+                            <div className="p-3 bg-orange-50 border border-orange-200 rounded text-sm">
+                              <div className="font-medium text-orange-800">Room is currently under maintenance</div>
+                              {booking.room.maintenanceNotes && (
+                                <div className="text-orange-700 mt-1">{booking.room.maintenanceNotes}</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Footer with Request Info */}
+                        <div className="pt-2 border-t border-gray-100">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center gap-4">
+                              <span>Created on {new Date(booking.createdAt).toLocaleDateString()}</span>
+                              {booking.isRecurring && (
+                                <Badge variant="outline" className="text-xs">
+                                  Recurring
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>Status: {booking.status}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

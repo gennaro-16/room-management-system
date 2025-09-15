@@ -48,32 +48,34 @@ export function RoomStatusOverview({ rooms, loading, error, onRetry }: RoomStatu
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Room Status Overview</CardTitle>
-        <CardDescription>Current status of all rooms</CardDescription>
+    <Card className="card-albaraka">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold">Aperçu du statut des salles</CardTitle>
+        <CardDescription className="text-sm">Statut actuel de toutes les salles</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {rooms.map((room) => (
-          <div key={room.id} className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="space-y-1">
-              <div className="font-medium">{room.name}</div>
-              <div className="text-sm text-muted-foreground">
-                Capacité : {room.capacity}
+          <div key={room.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center gap-3">
+                <div className="font-semibold text-base">{room.name}</div>
+                <div className="text-sm text-muted-foreground">
+                  Capacité : {room.capacity} personnes
+                </div>
               </div>
               {room.description && (
-                <div className="text-sm text-muted-foreground">{room.description}</div>
+                <div className="text-sm text-muted-foreground line-clamp-1">{room.description}</div>
               )}
               {room.bookings && room.bookings.length > 0 && (
-                <div className="text-sm text-primary">
+                <div className="text-sm text-primary font-medium">
                   Actuel : {room.bookings[0].purpose || 'Réunion'}
                 </div>
               )}
             </div>
             <Badge className={
-              room.isUnderMaintenance ? 'bg-amber-50 text-amber-800 border-amber-200' :
-              room.isAvailable === false ? 'bg-red-50 text-red-800 border-red-200' :
-              'bg-green-50 text-green-800 border-green-200'
+              room.isUnderMaintenance ? 'status-maintenance' :
+              room.isAvailable === false ? 'status-busy' :
+              'status-free'
             }>
               {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'OCCUPÉ' : 'LIBRE'}
             </Badge>

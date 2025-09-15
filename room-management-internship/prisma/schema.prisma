@@ -44,8 +44,8 @@ model Room {
   height      Int?
   
   // Department association
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
   
   // Status management
   isUnderMaintenance Boolean @default(false)
@@ -137,8 +137,8 @@ model User {
   phone     String?
   
   // Department association
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
   
   // Status
   isActive     Boolean   @default(true)

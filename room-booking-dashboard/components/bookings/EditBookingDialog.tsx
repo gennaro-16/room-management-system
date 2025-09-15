@@ -13,9 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UpdateBookingDto, Booking, BookingStatus } from '@/lib/api';
+import { Checkbox } from '@/components/ui/checkbox';
+import { UpdateBookingDto, Booking, BookingStatus, User } from '@/lib/api';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
+import { useUsers } from '@/hooks/useApi';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EditBookingDialogProps {
   open: boolean;
@@ -27,16 +30,32 @@ interface EditBookingDialogProps {
 }
 
 export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loading, error }: EditBookingDialogProps) {
+  const { hasRole } = useAuth();
+  const { data: users } = useUsers();
+  
   const [formData, setFormData] = useState<UpdateBookingDto>({
+    title: '',
     purpose: '',
+    agenda: '',
     startTime: '',
     endTime: '',
+    expectedAttendees: 1,
+    internalAttendees: [],
+    externalAttendees: [],
+    requiredAmenities: [],
+    isRecurring: false,
+    recurrenceRule: '',
     status: 'PENDING',
   });
 
   const [selectedDate, setSelectedDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [externalInput, setExternalInput] = useState('');
+  const [amenitiesInput, setAmenitiesInput] = useState('');
+  const [selectedInternalAttendees, setSelectedInternalAttendees] = useState<number[]>([]);
+
+  const isAdminRole = hasRole(['ADMIN', 'SUPER_ADMIN', 'DIRECTOR']);
 
   useEffect(() => {
     if (booking) {
@@ -44,15 +63,26 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
       const endDate = new Date(booking.endTime);
       
       setFormData({
+        title: booking.title || '',
         purpose: booking.purpose,
+        agenda: booking.agenda || '',
         startTime: booking.startTime,
         endTime: booking.endTime,
+        expectedAttendees: booking.expectedAttendees,
+        internalAttendees: booking.internalAttendees?.map(u => u.id) || [],
+        externalAttendees: booking.externalAttendees || [],
+        requiredAmenities: booking.requiredAmenities || [],
+        isRecurring: booking.isRecurring || false,
+        recurrenceRule: booking.recurrenceRule || '',
         status: booking.status,
       });
       
       setSelectedDate(startDate.toISOString().split('T')[0]);
       setStartTime(startDate.toTimeString().slice(0, 5));
       setEndTime(endDate.toTimeString().slice(0, 5));
+      setExternalInput(booking.externalAttendees?.join(', ') || '');
+      setAmenitiesInput(booking.requiredAmenities?.join(', ') || '');
+      setSelectedInternalAttendees(booking.internalAttendees?.map(u => u.id) || []);
     }
   }, [booking]);
 
@@ -68,6 +98,13 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
         ...formData,
         startTime: startDateTime,
         endTime: endDateTime,
+        externalAttendees: externalInput
+          ? externalInput.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
+        requiredAmenities: amenitiesInput
+          ? amenitiesInput.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
+        internalAttendees: selectedInternalAttendees,
       });
       
       onOpenChange(false);
@@ -76,11 +113,21 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
     }
   };
 
-  const handleInputChange = (field: keyof UpdateBookingDto, value: string) => {
+  const handleInputChange = (field: keyof UpdateBookingDto, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleInternalAttendeeChange = (userId: number, checked: boolean) => {
+    setSelectedInternalAttendees(prev => {
+      if (checked) {
+        return [...prev, userId];
+      } else {
+        return prev.filter(id => id !== userId);
+      }
+    });
   };
 
   if (!booking) return null;

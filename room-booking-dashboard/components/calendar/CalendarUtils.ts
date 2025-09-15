@@ -25,7 +25,7 @@ export class CalendarUtils {
    * Convert booking to calendar event
    */
   static bookingToEvent(booking: Booking): CalendarEvent {
-    const userName = booking.user 
+    const userName = booking.organizer 
       ? (booking.organizer.firstName && booking.organizer.lastName 
           ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
           : booking.organizer.username)

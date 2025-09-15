@@ -13,7 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UpdateRoomDto, Room } from '@/lib/api';
+import { UpdateRoomDto, Room, Department, departmentsApi } from '@/lib/api';
+import { Switch } from '@/components/ui/switch';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
 
@@ -31,11 +32,19 @@ export function EditRoomDialog({ open, onOpenChange, room, onSubmit, loading, er
     name: '',
     capacity: 1,
     description: '',
+    amenities: [],
+    floor: 1,
+    building: 'Main',
+    departmentId: undefined,
     x: undefined,
     y: undefined,
     width: undefined,
     height: undefined,
+    isUnderMaintenance: false,
+    maintenanceNotes: '',
   });
+  const [amenitiesInput, setAmenitiesInput] = useState('');
+  const [departments, setDepartments] = useState<Department[]>([]);
 
   useEffect(() => {
     if (room) {
@@ -43,20 +52,49 @@ export function EditRoomDialog({ open, onOpenChange, room, onSubmit, loading, er
         name: room.name,
         capacity: room.capacity,
         description: room.description || '',
-        x: room.x || undefined,
-        y: room.y || undefined,
-        width: room.width || undefined,
-        height: room.height || undefined,
+        amenities: room.amenities || [],
+        floor: room.floor,
+        building: room.building || 'Main',
+        departmentId: room.departmentId || undefined,
+        x: undefined,
+        y: undefined,
+        width: undefined,
+        height: undefined,
+        isUnderMaintenance: room.isUnderMaintenance,
+        maintenanceNotes: room.maintenanceNotes || '',
       });
+      setAmenitiesInput((room.amenities || []).join(', '));
     }
   }, [room]);
+
+  useEffect(() => {
+    departmentsApi.getPublic().then(setDepartments).catch(() => setDepartments([]));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!room) return;
     
+    if (!formData.departmentId) {
+      return; // Don't submit if department is not selected
+    }
+    
     try {
-      await onSubmit(room.id, formData);
+      const payload: UpdateRoomDto = {
+        ...formData,
+        amenities: amenitiesInput
+          ? amenitiesInput.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
+        departmentId: Number(formData.departmentId),
+        building: 'Main', // Set default building value
+        x: 100, // Set default coordinate values
+        y: 200,
+        width: 50,
+        height: 30,
+        isUnderMaintenance: room.isUnderMaintenance, // Keep existing maintenance status
+        maintenanceNotes: room.maintenanceNotes || '', // Keep existing maintenance notes
+      } as any;
+      await onSubmit(room.id, payload);
       onOpenChange(false);
     } catch (error) {
       // Error is handled by the parent component
@@ -108,6 +146,18 @@ export function EditRoomDialog({ open, onOpenChange, room, onSubmit, loading, er
                 required
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="floor">Étage</Label>
+              <Input
+                id="floor"
+                type="number"
+                min="0"
+                placeholder="1"
+                value={formData.floor || 0}
+                onChange={(e) => handleInputChange('floor', parseInt(e.target.value) || 0)}
+                required
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -122,49 +172,31 @@ export function EditRoomDialog({ open, onOpenChange, room, onSubmit, loading, er
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="x-coord">Coordonnée X</Label>
+              <Label htmlFor="amenities">Équipements (séparés par des virgules)</Label>
               <Input
-                id="x-coord"
-                type="number"
-                placeholder="100"
-                value={formData.x || ''}
-                onChange={(e) => handleInputChange('x', parseInt(e.target.value) || 0)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="y-coord">Coordonnée Y</Label>
-              <Input
-                id="y-coord"
-                type="number"
-                placeholder="200"
-                value={formData.y || ''}
-                onChange={(e) => handleInputChange('y', parseInt(e.target.value) || 0)}
+                id="amenities"
+                placeholder="projector, whiteboard, video-conference"
+                value={amenitiesInput}
+                onChange={(e) => setAmenitiesInput(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="width">Largeur</Label>
-              <Input
-                id="width"
-                type="number"
-                placeholder="50"
-                value={formData.width || ''}
-                onChange={(e) => handleInputChange('width', parseInt(e.target.value) || 0)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="height">Hauteur</Label>
-              <Input
-                id="height"
-                type="number"
-                placeholder="30"
-                value={formData.height || ''}
-                onChange={(e) => handleInputChange('height', parseInt(e.target.value) || 0)}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="departmentId">Département *</Label>
+            <Select value={formData.departmentId != null ? String(formData.departmentId) : ''} onValueChange={(v) => handleInputChange('departmentId', parseInt(v))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un département" />
+              </SelectTrigger>
+              <SelectContent>
+                {departments.map(d => (
+                  <SelectItem key={d.id} value={String(d.id)}>{d.name}{d.floor ? ` (Étage ${d.floor})` : ''}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+
 
           <div className="flex justify-end gap-2 pt-4 border-t">
             <Button 

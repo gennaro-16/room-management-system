@@ -359,7 +359,7 @@ export class UsersService {
     };
   }
 
-  async updateUserDepartment(userId: number, departmentId: number | null, currentUser: User) {
+  async updateUserDepartment(userId: number, departmentId: number, currentUser: User) {
     // Only admins can change user departments
     if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
@@ -373,15 +373,13 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // If departmentId is provided, validate it exists
-    if (departmentId) {
-      const department = await this.prisma.department.findUnique({
-        where: { id: departmentId },
-      });
+    // Validate department exists
+    const department = await this.prisma.department.findUnique({
+      where: { id: departmentId },
+    });
 
-      if (!department) {
-        throw new NotFoundException(`Department with ID ${departmentId} not found`);
-      }
+    if (!department) {
+      throw new NotFoundException(`Department with ID ${departmentId} not found`);
     }
 
     return this.prisma.user.update({

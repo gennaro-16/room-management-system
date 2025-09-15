@@ -48,26 +48,33 @@ export function TodaysBookings({ bookings, loading, error, onRetry }: TodaysBook
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Today's Bookings</CardTitle>
-        <CardDescription>Active and upcoming reservations</CardDescription>
+    <Card className="card-albaraka">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold">Réservations d'aujourd'hui</CardTitle>
+        <CardDescription className="text-sm">Réservations actives et à venir</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {bookings.map((booking) => (
-          <div key={booking.id} className="flex items-center justify-between p-3 border rounded-lg">
-            <div className="space-y-1">
-              <div className="font-medium">{booking.room || 'Salle inconnue'}</div>
-              <div className="text-sm text-muted-foreground">
-                {booking.user || 'Utilisateur inconnu'}
+          <div key={booking.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors">
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center gap-3">
+                <div className="font-semibold text-base">{booking.room || 'Salle inconnue'}</div>
+                <div className="text-sm text-muted-foreground">
+                  {booking.user || 'Utilisateur inconnu'}
+                </div>
               </div>
-              <div className="text-sm text-primary">{booking.purpose || 'Réunion'}</div>
+              <div className="text-sm text-primary font-medium">{booking.purpose || 'Réunion'}</div>
             </div>
-            <div className="text-right">
-              <div className="text-sm font-medium">
+            <div className="text-right space-y-2">
+              <div className="text-sm font-semibold text-foreground">
                 {apiUtils.formatTimeForDisplay(booking.startTime)} - {apiUtils.formatTimeForDisplay(booking.endTime)}
               </div>
-              <Badge variant="outline" className="text-xs">
+              <Badge className={
+                booking.status === 'APPROVED' ? 'status-approved' :
+                booking.status === 'PENDING' ? 'status-pending' :
+                booking.status === 'REJECTED' ? 'status-rejected' :
+                'status-cancelled'
+              }>
                 {booking.status}
               </Badge>
             </div>

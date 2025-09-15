@@ -12,6 +12,7 @@ interface ErrorAlertProps {
   onRetry?: () => void;
   className?: string;
   title?: string;
+  compact?: boolean;
 }
 
 export function ErrorAlert({ 
@@ -19,9 +20,33 @@ export function ErrorAlert({
   onDismiss, 
   onRetry, 
   className,
-  title = 'Erreur'
+  title = 'Erreur',
+  compact = false
 }: ErrorAlertProps) {
   if (!error) return null;
+
+  if (compact) {
+    return (
+      <Alert variant="destructive" className={cn('mb-3 py-2', className)}>
+        <AlertTriangle className="h-3 w-3" />
+        <AlertDescription className="flex items-center justify-between text-sm">
+          <div className="flex-1">
+            {error}
+          </div>
+          {onDismiss && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDismiss}
+              className="h-5 w-5 p-0 ml-2"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <Alert variant="destructive" className={cn('mb-4', className)}>
