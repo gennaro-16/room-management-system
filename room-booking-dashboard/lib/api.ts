@@ -482,12 +482,14 @@ export const bookingsApi = {
     startDate?: string;
     endDate?: string;
     status?: 'approved' | 'upcoming' | 'pending';
+    organizerId?: number;
   }): Promise<Booking[]> => {
     const params = new URLSearchParams();
     if (filters?.roomId) params.append('roomId', filters.roomId.toString());
     if (filters?.startDate) params.append('startDate', filters.startDate);
     if (filters?.endDate) params.append('endDate', filters.endDate);
     if (filters?.status) params.append('status', filters.status);
+    if (filters?.organizerId) params.append('organizerId', filters.organizerId.toString());
 
     const queryString = params.toString();
     return apiRequest<Booking[]>(`/bookings${queryString ? `?${queryString}` : ''}`);
