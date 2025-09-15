@@ -89,7 +89,7 @@ export function DashboardProfile() {
                 <div>
                   <label className="text-sm font-medium text-[var(--albaraka-muted)]">Department</label>
                   <p className="text-lg text-[var(--albaraka-primary)]">
-                    {user.department || 'Not specified'}
+                    {(typeof user.department === 'string' ? user.department : user.department?.name) || 'Not specified'}
                   </p>
                 </div>
                 
@@ -136,7 +136,7 @@ export function DashboardProfile() {
                     variant="secondary" 
                     className={`text-sm ${getRoleColor(user.role)}`}
                   >
-                    {(user.role || 'USER').replace('_', ' ')}
+                    {user.role.replace('_', ' ')}
                   </Badge>
                 </div>
               </div>

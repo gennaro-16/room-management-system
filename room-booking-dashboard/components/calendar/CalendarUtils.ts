@@ -26,9 +26,9 @@ export class CalendarUtils {
    */
   static bookingToEvent(booking: Booking): CalendarEvent {
     const userName = booking.user 
-      ? (booking.user.firstName && booking.user.lastName 
-          ? `${booking.user.firstName} ${booking.user.lastName}`
-          : booking.user.username)
+      ? (booking.organizer.firstName && booking.organizer.lastName 
+          ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+          : booking.organizer.username)
       : 'Unknown User';
     
     return {

@@ -14,19 +14,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Department {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  floor       Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+ 
+  // Department resources
+  rooms       Room[]
+  users       User[]
+}
+
 model Room {
   id          Int         @id @default(autoincrement())
   name        String      @unique
   capacity    Int
   description String?
-
-x       Int?
-y       Int?
-width   Int?
-height  Int?
-
-
-    isUnderMaintenance Boolean @default(false)
+  amenities   String[]    // e.g., ["projector", "whiteboard", "video-conference"]
+  
+  // Location tracking
+  floor       Int
+  building    String      @default("Main")
+  x           Int?
+  y           Int?
+  width       Int?
+  height      Int?
+  
+  // Department association
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  
+  // Status management
+  isUnderMaintenance Boolean @default(false)
+  maintenanceNotes   String?
+  
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   bookings    Booking[]
@@ -36,76 +60,133 @@ enum BookingStatus {
   PENDING
   APPROVED
   REJECTED
-  CANCELLED
+  CANCELLED  // by the user
   COMPLETED
+  ONGOING
 }
 
 model Booking {
   id         Int            @id @default(autoincrement())
+  title      String         // Meeting title
   roomId     Int
   room       Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
-  userId     Int
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizerId Int           // The person who created the booking
+  organizer  User           @relation("BookingOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
 
-  purpose    String?
+  // Participants
+  expectedAttendees Int     // To compare with room capacity
+  internalAttendees User[]  @relation("BookingInternalAttendees")
+  externalAttendees String[] // Names of external participants
+  
+  // Meeting details
+  purpose    String
+  agenda     String?
   startTime  DateTime
   endTime    DateTime
-  status     BookingStatus  @default(PENDING) // starts as PENDING
+  status     BookingStatus  @default(PENDING)
+  isRecurring Boolean       @default(false)
+  recurrenceRule String?    // e.g., "RRULE:FREQ=WEEKLY;INTERVAL=1"
+  
+  // Resources needed
+  requiredAmenities String[]
   
   // Approval tracking
-  approvedBy Int?
-  approvedAt DateTime?
-  rejectedBy Int?
-  rejectedAt DateTime?
+  approvedById Int?
+  approvedBy   User?     @relation("BookingApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+  rejectedById Int?
+  rejectedBy   User?     @relation("BookingRejecter", fields: [rejectedById], references: [id])
+  rejectedAt   DateTime?
   rejectionReason String?
   
-  // Relations for approval tracking
-  approver   User?          @relation("BookingApprover", fields: [approvedBy], references: [id])
-  rejecter   User?          @relation("BookingRejecter", fields: [rejectedBy], references: [id])
-
+  // For recurring bookings
+  parentBookingId Int?
+  parentBooking   Booking?   @relation("RecurringBookings", fields: [parentBookingId], references: [id])
+  childBookings   Booking[]  @relation("RecurringBookings")
+  
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
+  notifications Notification[]
+  
+  @@index([startTime, endTime])
+  @@index([status])
 }
 
 enum UserRole {
   SUPER_ADMIN
   ADMIN
-  USER
+  DIRECTOR
+  SUB_DIRECTOR
+  EMPLOYEE
+  GUEST
 }
 
 model User {
   id        Int       @id @default(autoincrement())
+  employeeId String   @unique // Bank employee ID
   username  String    @unique
   email     String    @unique
   password  String    // hashed password
-  role      UserRole  @default(USER)
+  role      UserRole  @default(EMPLOYEE)
   
-  // Additional user fields
-  firstName String?
-  lastName  String?
-  department String?
-  isActive  Boolean   @default(true)
-  isApproved Boolean  @default(false)
+  // Personal information
+  firstName String
+  lastName  String
+  title     String?   // Job title
+  phone     String?
+  
+  // Department association
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  
+  // Status
+  isActive     Boolean   @default(true)
+  isApproved   Boolean   @default(false)
   
   // Approval tracking
-  approvedBy Int?
-  approvedAt DateTime?
-  rejectedBy Int?
-  rejectedAt DateTime?
+  approvedById Int?
+  approvedBy   User?     @relation("UserApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+  rejectedById Int?
+  rejectedBy   User?     @relation("UserRejecter", fields: [rejectedById], references: [id])
+  rejectedAt   DateTime?
   rejectionReason String?
   
-  // Relations
-  bookings  Booking[]
-  approvedBookings Booking[] @relation("BookingApprover")
-  rejectedBookings Booking[] @relation("BookingRejecter")
+  // Reverse relations for approval tracking
+  approvedUsers User[] @relation("UserApprover")
+  rejectedUsers User[] @relation("UserRejecter")
   
-  // Relations for user approval tracking
-  approver   User?          @relation("UserApprover", fields: [approvedBy], references: [id])
-  rejecter   User?          @relation("UserRejecter", fields: [rejectedBy], references: [id])
-  approvedUsers User[]      @relation("UserApprover")
-  rejectedUsers User[]      @relation("UserRejecter")
+  // Relations
+  organizedBookings Booking[] @relation("BookingOrganizer")
+  attendingBookings Booking[] @relation("BookingInternalAttendees")
+  approvedBookings  Booking[] @relation("BookingApprover")
+  rejectedBookings  Booking[] @relation("BookingRejecter")
+  notifications Notification[]
+  
   
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+// Notification system for booking updates
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType
+  relatedBookingId Int?
+  relatedBooking Booking? @relation(fields: [relatedBookingId], references: [id])
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  BOOKING_APPROVED
+  BOOKING_REJECTED
+  BOOKING_REMINDER
+  ROOM_MAINTENANCE
+  NEW_BOOKING_REQUEST // For approvers
 }

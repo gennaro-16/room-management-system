@@ -1,7 +1,11 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional, IsEnum, IsInt } from 'class-validator';
 import { UserRole } from '@prisma/client';
 
 export class RegisterDto {
+  @IsString()
+  @IsNotEmpty()
+  employeeId: string;
+
   @IsString()
   @IsNotEmpty()
   username: string;
@@ -16,16 +20,24 @@ export class RegisterDto {
   password: string;
 
   @IsString()
-  @IsOptional()
-  firstName?: string;
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
 
   @IsString()
   @IsOptional()
-  lastName?: string;
+  title?: string;
 
   @IsString()
   @IsOptional()
-  department?: string;
+  phone?: string;
+
+  @IsInt()
+  @IsOptional()
+  departmentId?: number;
 
   @IsEnum(UserRole)
   @IsOptional()

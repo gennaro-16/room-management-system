@@ -32,9 +32,9 @@ export function BookingsSection() {
     
     return bookings.filter(booking => {
       const userName = booking.user && typeof booking.user === 'object' 
-        ? (booking.user.firstName && booking.user.lastName 
-            ? `${booking.user.firstName} ${booking.user.lastName}`
-            : booking.user.username)
+        ? (booking.organizer.firstName && booking.organizer.lastName 
+            ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+            : booking.organizer.username)
         : booking.user || '';
         
       const matchesSearch = 
@@ -200,9 +200,9 @@ export function BookingsSection() {
                           <User className="h-4 w-4 text-muted-foreground" />
                           <span>
                             {booking.user && typeof booking.user === 'object' 
-                              ? (booking.user.firstName && booking.user.lastName 
-                                  ? `${booking.user.firstName} ${booking.user.lastName}`
-                                  : booking.user.username)
+                              ? (booking.organizer.firstName && booking.organizer.lastName 
+                                  ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                  : booking.organizer.username)
                               : booking.user || 'Unknown User'}
                           </span>
                         </div>

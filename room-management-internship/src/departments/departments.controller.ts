@@ -1,0 +1,73 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { DepartmentsService } from './departments.service';
+import { CreateDepartmentDto } from '../dto/create-department.dto';
+import { UpdateDepartmentDto } from '../dto/update-department.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
+
+@Controller('departments')
+@UseGuards(JwtAuthGuard)
+export class DepartmentsController {
+  constructor(private readonly departmentsService: DepartmentsService) {}
+
+  @Post()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  create(@Body() createDepartmentDto: CreateDepartmentDto) {
+    return this.departmentsService.create(createDepartmentDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.departmentsService.findAll();
+  }
+
+  // Public lightweight list for registration (no auth)
+  @Get('public')
+  @UseGuards()
+  findAllPublic() {
+    return this.departmentsService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.departmentsService.findOne(id);
+  }
+
+  @Get(':id/stats')
+  getStats(@Param('id', ParseIntPipe) id: number) {
+    return this.departmentsService.getDepartmentStats(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDepartmentDto: UpdateDepartmentDto,
+  ) {
+    return this.departmentsService.update(id, updateDepartmentDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.departmentsService.remove(id);
+  }
+}

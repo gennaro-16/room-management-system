@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { MapPin, UserCheck, Clock, Wrench, Edit, BookOpen, Trash2 } from 'lucide-react';
+import { MapPin, UserCheck, Clock, Wrench, Edit, BookOpen, Trash2, Building2, Layers } from 'lucide-react';
 import { Room, apiUtils } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -37,6 +37,15 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
             {room.description && (
               <div className="text-sm text-muted-foreground">{room.description}</div>
             )}
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1"><Building2 className="h-3 w-3" />{room.building || 'Main'}</span>
+              <span className="inline-flex items-center gap-1"><Layers className="h-3 w-3" />Etage {room.floor}</span>
+              {room.department && (
+                <Badge variant="outline" className="text-[10px]">
+                  {typeof room.department === 'string' ? room.department : (room.department as any)?.name}
+                </Badge>
+              )}
+            </div>
           </div>
           <Badge className={
             room.isUnderMaintenance ? 'bg-amber-50 text-amber-800 border-amber-200' :
@@ -57,6 +66,20 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
           </div>
         )}
 
+        {/* Amenities */}
+        {room.amenities && room.amenities.length > 0 && (
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground">ÉQUIPEMENTS</Label>
+            <div className="flex flex-wrap gap-2">
+              {room.amenities.map((a, idx) => (
+                <Badge key={idx} variant="secondary" className="text-[10px]">
+                  {a}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Quick Status Actions */}
         <div className="space-y-2">
           <Label className="text-xs font-medium text-muted-foreground">ACTIONS RAPIDES</Label>
@@ -71,6 +94,11 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
               <Wrench className="h-3 w-3 mr-1" />
               {room.isUnderMaintenance ? "En maintenance" : "Mettre en maintenance"}
             </Button>
+            {room.isUnderMaintenance && room.maintenanceNotes && (
+              <div className="text-xs text-muted-foreground">
+                {room.maintenanceNotes}
+              </div>
+            )}
           </div>
         </div>
 

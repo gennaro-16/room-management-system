@@ -93,16 +93,16 @@ export function CalendarGrid({
                           className="text-xs p-1 rounded bg-red-100 text-red-800 cursor-pointer hover:bg-red-200 transition-colors border border-red-200"
                           onClick={() => onBookingClick?.(booking)}
                           title={`${booking.user && typeof booking.user === 'object' 
-                            ? (booking.user.firstName && booking.user.lastName 
-                                ? `${booking.user.firstName} ${booking.user.lastName}`
-                                : booking.user.username)
+                            ? (booking.organizer.firstName && booking.organizer.lastName 
+                                ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                : booking.organizer.username)
                             : booking.user || 'Unknown User'} - ${booking.room?.name || 'Room'}`}
                         >
                           <div className="truncate font-medium">
                             {booking.user && typeof booking.user === 'object' 
-                              ? (booking.user.firstName && booking.user.lastName 
-                                  ? `${booking.user.firstName} ${booking.user.lastName}`
-                                  : booking.user.username)
+                              ? (booking.organizer.firstName && booking.organizer.lastName 
+                                  ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                  : booking.organizer.username)
                               : booking.user || 'Unknown User'}
                           </div>
                           <div className="text-xs opacity-70">
@@ -186,9 +186,9 @@ export function CalendarGrid({
                     >
                       <div className="text-sm font-medium truncate">
                         {booking.user && typeof booking.user === 'object' 
-                          ? (booking.user.firstName && booking.user.lastName 
-                              ? `${booking.user.firstName} ${booking.user.lastName}`
-                              : booking.user.username)
+                          ? (booking.organizer.firstName && booking.organizer.lastName 
+                              ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                              : booking.organizer.username)
                           : booking.user || 'Unknown User'}
                       </div>
                       <div className="text-xs opacity-70">
@@ -249,9 +249,9 @@ export function CalendarGrid({
                     <div className="flex-1">
                       <h4 className="font-medium">
                         {booking.user && typeof booking.user === 'object' 
-                          ? (booking.user.firstName && booking.user.lastName 
-                              ? `${booking.user.firstName} ${booking.user.lastName}`
-                              : booking.user.username)
+                          ? (booking.organizer.firstName && booking.organizer.lastName 
+                              ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                              : booking.organizer.username)
                           : booking.user || 'Unknown User'}
                       </h4>
                       <p className="text-sm text-muted-foreground">

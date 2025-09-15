@@ -76,7 +76,7 @@ export function LoginForm() {
               type="email"
               placeholder="Saisissez votre e-mail"
               {...register('email', { 
-                required: 'L'e-mail est requis'
+                required: "L'e-mail est requis"
               })}
               disabled={isLoading}
             />

@@ -19,6 +19,7 @@ import {
   ApproveUserDto,
   ApiError
 } from '@/lib/api';
+import { departmentsApi, Department, CreateDepartmentDto, UpdateDepartmentDto } from '@/lib/api';
 
 // Generic hook for API calls with loading and error states
 function useApiCall<T>(
@@ -392,6 +393,74 @@ export function useApproveUser() {
   }, []);
 
   return { approveUser, loading, error };
+}
+
+// Departments hooks (SUPER_ADMIN/ADMIN for mutating)
+export function useDepartments() {
+  return useApiCall(() => departmentsApi.getAll());
+}
+
+export function useCreateDepartment() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createDepartment = useCallback(async (data: CreateDepartmentDto) => {
+    try {
+      setLoading(true);
+      setError(null);
+      return await departmentsApi.create(data);
+    } catch (err) {
+      const errorMessage = err instanceof ApiError ? err.message : 'Failed to create department';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { createDepartment, loading, error };
+}
+
+export function useUpdateDepartment() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateDepartment = useCallback(async (id: number, data: UpdateDepartmentDto) => {
+    try {
+      setLoading(true);
+      setError(null);
+      return await departmentsApi.update(id, data);
+    } catch (err) {
+      const errorMessage = err instanceof ApiError ? err.message : 'Failed to update department';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { updateDepartment, loading, error };
+}
+
+export function useDeleteDepartment() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const deleteDepartment = useCallback(async (id: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await departmentsApi.remove(id);
+    } catch (err) {
+      const errorMessage = err instanceof ApiError ? err.message : 'Failed to delete department';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { deleteDepartment, loading, error };
 }
 
 // Utility hook for managing multiple API calls

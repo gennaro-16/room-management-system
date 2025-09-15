@@ -11,6 +11,7 @@ import { RoomMapSection } from './dashboard/RoomMapSection';
 import { BookingApprovals } from './admin/BookingApprovals';
 import { UserManagement } from './admin/UserManagement';
 import { DashboardProfile } from './dashboard/DashboardProfile';
+import DepartmentsManagement from './admin/DepartmentsManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -66,6 +67,21 @@ export function MainDashboard() {
           );
         }
         return <UserManagement />;
+      case 'departments':
+        if (!isAdmin) {
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle>Accès refusé</CardTitle>
+                <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Seuls les administrateurs peuvent gérer les départements.</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <DepartmentsManagement />;
       case 'reports':
         if (!isAdmin) {
           return (

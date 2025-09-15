@@ -10,7 +10,7 @@ export class RoomsService {
 
   async create(createRoomDto: CreateRoomDto, currentUser: User) {
     // Only admins can create rooms
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -42,7 +42,7 @@ export class RoomsService {
             }
           },
           include: {
-            user: {
+            organizer: {
               select: {
                 id: true,
                 username: true,
@@ -71,21 +71,17 @@ export class RoomsService {
       include: {
         bookings: {
           where: {
-            status: BookingStatus.APPROVED
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                firstName: true,
-                lastName: true,
-                department: true,
+            status: BookingStatus.APPROVED,
+            OR: [
+              {
+                startTime: {
+                  lte: new Date()
+                },
+                endTime: {
+                  gte: new Date()
+                }
               }
-            }
-          },
-          orderBy: {
-            startTime: 'asc'
+            ]
           }
         }
       }
@@ -103,7 +99,7 @@ export class RoomsService {
 
   async update(id: number, updateRoomDto: UpdateRoomDto, currentUser: User) {
     // Only admins can update rooms
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -128,7 +124,7 @@ export class RoomsService {
 
   async remove(id: number, currentUser: User) {
     // Only admins can delete rooms
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -156,7 +152,7 @@ export class RoomsService {
 
   async toggleMaintenance(id: number, currentUser: User) {
     // Only admins can toggle maintenance status
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -231,7 +227,7 @@ export class RoomsService {
         ]
       },
       include: {
-        user: {
+        organizer: {
           select: {
             username: true,
             firstName: true,

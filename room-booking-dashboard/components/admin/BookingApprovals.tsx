@@ -118,14 +118,16 @@ export function BookingApprovals() {
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span>
-                        {booking.user?.firstName && booking.user?.lastName
-                          ? `${booking.user.firstName} ${booking.user.lastName}`
-                          : booking.user?.username
+                        {booking.organizer?.firstName && booking.organizer?.lastName
+                          ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                          : booking.organizer?.username
                         }
                       </span>
-                      {booking.user?.department && (
+                      {booking.organizer?.department && (
                         <Badge variant="secondary" className="text-xs">
-                          {booking.user.department}
+                          {typeof booking.organizer.department === 'string' 
+                            ? booking.organizer.department 
+                            : booking.organizer.department?.name}
                         </Badge>
                       )}
                     </div>
@@ -197,9 +199,9 @@ export function BookingApprovals() {
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="font-semibold">{selectedBooking.room?.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {selectedBooking.user?.firstName && selectedBooking.user?.lastName
-                      ? `${selectedBooking.user.firstName} ${selectedBooking.user.lastName}`
-                      : selectedBooking.user?.username
+                    {selectedBooking.organizer?.firstName && selectedBooking.organizer?.lastName
+                      ? `${selectedBooking.organizer.firstName} ${selectedBooking.organizer.lastName}`
+                      : selectedBooking.organizer?.username
                     }
                   </p>
                   <p className="text-sm text-muted-foreground">

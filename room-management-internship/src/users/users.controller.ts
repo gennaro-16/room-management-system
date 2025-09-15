@@ -61,4 +61,34 @@ export class UsersController {
   ) {
     return this.usersService.approveUser(id, approveUserDto, user);
   }
+
+  @Get('department/:departmentId')
+  getUsersByDepartment(
+    @Param('departmentId', ParseIntPipe) departmentId: number,
+    @CurrentUser() user: User
+  ) {
+    return this.usersService.getUsersByDepartment(departmentId, user);
+  }
+
+  @Get('pending-approvals')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  getPendingApprovals() {
+    return this.usersService.getPendingApprovals();
+  }
+
+  @Get('stats')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  getUserStats() {
+    return this.usersService.getUserStats();
+  }
+
+  @Patch(':id/department')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  updateUserDepartment(
+    @Param('id', ParseIntPipe) userId: number,
+    @Body('departmentId') departmentId: number | null,
+    @CurrentUser() user: User
+  ) {
+    return this.usersService.updateUserDepartment(userId, departmentId, user);
+  }
 }

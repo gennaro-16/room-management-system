@@ -26,6 +26,7 @@ const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
   { icon: Map, label: 'Plan des salles', id: 'map' },
   ...(isAdmin ? [
     { icon: CheckCircle, label: 'Approbations', id: 'approvals' },
+    { icon: Building2, label: 'Départements', id: 'departments' },
   ] : []),
   ...(isSuperAdmin ? [
     { icon: Users, label: 'Gestion des utilisateurs', id: 'users' }

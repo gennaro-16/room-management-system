@@ -54,7 +54,7 @@ export class AuthService {
         role: user.role,
         firstName: user.firstName,
         lastName: user.lastName,
-        department: user.department,
+        department: user.departmentId,
       },
     };
   }
@@ -80,13 +80,16 @@ export class AuthService {
     // Create user
     const user = await this.prisma.user.create({
       data: {
+        employeeId: registerDto.employeeId,
         username: registerDto.username,
         email: registerDto.email,
         password: hashedPassword,
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
-        department: registerDto.department,
-        role: registerDto.role || UserRole.USER,
+        title: registerDto.title,
+        phone: registerDto.phone,
+        departmentId: registerDto.departmentId,
+        role: registerDto.role || UserRole.EMPLOYEE,
       },
     });
 

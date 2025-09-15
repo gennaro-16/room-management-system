@@ -423,9 +423,9 @@ export function CalendarSection() {
                       <div className="flex items-center justify-between">
                         <div className="font-medium">
                           {booking.user && typeof booking.user === 'object' 
-                            ? (booking.user.firstName && booking.user.lastName 
-                                ? `${booking.user.firstName} ${booking.user.lastName}`
-                                : booking.user.username)
+                            ? (booking.organizer.firstName && booking.organizer.lastName 
+                                ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                : booking.organizer.username)
                             : booking.user || 'Unknown User'}
                         </div>
                         <Badge className={getStatusColor(booking.status)}>

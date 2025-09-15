@@ -30,7 +30,7 @@ export function SimpleLoginForm() {
     const newErrors: { email?: string; password?: string } = {};
     
     if (!email) {
-      newErrors.email = 'L'e-mail est requis';
+      newErrors.email = "L'e-mail est requis";
     } else if (!email.includes('@')) {
       newErrors.email = 'Veuillez saisir une adresse e-mail valide';
     }
@@ -133,6 +133,15 @@ export function SimpleLoginForm() {
             <p><strong>Manager :</strong> manager@company.com / password123</p>
             <p><strong>Utilisateur :</strong> john@company.com / password123</p>
           </div>
+        </div>
+
+        <div className="mt-4 text-center text-sm">
+          <p className="text-muted-foreground">
+            Vous n'avez pas de compte ?{' '}
+            <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/register')}>
+              S'inscrire
+            </Button>
+          </p>
         </div>
       </CardContent>
     </Card>

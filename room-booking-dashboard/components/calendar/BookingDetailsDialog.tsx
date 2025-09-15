@@ -71,9 +71,9 @@ export function BookingDetailsDialog({
               <CardTitle className="text-lg flex items-center gap-2">
                 <User className="h-4 w-4" />
                 {booking.user && typeof booking.user === 'object' 
-                  ? (booking.user.firstName && booking.user.lastName 
-                      ? `${booking.user.firstName} ${booking.user.lastName}`
-                      : booking.user.username)
+                  ? (booking.organizer.firstName && booking.organizer.lastName 
+                      ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                      : booking.organizer.username)
                   : booking.user || 'Unknown User'}
               </CardTitle>
             </CardHeader>
