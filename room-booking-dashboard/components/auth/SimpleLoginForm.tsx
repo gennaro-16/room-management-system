@@ -30,7 +30,7 @@ export function SimpleLoginForm() {
     const newErrors: { email?: string; password?: string } = {};
     
     if (!email) {
-      newErrors.email = 'L'e-mail est requis';
+      newErrors.email = "L'e-mail est requis";
     } else if (!email.includes('@')) {
       newErrors.email = 'Veuillez saisir une adresse e-mail valide';
     }

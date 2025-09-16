@@ -49,7 +49,7 @@ export function RegisterForm() {
       clearError();
       const { confirmPassword, ...registerData } = data;
       await registerUser(registerData);
-      router.push('/login?message=Inscription réussie ! Votre compte est en attente d'approbation d'un super administrateur. Vous serez notifié une fois approuvé.');
+      router.push("/login?message=Inscription réussie ! Votre compte est en attente d'approbation d'un super administrateur. Vous serez notifié une fois approuvé.");
     } catch (error) {
       // Error is handled by the auth context
     }
