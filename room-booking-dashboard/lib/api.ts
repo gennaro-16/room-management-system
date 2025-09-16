@@ -107,7 +107,7 @@ export interface Booking {
   purpose: string;
   agenda?: string | null;
   expectedAttendees: number;
-  internalAttendees?: User[]; // populated when included
+  internalAttendees?: string[]; // names of internal participants
   externalAttendees?: string[];
   requiredAmenities?: string[];
   isRecurring?: boolean;
@@ -168,7 +168,7 @@ export interface CreateBookingDto {
   startTime: string;
   endTime: string;
   expectedAttendees: number;
-  internalAttendees?: number[]; // user IDs
+  internalAttendees?: string[]; // names
   externalAttendees?: string[];
   requiredAmenities?: string[];
   isRecurring?: boolean;
@@ -182,7 +182,7 @@ export interface UpdateBookingDto {
   startTime?: string;
   endTime?: string;
   expectedAttendees?: number;
-  internalAttendees?: number[]; // user IDs
+  internalAttendees?: string[]; // names
   externalAttendees?: string[];
   requiredAmenities?: string[];
   isRecurring?: boolean;
@@ -305,10 +305,8 @@ async function apiRequest<T>(
       
       // Handle 401 Unauthorized - clear token and redirect to login
       if (response.status === 401) {
+        // Just clear token; let route guards/components decide navigation
         setAuthToken(null);
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
       }
       
       throw new ApiError(
@@ -671,15 +669,15 @@ export const apiUtils = {
   getStatusColor: (status: BookingStatus): string => {
     switch (status) {
       case 'PENDING':
-        return 'status-pending bg-yellow-50 text-yellow-800 border-yellow-200';
+        return 'bg-red-50 text-red-800 border-red-200';
       case 'APPROVED':
-        return 'status-approved bg-green-50 text-green-800 border-green-200';
+        return 'bg-green-50 text-green-800 border-green-200';
       case 'REJECTED':
-        return 'status-rejected bg-red-50 text-red-800 border-red-200';
+        return 'bg-gray-50 text-gray-800 border-gray-200';
       case 'CANCELLED':
-        return 'status-cancelled bg-gray-50 text-gray-800 border-gray-200';
+        return 'bg-slate-50 text-slate-800 border-slate-200';
       case 'COMPLETED':
-        return 'status-completed bg-blue-50 text-blue-800 border-blue-200';
+        return 'bg-blue-50 text-blue-800 border-blue-200';
       default:
         return 'bg-gray-50 text-gray-800 border-gray-200';
     }

@@ -122,7 +122,7 @@ export function CalendarGrid({
                       {dayBookings.slice(0, 3).map((booking) => (
                         <div
                           key={booking.id}
-                          className="text-xs p-1 rounded bg-red-100 text-red-800 cursor-pointer hover:bg-red-200 transition-colors border border-red-200"
+                          className={`text-xs p-1 rounded cursor-pointer transition-colors border ${CalendarUtils.getEventClasses(booking.status)}`}
                           onClick={() => onBookingClick?.(booking)}
                           title={`${booking.organizer && typeof booking.organizer === 'object' 
                             ? (booking.organizer.firstName && booking.organizer.lastName 
@@ -213,7 +213,7 @@ export function CalendarGrid({
                   {dayBookings.map((booking) => (
                     <div
                       key={booking.id}
-                      className="p-2 rounded bg-red-100 text-red-800 cursor-pointer hover:bg-red-200 transition-colors border border-red-200"
+                      className={`p-2 rounded cursor-pointer transition-colors border ${CalendarUtils.getEventClasses(booking.status)}`}
                       onClick={() => onBookingClick?.(booking)}
                     >
                       <div className="text-sm font-medium truncate">

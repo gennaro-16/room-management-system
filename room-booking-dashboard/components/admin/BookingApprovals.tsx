@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { usePendingBookings, useApproveBooking, useRejectBooking } from '@/hooks/useApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +20,91 @@ export function BookingApprovals() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [expandedBookings, setExpandedBookings] = useState<Set<number>>(new Set());
 
+  // Priority scoring for pending bookings (higher = more priority)
+  const computePriorityScore = (booking: any) => {
+    const capacity = booking?.room?.capacity || 1;
+    const expected = booking?.expectedAttendees || 0;
+    const utilization = Math.min(1, expected / capacity); // 0..1
+    const startMs = new Date(booking.startTime).getTime();
+    const endMs = new Date(booking.endTime).getTime();
+    const durationMinutes = Math.max(0, Math.round((endMs - startMs) / 60000));
+    const normalizedDuration = Math.min(1, durationMinutes / 240); // cap at 4h
+    // Weight utilization higher than duration
+    return utilization * 0.7 + normalizedDuration * 0.3;
+  };
+
+  // Sort pending bookings so overlapping reservations for the same room are ordered by priority
+  const sortedBookings = React.useMemo(() => {
+    if (!pendingBookings) return [] as any[];
+    const list = [...pendingBookings].sort((a: any, b: any) => {
+      // Group by room
+      if ((a.roomId || 0) !== (b.roomId || 0)) return (a.roomId || 0) - (b.roomId || 0);
+      // Then by start time
+      const aStart = new Date(a.startTime).getTime();
+      const bStart = new Date(b.startTime).getTime();
+      if (aStart !== bStart) return aStart - bStart;
+      // If same start, higher priority first
+      return computePriorityScore(b) - computePriorityScore(a);
+    });
+    // For consecutive overlapping in same room, bubble higher priority earlier
+    for (let i = 1; i < list.length; i++) {
+      const prev = list[i - 1];
+      const cur = list[i];
+      if ((prev.roomId || 0) === (cur.roomId || 0)) {
+        const prevStart = new Date(prev.startTime).getTime();
+        const prevEnd = new Date(prev.endTime).getTime();
+        const curStart = new Date(cur.startTime).getTime();
+        const curEnd = new Date(cur.endTime).getTime();
+        const isOverlap = prevStart < curEnd && prevEnd > curStart;
+        if (isOverlap && computePriorityScore(cur) > computePriorityScore(prev)) {
+          list[i - 1] = cur;
+          list[i] = prev;
+          i = Math.max(0, i - 2);
+        }
+      }
+    }
+    return list;
+  }, [pendingBookings]);
+
+  // Build conflicts map: for each pending booking, list other pending bookings that overlap in the same room
+  const conflictsMap = React.useMemo(() => {
+    const map = new Map<number, any[]>();
+    const list = pendingBookings || [];
+    const byRoom: Record<number, any[]> = {};
+    list.forEach((b: any) => {
+      const roomId = b.roomId || 0;
+      byRoom[roomId] = byRoom[roomId] || [];
+      byRoom[roomId].push(b);
+    });
+    Object.values(byRoom).forEach((arr) => {
+      const sorted = arr.slice().sort((a: any, b: any) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      for (let i = 0; i < sorted.length; i++) {
+        for (let j = i + 1; j < sorted.length; j++) {
+          const a = sorted[i];
+          const b = sorted[j];
+          const aStart = new Date(a.startTime).getTime();
+          const aEnd = new Date(a.endTime).getTime();
+          const bStart = new Date(b.startTime).getTime();
+          const bEnd = new Date(b.endTime).getTime();
+          const overlap = aStart < bEnd && aEnd > bStart;
+          if (!overlap) break; // since sorted by start, further j won't overlap with a
+          map.set(a.id, [...(map.get(a.id) || []), b]);
+          map.set(b.id, [...(map.get(b.id) || []), a]);
+        }
+      }
+    });
+    return map;
+  }, [pendingBookings]);
+
   const handleApprove = async (bookingId: number) => {
     try {
+      const conflicts = conflictsMap.get(bookingId) || [];
+      if (conflicts.length > 0) {
+        const proceed = window.confirm(
+          `Attention: ${conflicts.length} autre(s) demande(s) en conflit pour cette salle et cette période. Vous ne pouvez en approuver qu'une seule sans modifier les autres horaires. Continuer ?`
+        );
+        if (!proceed) return;
+      }
       await approveBooking(bookingId);
       refetch();
     } catch (error) {
@@ -117,46 +200,40 @@ export function BookingApprovals() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {pendingBookings.map((booking) => {
+          {sortedBookings.map((booking: any) => {
             const isExpanded = expandedBookings.has(booking.id);
             
             return (
-              <Card key={booking.id} className="border-l-4 border-l-yellow-500">
+              <Card key={booking.id} >
                 <CardContent className="pt-6">
                   <div className="space-y-4">
                     {/* Main Booking Info - Always Visible */}
                     <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-semibold text-lg">{booking.room?.name}</span>
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                            {booking.room?.capacity} seats
-                          </Badge>
-                        </div>
-                        
-                        {/* Basic Info Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <span>
+                            <MapPin className="h-5 w-5 text-muted-foreground" />
+                            <span className="font-semibold text-lg">{booking.room?.name}</span>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                              {booking.room?.capacity} places
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              Priorité {Math.round(computePriorityScore(booking) * 100)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <User className="h-4 w-4" />
                               {booking.organizer?.firstName && booking.organizer?.lastName
                                 ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
-                                : booking.organizer?.username
-                              }
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span>
+                                : booking.organizer?.username}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
                               {new Date(booking.startTime).toLocaleDateString()}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
                               {new Date(booking.startTime).toLocaleTimeString([], { 
                                 hour: '2-digit', 
                                 minute: '2-digit' 
@@ -164,19 +241,24 @@ export function BookingApprovals() {
                                 hour: '2-digit', 
                                 minute: '2-digit' 
                               })}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span>{booking.expectedAttendees} people</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-4 w-4" />
+                              {booking.expectedAttendees} personnes
+                            </div>
                           </div>
                         </div>
 
-                        {booking.purpose && (
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Purpose:</strong> {booking.purpose}
-                          </p>
+                        {booking.title && (
+                          <div className="text-sm text-muted-foreground mb-2">
+                            <strong>Titre:</strong> {booking.title}
+                          </div>
+                        )}
+                        {/* Conflict warning inline */}
+                        {(conflictsMap.get(booking.id)?.length || 0) > 0 && (
+                          <div className="mt-2 p-2 rounded border border-yellow-300 bg-yellow-50 text-yellow-800 text-xs">
+                            {conflictsMap.get(booking.id)!.length} demande(s) en conflit pour cette salle et cette période. Veuillez n'en approuver qu'une ou modifier les horaires.
+                          </div>
                         )}
                       </div>
 
@@ -219,179 +301,140 @@ export function BookingApprovals() {
                     {isExpanded && (
                       <div className="space-y-4 pt-4 border-t border-gray-100">
                         {/* Room Details */}
-                        <div className="space-y-2">
-                          <div className="font-medium text-sm flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            Informations sur la salle
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                            {booking.room?.floor && (
-                              <div className="flex items-center gap-1">
-                                <Layers className="h-3 w-3" />
-                                <span>Étage {booking.room.floor}</span>
-                              </div>
-                            )}
-                            {booking.room?.department && (
-                              <div className="flex items-center gap-1">
-                                <Building2 className="h-3 w-3" />
-                                <span>{typeof booking.room.department === 'string' 
-                                  ? booking.room.department 
-                                  : booking.room.department?.name}
-                                </span>
-                              </div>
-                            )}
-                            {booking.room?.description && (
-                              <div className="col-span-2 text-xs">
-                                {booking.room.description}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Booking Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* Left Column - Booking Info */}
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <div className="font-medium">
-                                  {new Date(booking.startTime).toLocaleDateString('en-US', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                  })}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                  {new Date(booking.startTime).toLocaleTimeString([], { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                  })} - {new Date(booking.endTime).toLocaleTimeString([], { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                  })}
-                                </div>
-                              </div>
+                        {(booking.room?.floor || booking.room?.department || booking.room?.description) && (
+                          <div className="space-y-2">
+                            <div className="font-medium text-sm flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              Informations sur la salle
                             </div>
-
-                            {booking.title && (
-                              <div className="flex items-start gap-2">
-                                <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                <div>
-                                  <div className="font-medium text-sm">Titre de la réunion</div>
-                                  <div className="text-sm text-muted-foreground">{booking.title}</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                              {booking.room?.floor && (
+                                <div className="flex items-center gap-1">
+                                  <Layers className="h-3 w-3" />
+                                  <span>Étage {booking.room.floor}</span>
                                 </div>
-                              </div>
-                            )}
-
-                            {booking.agenda && (
-                              <div className="flex items-start gap-2">
-                                <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                <div>
-                                  <div className="font-medium text-sm">Ordre du jour</div>
-                                  <div className="text-sm text-muted-foreground whitespace-pre-wrap">{booking.agenda}</div>
+                              )}
+                              {booking.room?.department && (
+                                <div className="flex items-center gap-1">
+                                  <Building2 className="h-3 w-3" />
+                                  <span>{typeof booking.room.department === 'string' 
+                                    ? booking.room.department 
+                                    : booking.room.department?.name}
+                                  </span>
                                 </div>
-                              </div>
-                            )}
-
-                            <div className="flex items-center gap-2">
-                              <Timer className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <div className="font-medium text-sm">Durée</div>
-                                <div className="text-sm text-muted-foreground">
-                                  {(() => {
-                                    const start = new Date(booking.startTime);
-                                    const end = new Date(booking.endTime);
-                                    const durationMs = end.getTime() - start.getTime();
-                                    const hours = Math.floor(durationMs / (1000 * 60 * 60));
-                                    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-                                    return `${hours}h ${minutes}min`;
-                                  })()}
+                              )}
+                              {booking.room?.description && (
+                                <div className="col-span-2 text-xs">
+                                  {booking.room.description}
                                 </div>
-                              </div>
+                              )}
                             </div>
+                          </div>
+                        )}
 
-                            {booking.isRecurring && (
-                              <div className="flex items-center gap-2">
-                                <Repeat className="h-4 w-4 text-muted-foreground" />
-                                <div>
-                                  <div className="font-medium text-sm">Récurrence</div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {booking.recurrenceRule ? (
-                                      <Badge variant="outline" className="text-xs">
-                                        {booking.recurrenceRule.includes('WEEKLY') ? 'Hebdomadaire' : 
-                                         booking.recurrenceRule.includes('DAILY') ? 'Quotidienne' :
-                                         booking.recurrenceRule.includes('MONTHLY') ? 'Mensuelle' : 'Personnalisée'}
-                                      </Badge>
-                                    ) : (
-                                      <Badge variant="outline" className="text-xs">Récurrente</Badge>
-                                    )}
+                        {/* Additional Details - Only show what's not already visible */}
+                        <div className="space-y-4">
+                          {/* Organizer Details */}
+                          {(booking.organizer?.title || booking.organizer?.department || booking.organizer?.email || booking.organizer?.phone) && (
+                            <div className="space-y-2">
+                              <div className="font-medium text-sm flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Détails de l'organisateur
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                                {booking.organizer?.title && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-medium">Titre:</span>
+                                    <span>{booking.organizer.title}</span>
                                   </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right Column - Attendees & Organizer */}
-                          <div className="space-y-3">
-                            {/* Organizer Info */}
-                            <div className="flex items-start gap-2">
-                              <User className="h-4 w-4 text-muted-foreground mt-0.5" />
-                              <div className="flex-1">
-                                <div className="font-medium text-sm">Organisateur</div>
-                                <div className="text-sm">
-                                  {booking.organizer?.firstName && booking.organizer?.lastName
-                                    ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
-                                    : booking.organizer?.username
-                                  }
-                                  {booking.organizer?.title && (
-                                    <div className="text-xs text-muted-foreground">{booking.organizer.title}</div>
-                                  )}
-                                </div>
+                                )}
                                 {booking.organizer?.department && (
-                                  <Badge variant="secondary" className="text-xs mt-1">
-                                    {typeof booking.organizer.department === 'string' 
+                                  <div className="flex items-center gap-1">
+                                    <Building2 className="h-3 w-3" />
+                                    <span>{typeof booking.organizer.department === 'string' 
                                       ? booking.organizer.department 
                                       : booking.organizer.department?.name}
-                                  </Badge>
+                                    </span>
+                                  </div>
                                 )}
                                 {booking.organizer?.email && (
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                  <div className="flex items-center gap-1">
                                     <Mail className="h-3 w-3" />
-                                    {booking.organizer.email}
+                                    <span>{booking.organizer.email}</span>
                                   </div>
                                 )}
                                 {booking.organizer?.phone && (
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-1">
                                     <Phone className="h-3 w-3" />
-                                    {booking.organizer.phone}
+                                    <span>{booking.organizer.phone}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
+                          )}
 
-                            {/* Attendees Info */}
-                            <div className="flex items-start gap-2">
-                              <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
-                              <div>
-                                <div className="font-medium text-sm">Participants attendus</div>
-                                <div className="text-sm text-muted-foreground">
-                                  {booking.expectedAttendees} personnes
-                                </div>
+                          {/* Meeting Details */}
+                          {(booking.agenda || booking.isRecurring) && (
+                            <div className="space-y-2">
+                              <div className="font-medium text-sm flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Détails de la réunion
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                {booking.agenda && (
+                                  <div>
+                                    <div className="font-medium text-muted-foreground mb-1">Ordre du jour:</div>
+                                    <div className="text-muted-foreground whitespace-pre-wrap p-2 bg-gray-50 rounded">
+                                      {booking.agenda}
+                                    </div>
+                                  </div>
+                                )}
+                                {booking.isRecurring && (
+                                  <div className="flex items-center gap-2">
+                                    <Repeat className="h-4 w-4 text-muted-foreground" />
+                                    <span className="font-medium">Récurrence:</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {booking.recurrenceRule?.includes('WEEKLY') ? 'Hebdomadaire' :
+                                        booking.recurrenceRule?.includes('DAILY') ? 'Quotidienne' :
+                                        booking.recurrenceRule?.includes('MONTHLY') ? 'Mensuelle' : 'Personnalisée'}
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Attendees Details */}
+                          {(booking.internalAttendees && booking.internalAttendees.length > 0) || (booking.externalAttendees && booking.externalAttendees.length > 0) ? (
+                            <div className="space-y-2">
+                              <div className="font-medium text-sm flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                Participants détaillés
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {booking.internalAttendees && booking.internalAttendees.length > 0 && (
-                                  <div className="text-xs text-muted-foreground mt-1">
-                                    {booking.internalAttendees.length} participants internes
+                                  <div className="space-y-1">
+                                    <div className="font-medium text-sm text-muted-foreground">Participants internes ({booking.internalAttendees.length})</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {booking.internalAttendees.map((name: string, idx: number) => (
+                                        <Badge key={idx} variant="outline" className="text-xs">{name}</Badge>
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
                                 {booking.externalAttendees && booking.externalAttendees.length > 0 && (
-                                  <div className="text-xs text-muted-foreground">
-                                    {booking.externalAttendees.length} participants externes
+                                  <div className="space-y-1">
+                                    <div className="font-medium text-sm text-muted-foreground">Participants externes ({booking.externalAttendees.length})</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {booking.externalAttendees.map((name: string, idx: number) => (
+                                        <Badge key={idx} variant="outline" className="text-xs">{name}</Badge>
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
                               </div>
                             </div>
-                          </div>
+                          ) : null}
                         </div>
 
                         {/* Room Amenities */}
@@ -399,7 +442,7 @@ export function BookingApprovals() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm">Équipements de la salle</div>
                             <div className="flex flex-wrap gap-1">
-                              {booking.room.amenities.map((amenity, index) => {
+                              {booking.room.amenities.map((amenity: string, index: number) => {
                                 const getAmenityIcon = (amenity: string) => {
                                   const lowerAmenity = amenity.toLowerCase();
                                   if (lowerAmenity.includes('wifi') || lowerAmenity.includes('internet')) return <Wifi className="h-3 w-3" />;
@@ -430,7 +473,7 @@ export function BookingApprovals() {
                               Équipements et outils requis
                             </div>
                             <div className="flex flex-wrap gap-1">
-                              {booking.requiredAmenities.map((amenity, index) => {
+                              {booking.requiredAmenities.map((amenity: string, index: number) => {
                                 const getAmenityIcon = (amenity: string) => {
                                   const lowerAmenity = amenity.toLowerCase();
                                   if (lowerAmenity.includes('wifi') || lowerAmenity.includes('internet')) return <Wifi className="h-3 w-3" />;
@@ -483,57 +526,7 @@ export function BookingApprovals() {
                           )}
                         </div>
 
-                        {/* Internal Attendees Details */}
-                        {booking.internalAttendees && booking.internalAttendees.length > 0 && (
-                          <div className="space-y-2">
-                            <div className="font-medium text-sm flex items-center gap-2">
-                              <UserCheck className="h-4 w-4" />
-                              Internal Attendees ({booking.internalAttendees.length})
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {booking.internalAttendees.map((attendee, index) => (
-                                <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-sm">
-                                  <User className="h-3 w-3 text-muted-foreground" />
-                                  <div className="flex-1">
-                                    <div className="font-medium">
-                                      {attendee.firstName && attendee.lastName
-                                        ? `${attendee.firstName} ${attendee.lastName}`
-                                        : attendee.username
-                                      }
-                                    </div>
-                                    {attendee.title && (
-                                      <div className="text-xs text-muted-foreground">{attendee.title}</div>
-                                    )}
-                                  </div>
-                                  {attendee.department && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {typeof attendee.department === 'string' 
-                                        ? attendee.department 
-                                        : attendee.department?.name}
-                                    </Badge>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
 
-                        {/* External Attendees */}
-                        {booking.externalAttendees && booking.externalAttendees.length > 0 && (
-                          <div className="space-y-2">
-                            <div className="font-medium text-sm flex items-center gap-2">
-                              <ExternalLink className="h-4 w-4" />
-                              External Attendees ({booking.externalAttendees.length})
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {booking.externalAttendees.map((attendee, index) => (
-                                <Badge key={index} variant="outline" className="text-xs">
-                                  {attendee}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
 
                         {/* Room Status & Maintenance */}
                         {booking.room?.isUnderMaintenance && (

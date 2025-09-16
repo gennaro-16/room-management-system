@@ -76,7 +76,7 @@ model Booking {
 
   // Participants
   expectedAttendees Int     // To compare with room capacity
-  internalAttendees User[]  @relation("BookingInternalAttendees")
+  internalAttendees String[] // Names of internal participants
   externalAttendees String[] // Names of external participants
   
   // Meeting details
@@ -159,7 +159,7 @@ model User {
   
   // Relations
   organizedBookings Booking[] @relation("BookingOrganizer")
-  attendingBookings Booking[] @relation("BookingInternalAttendees")
+  // attendingBookings relation removed; internal attendees now stored as names on Booking
   approvedBookings  Booking[] @relation("BookingApprover")
   rejectedBookings  Booking[] @relation("BookingRejecter")
   notifications Notification[]

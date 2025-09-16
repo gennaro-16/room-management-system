@@ -516,30 +516,15 @@ export function BookingsSection() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2">
                               <UserCheck className="h-4 w-4" />
-                              Internal Attendees ({booking.internalAttendees.length})
+                              Participants internes ({booking.internalAttendees.length})
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {booking.internalAttendees.map((attendee, index) => (
+                              {booking.internalAttendees.map((name, index) => (
                                 <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-sm">
                                   <User className="h-3 w-3 text-muted-foreground" />
                                   <div className="flex-1">
-                                    <div className="font-medium">
-                                      {attendee.firstName && attendee.lastName
-                                        ? `${attendee.firstName} ${attendee.lastName}`
-                                        : attendee.username
-                                      }
-                                    </div>
-                                    {attendee.title && (
-                                      <div className="text-xs text-muted-foreground">{attendee.title}</div>
-                                    )}
+                                    <div className="font-medium">{name}</div>
                                   </div>
-                                  {attendee.department && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {typeof attendee.department === 'string' 
-                                        ? attendee.department 
-                                        : attendee.department?.name}
-                                    </Badge>
-                                  )}
                                 </div>
                               ))}
                             </div>
@@ -551,7 +536,7 @@ export function BookingsSection() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2">
                               <ExternalLink className="h-4 w-4" />
-                              External Attendees ({booking.externalAttendees.length})
+                              Participants externes ({booking.externalAttendees.length})
                             </div>
                             <div className="flex flex-wrap gap-1">
                               {booking.externalAttendees.map((attendee, index) => (

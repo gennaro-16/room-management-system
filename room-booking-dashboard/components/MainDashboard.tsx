@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sidebar } from './dashboard/Sidebar';
 import { Header } from './dashboard/Header';
 import { DashboardSection } from './dashboard/DashboardSection';
@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 
 export function MainDashboard() {
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSection] = useState('rooms');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
 
@@ -23,10 +23,14 @@ export function MainDashboard() {
   const renderContent = () => {
     // Check user role and show appropriate content
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isDirector = user?.role === 'DIRECTOR' || user?.role === 'SUB_DIRECTOR';
     const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
     switch (activeSection) {
       case 'dashboard':
+        if (!isAdmin) {
+          return isDirector ? <CalendarSection /> : <RoomsSection />;
+        }
         return <DashboardSection />;
       case 'rooms':
         return <RoomsSection />;
@@ -119,9 +123,19 @@ export function MainDashboard() {
           </Card>
         );
       default:
-        return <DashboardSection />;
+        return isAdmin ? <DashboardSection /> : (isDirector ? <CalendarSection /> : <RoomsSection />);
     }
   };
+
+  // Choose default landing section based on role
+  useEffect(() => {
+    if (!user?.role) return;
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+    const isDirector = user.role === 'DIRECTOR' || user.role === 'SUB_DIRECTOR';
+    if (isAdmin) setActiveSection('dashboard');
+    else if (isDirector) setActiveSection('calendar');
+    else setActiveSection('rooms');
+  }, [user?.role]);
 
   return (
     <div className="min-h-screen bg-background">

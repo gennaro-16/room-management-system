@@ -3,6 +3,10 @@ import { BookingStatus } from '@prisma/client';
 
 export class UpdateBookingDto {
   @IsOptional()
+  @IsInt()
+  roomId?: number;
+
+  @IsOptional()
   @IsString()
   title?: string;
 
@@ -28,8 +32,8 @@ export class UpdateBookingDto {
 
   @IsOptional()
   @IsArray()
-  @IsInt({ each: true })
-  internalAttendees?: number[];
+  @IsString({ each: true })
+  internalAttendees?: string[];
 
   @IsOptional()
   @IsArray()

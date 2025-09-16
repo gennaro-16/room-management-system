@@ -3,12 +3,12 @@ import { UserRole } from '@prisma/client';
 
 export class RegisterDto {
   @IsString()
-  @IsNotEmpty()
-  employeeId: string;
+  @IsOptional()
+  employeeId?: string;
 
   @IsString()
-  @IsNotEmpty()
-  username: string;
+  @IsOptional()
+  username?: string;
 
   @IsEmail()
   @IsNotEmpty()

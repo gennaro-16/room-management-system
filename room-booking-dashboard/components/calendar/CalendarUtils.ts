@@ -132,22 +132,38 @@ export class CalendarUtils {
    */
   static getStatusColor(status: string): string {
     switch (status) {
-      case 'ACTIVE':
-        return 'bg-red-100 text-red-800 border-red-200'; // alBaraka red/orange
+      case 'PENDING':
+        return 'bg-red-50 text-red-800 border-red-200';
+      case 'APPROVED':
+        return 'bg-green-50 text-green-800 border-green-200';
+      case 'REJECTED':
+        return 'bg-gray-50 text-gray-800 border-gray-200';
       case 'CANCELLED':
-        return 'bg-slate-100 text-slate-800 border-slate-200'; // alBaraka dark gray
+        return 'bg-slate-50 text-slate-800 border-slate-200';
       case 'COMPLETED':
-        return 'bg-gray-100 text-gray-800 border-gray-200'; // alBaraka medium gray
-      case 'FREE':
-        return 'bg-red-100 text-red-800 border-red-200'; // alBaraka red/orange
-      case 'BUSY':
-        return 'bg-slate-100 text-slate-800 border-slate-200'; // alBaraka dark gray
-      case 'MAINTENANCE':
-        return 'bg-amber-100 text-amber-800 border-amber-200'; // alBaraka brown
-      case 'RESERVED':
-        return 'bg-stone-100 text-stone-800 border-stone-200'; // alBaraka beige
+        return 'bg-blue-50 text-blue-800 border-blue-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  }
+
+  /**
+   * Event block background/text classes for calendar cells
+   */
+  static getEventClasses(status: string): string {
+    switch (status) {
+      case 'APPROVED':
+        return 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200';
+      case 'PENDING':
+        return 'bg-red-100 text-red-800 border-red-200 hover:bg-red-200';
+      case 'REJECTED':
+        return 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
+      case 'CANCELLED':
+        return 'bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200';
+      case 'COMPLETED':
+        return 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
     }
   }
 

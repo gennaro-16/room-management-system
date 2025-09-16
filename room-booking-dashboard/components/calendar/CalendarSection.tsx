@@ -10,14 +10,16 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarIcon, Clock, Users, Plus, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfDay, endOfDay, isSameDay, parseISO, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto, type User } from '@/lib/api';
+import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto, type UpdateBookingDto, type User } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUsers, useCreateBooking } from '@/hooks/useApi';
+import { useUsers, useCreateBooking, useUpdateBooking } from '@/hooks/useApi';
 import { CalendarGrid } from './CalendarGrid';
 import { CalendarUtils } from './CalendarUtils';
 import { BookingDetailsDialog } from './BookingDetailsDialog';
 import { NewBookingDialog } from '@/components/bookings/NewBookingDialog';
+import { EditBookingDialog } from '@/components/bookings/EditBookingDialog';
+import DayTimeline from './DayTimeline';
 
 interface CalendarEvent {
   id: number;
@@ -44,8 +46,10 @@ export function CalendarSection() {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isBookingDetailsOpen, setIsBookingDetailsOpen] = useState(false);
+  const [isEditBookingOpen, setIsEditBookingOpen] = useState(false);
   const { toast } = useToast();
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
+  const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
 
   const isAdminRole = hasRole(['ADMIN', 'SUPER_ADMIN']);
 
@@ -163,8 +167,8 @@ export function CalendarSection() {
   };
 
   const handleEditBooking = (booking: Booking) => {
-    // TODO: Implement edit booking functionality
-    console.log('Edit booking:', booking);
+    setSelectedBooking(booking);
+    setIsEditBookingOpen(true);
   };
 
   const handleDeleteBooking = async (booking: Booking) => {
@@ -182,6 +186,17 @@ export function CalendarSection() {
         description: "Failed to cancel booking",
         variant: "destructive",
       });
+    }
+  };
+
+  // Approve from timeline helper (admin only UI passes here)
+  const handleApproveBookingFromTimeline = async (booking: Booking) => {
+    try {
+      await bookingsApi.approve(booking.id);
+      toast({ title: 'Succès', description: 'Réservation approuvée' });
+      loadBookings();
+    } catch (error) {
+      toast({ title: 'Erreur', description: "Impossible d'approuver cette réservation", variant: 'destructive' });
     }
   };
 
@@ -407,6 +422,18 @@ export function CalendarSection() {
         </div>
       </div>
 
+      {/* Day timeline as a separate, large section */}
+      <div>
+        <DayTimeline 
+          date={selectedDate} 
+          bookings={getBookingsForSelectedDate()} 
+          rooms={rooms} 
+          isAdmin={isAdminRole}
+          onBookingClick={(b) => handleBookingClick(b)}
+          onApprove={(b) => handleApproveBookingFromTimeline(b)}
+        />
+      </div>
+
       {/* Booking Details Dialog */}
       <BookingDetailsDialog
         booking={selectedBooking}
@@ -415,6 +442,25 @@ export function CalendarSection() {
         onClose={() => setIsBookingDetailsOpen(false)}
         onEdit={handleEditBooking}
         onDelete={handleDeleteBooking}
+      />
+
+      {/* Edit Booking Dialog */}
+      <EditBookingDialog
+        open={isEditBookingOpen}
+        onOpenChange={setIsEditBookingOpen}
+        booking={selectedBooking}
+        onSubmit={async (id: number, data: UpdateBookingDto) => {
+          // If user edits an approved booking, set back to PENDING (re-approval flow)
+          if (selectedBooking?.status === 'APPROVED') {
+            data = { ...data, status: 'PENDING' };
+          }
+          await updateBooking(id, data);
+          setIsEditBookingOpen(false);
+          setIsBookingDetailsOpen(false);
+          loadBookings();
+        }}
+        loading={updateLoading}
+        error={updateError}
       />
 
       {/* New Booking Dialog */}

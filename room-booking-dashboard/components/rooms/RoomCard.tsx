@@ -82,27 +82,29 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
           </div>
         )}
 
-        {/* Quick Status Actions */}
-        <div className="space-y-3">
-          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Actions rapides</Label>
-          <div className="grid grid-cols-1 gap-2">
-            <Button
-              variant={room.isUnderMaintenance ? "destructive" : "outline"}
-              size="sm"
-              onClick={() => onToggleMaintenance?.(room.id)}
-              disabled={isMaintenanceLoading}
-              className="text-xs h-8"
-            >
-              <Wrench className="h-3 w-3 mr-2" />
-              {room.isUnderMaintenance ? "En maintenance" : "Mettre en maintenance"}
-            </Button>
-            {room.isUnderMaintenance && room.maintenanceNotes && (
-              <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
-                {room.maintenanceNotes}
-              </div>
-            )}
+        {/* Quick Status Actions - Admin only */}
+        {isAdmin() && (
+          <div className="space-y-3">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Actions rapides</Label>
+            <div className="grid grid-cols-1 gap-2">
+              <Button
+                variant={room.isUnderMaintenance ? "destructive" : "outline"}
+                size="sm"
+                onClick={() => onToggleMaintenance?.(room.id)}
+                disabled={isMaintenanceLoading}
+                className="text-xs h-8"
+              >
+                <Wrench className="h-3 w-3 mr-2" />
+                {room.isUnderMaintenance ? "En maintenance" : "Mettre en maintenance"}
+              </Button>
+              {room.isUnderMaintenance && room.maintenanceNotes && (
+                <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
+                  {room.maintenanceNotes}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Room Actions */}
         <div className="flex gap-2 pt-3 border-t border-border">

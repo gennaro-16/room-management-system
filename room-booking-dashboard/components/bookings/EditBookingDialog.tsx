@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { UpdateBookingDto, Booking, BookingStatus, User } from '@/lib/api';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
@@ -52,8 +51,9 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [externalInput, setExternalInput] = useState('');
+  const [internalInput, setInternalInput] = useState('');
   const [amenitiesInput, setAmenitiesInput] = useState('');
-  const [selectedInternalAttendees, setSelectedInternalAttendees] = useState<number[]>([]);
+  // No longer using IDs for internal attendees; handled as names (string[])
 
   const isAdminRole = hasRole(['ADMIN', 'SUPER_ADMIN', 'DIRECTOR']);
 
@@ -69,7 +69,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
         startTime: booking.startTime,
         endTime: booking.endTime,
         expectedAttendees: booking.expectedAttendees,
-        internalAttendees: booking.internalAttendees?.map(u => u.id) || [],
+        internalAttendees: (booking.internalAttendees as any) as string[] || [],
         externalAttendees: booking.externalAttendees || [],
         requiredAmenities: booking.requiredAmenities || [],
         isRecurring: booking.isRecurring || false,
@@ -81,8 +81,8 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
       setStartTime(startDate.toTimeString().slice(0, 5));
       setEndTime(endDate.toTimeString().slice(0, 5));
       setExternalInput(booking.externalAttendees?.join(', ') || '');
+      setInternalInput((booking.internalAttendees as any as string[] | undefined)?.join(', ') || '');
       setAmenitiesInput(booking.requiredAmenities?.join(', ') || '');
-      setSelectedInternalAttendees(booking.internalAttendees?.map(u => u.id) || []);
     }
   }, [booking]);
 
@@ -104,7 +104,9 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
         requiredAmenities: amenitiesInput
           ? amenitiesInput.split(',').map(s => s.trim()).filter(Boolean)
           : [],
-        internalAttendees: selectedInternalAttendees,
+        internalAttendees: internalInput
+          ? internalInput.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
       });
       
       onOpenChange(false);
@@ -154,24 +156,48 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
                 required
               />
             </div>
+            {isAdminRole && (
+              <div className="space-y-2">
+                <Label htmlFor="booking-status">Statut</Label>
+                <Select value={formData.status} onValueChange={(value: BookingStatus) => handleInputChange('status', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="APPROVED">Approuvée</SelectItem>
+                    <SelectItem value="COMPLETED">Terminée</SelectItem>
+                    <SelectItem value="CANCELLED">Annulée</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="booking-status">Status</Label>
-              <Select value={formData.status} onValueChange={(value: BookingStatus) => handleInputChange('status', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="title">Titre de la réunion</Label>
+              <Input 
+                id="title" 
+                placeholder="Titre de la réunion"
+                value={formData.title || ''}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expectedAttendees">Participants attendus</Label>
+              <Input 
+                id="expectedAttendees" 
+                type="number" 
+                min="1"
+                value={formData.expectedAttendees || 1}
+                onChange={(e) => handleInputChange('expectedAttendees', parseInt(e.target.value) || 1)}
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start-time">Start Time</Label>
+              <Label htmlFor="start-time">Heure de début</Label>
               <Input 
                 id="start-time" 
                 type="time" 
@@ -181,7 +207,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="end-time">End Time</Label>
+              <Label htmlFor="end-time">Heure de fin</Label>
               <Input 
                 id="end-time" 
                 type="time" 
@@ -194,22 +220,58 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
 
 
           <div className="space-y-2">
-            <Label htmlFor="booking-purpose">Meeting Purpose</Label>
+            <Label htmlFor="booking-purpose">Objectif de la réunion</Label>
             <Input 
               id="booking-purpose" 
-              placeholder="e.g., Team Meeting, Client Presentation" 
+              placeholder="Ex. : réunion d'équipe, présentation client" 
               value={formData.purpose}
               onChange={(e) => handleInputChange('purpose', e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="booking-description">Description (Optional)</Label>
+            <Label htmlFor="booking-description">Description (optionnel)</Label>
             <Textarea 
               id="booking-description" 
-              placeholder="Additional details about the meeting" 
+              placeholder="Détails supplémentaires (agenda)" 
               rows={3} 
+              value={formData.agenda || ''}
+              onChange={(e) => handleInputChange('agenda', e.target.value)}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="internalAttendees">Participants internes</Label>
+              <Input 
+                id="internalAttendees"
+                placeholder="Nom1, Nom2"
+                value={internalInput}
+                onChange={(e) => setInternalInput(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Séparés par des virgules</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="externalAttendees">Participants externes</Label>
+              <Input 
+                id="externalAttendees"
+                placeholder="Nom1, Nom2"
+                value={externalInput}
+                onChange={(e) => setExternalInput(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Séparés par des virgules</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="requiredAmenities">Équipements requis</Label>
+            <Input 
+              id="requiredAmenities"
+              placeholder="projecteur, tableau blanc"
+              value={amenitiesInput}
+              onChange={(e) => setAmenitiesInput(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Séparés par des virgules</p>
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t">
@@ -219,10 +281,10 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <LoadingSpinner size="sm" /> : 'Update Booking'}
+              {loading ? <LoadingSpinner size="sm" /> : 'Mettre à jour la réservation'}
             </Button>
           </div>
         </form>

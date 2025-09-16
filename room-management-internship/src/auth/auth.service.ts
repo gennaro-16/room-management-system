@@ -65,7 +65,7 @@ export class AuthService {
       where: {
         OR: [
           { email: registerDto.email },
-          { username: registerDto.username },
+          ...(registerDto.username ? [{ username: registerDto.username }] : []),
         ],
       },
     });
@@ -74,14 +74,24 @@ export class AuthService {
       throw new ConflictException('User with this email or username already exists');
     }
 
+    // Generate defaults
+    const baseUsername = (registerDto.username || `${registerDto.firstName}.${registerDto.lastName}`).toLowerCase().replace(/\s+/g, '');
+    let finalUsername = baseUsername;
+    let counter = 1;
+    while (await this.prisma.user.findUnique({ where: { username: finalUsername } })) {
+      finalUsername = `${baseUsername}${counter++}`;
+    }
+
+    const generatedEmployeeId = registerDto.employeeId || `EMP${Math.floor(100000 + Math.random() * 900000)}`;
+
     // Hash password
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
     // Create user
     const user = await this.prisma.user.create({
       data: {
-        employeeId: registerDto.employeeId,
-        username: registerDto.username,
+        employeeId: generatedEmployeeId,
+        username: finalUsername,
         email: registerDto.email,
         password: hashedPassword,
         firstName: registerDto.firstName,
@@ -89,7 +99,7 @@ export class AuthService {
         title: registerDto.title,
         phone: registerDto.phone,
         departmentId: registerDto.departmentId,
-        role: registerDto.role || UserRole.EMPLOYEE,
+        role: UserRole.EMPLOYEE,
       },
     });
 

@@ -74,9 +74,7 @@ export class BookingsService {
         purpose,
         agenda,
         expectedAttendees,
-        internalAttendees: internalAttendees ? {
-          connect: internalAttendees.map(id => ({ id }))
-        } : undefined,
+        internalAttendees: (internalAttendees || []) as any,
         externalAttendees: externalAttendees || [],
         requiredAmenities: requiredAmenities || [],
         isRecurring: isRecurring || false,
@@ -110,10 +108,23 @@ export class BookingsService {
   }
 
   async findAll(currentUser: User) {
-    // Admins can see all bookings, users can only see their own
-    const whereClause = currentUser.role === UserRole.EMPLOYEE 
-      ? { organizerId: currentUser.id }
-      : {};
+    // Visibility rules:
+    // - EMPLOYEE: only own bookings
+    // - DIRECTOR/SUB_DIRECTOR: own bookings + APPROVED bookings of others
+    // - ADMIN/SUPER_ADMIN: all bookings
+    let whereClause: any = {};
+    if (currentUser.role === UserRole.EMPLOYEE) {
+      whereClause = { organizerId: currentUser.id };
+    } else if (currentUser.role === UserRole.DIRECTOR || currentUser.role === UserRole.SUB_DIRECTOR) {
+      whereClause = {
+        OR: [
+          { organizerId: currentUser.id },
+          { status: BookingStatus.APPROVED },
+        ],
+      };
+    } else {
+      whereClause = {};
+    }
 
     return this.prisma.booking.findMany({
       where: whereClause,
@@ -334,12 +345,21 @@ export class BookingsService {
     const isOwner = existingBooking.organizerId === currentUser.id;
     
     if (currentUser.role === UserRole.EMPLOYEE) {
-      // Employees can only update their own pending bookings
+      // Employees can only update their own bookings
       if (!isOwner) {
         throw new ForbiddenException('Insufficient permissions');
       }
-      if (existingBooking.status !== BookingStatus.PENDING) {
-        throw new BadRequestException('Only pending bookings can be updated');
+      if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED) {
+        throw new BadRequestException('Cannot update rejected or cancelled bookings');
+      }
+      // If approved, allow update but force status back to PENDING for re-approval
+      if (existingBooking.status === BookingStatus.APPROVED) {
+        updateBookingDto.status = BookingStatus.PENDING;
+      } else {
+        // For pending bookings, prevent employees from changing status explicitly
+        if (updateBookingDto.status && updateBookingDto.status !== BookingStatus.PENDING) {
+          updateBookingDto.status = BookingStatus.PENDING;
+        }
       }
     } else if (isAdminRole) {
       // Admins, Super Admins, and Directors can update approved bookings
@@ -385,13 +405,6 @@ export class BookingsService {
 
     // Transform the DTO to match Prisma's expected format
     const updateData: any = { ...updateBookingDto };
-    
-    // Handle internal attendees connection
-    if (updateData.internalAttendees) {
-      updateData.internalAttendees = {
-        set: updateData.internalAttendees.map(id => ({ id }))
-      };
-    }
 
     return this.prisma.booking.update({
       where: { id },
@@ -474,18 +487,33 @@ export class BookingsService {
   }
 
   async getBookingsByDateRange(startDate: Date, endDate: Date, currentUser: User, organizerId?: number) {
-    // Users can only see their own bookings in date range
-    const whereClause = currentUser.role === UserRole.EMPLOYEE 
-      ? { 
-          organizerId: currentUser.id,
-          startTime: { gte: startDate },
-          endTime: { lte: endDate }
-        }
-      : {
-          startTime: { gte: startDate },
-          endTime: { lte: endDate },
-          ...(organizerId && { organizerId })
-        };
+    // Visibility rules mirror findAll:
+    // - EMPLOYEE: own only
+    // - DIRECTOR/SUB_DIRECTOR: own + APPROVED
+    // - ADMIN/SUPER_ADMIN: all
+    let whereClause: any;
+    if (currentUser.role === UserRole.EMPLOYEE) {
+      whereClause = {
+        organizerId: currentUser.id,
+        startTime: { gte: startDate },
+        endTime: { lte: endDate },
+      };
+    } else if (currentUser.role === UserRole.DIRECTOR || currentUser.role === UserRole.SUB_DIRECTOR) {
+      whereClause = {
+        startTime: { gte: startDate },
+        endTime: { lte: endDate },
+        OR: [
+          { organizerId: currentUser.id },
+          { status: BookingStatus.APPROVED },
+        ],
+      };
+    } else {
+      whereClause = {
+        startTime: { gte: startDate },
+        endTime: { lte: endDate },
+        ...(organizerId && { organizerId }),
+      };
+    }
 
     return this.prisma.booking.findMany({
       where: whereClause,

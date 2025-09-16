@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
-  { icon: Home, label: 'Tableau de bord', id: 'dashboard' },
+  ...(isAdmin ? [{ icon: Home, label: 'Tableau de bord', id: 'dashboard' }] : []),
   { icon: Building2, label: 'Salles', id: 'rooms' },
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },

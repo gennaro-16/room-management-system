@@ -26,6 +26,7 @@ export function UserManagement() {
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [approvalDialog, setApprovalDialog] = useState<{ user: UserType; action: 'approve' | 'reject' } | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [viewUser, setViewUser] = useState<UserType | null>(null);
   const isSuperAdmin = useIsSuperAdmin();
 
   // Edit form state
@@ -258,6 +259,15 @@ export function UserManagement() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
+                          {isSuperAdmin() && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setViewUser(user)}
+                            >
+                              Afficher
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -330,6 +340,15 @@ export function UserManagement() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
+                          {isSuperAdmin() && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setViewUser(user)}
+                            >
+                              Afficher
+                            </Button>
+                          )}
                           <Button
                             variant="default"
                             size="sm"
@@ -493,6 +512,72 @@ export function UserManagement() {
             >
               {updateLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View User Details (Super Admin) */}
+      <Dialog open={!!viewUser} onOpenChange={() => setViewUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Détails de l'utilisateur</DialogTitle>
+            <DialogDescription>Informations complètes sur l'utilisateur sélectionné.</DialogDescription>
+          </DialogHeader>
+          {viewUser && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <div className="text-muted-foreground">Identifiant Employé</div>
+                <div className="font-medium">{(viewUser as any).employeeId || '—'}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Nom d'utilisateur</div>
+                <div className="font-medium">{viewUser.username}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">E-mail</div>
+                <div className="font-medium">{viewUser.email}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Nom</div>
+                <div className="font-medium">{viewUser.firstName} {viewUser.lastName}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Rôle</div>
+                <div className="flex items-center gap-2 font-medium">
+                  {getRoleIcon(viewUser.role)}
+                  <Badge className={apiUtils.getRoleColor(viewUser.role)}>
+                    {viewUser.role.replace('_', ' ')}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Département</div>
+                <div className="font-medium">{(typeof viewUser.department === 'string' ? viewUser.department : viewUser.department?.name) || 'N/D'}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Titre</div>
+                <div className="font-medium">{viewUser.title || '—'}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Téléphone</div>
+                <div className="font-medium">{viewUser.phone || '—'}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Statut</div>
+                <div className="font-medium">{getStatusBadge(viewUser)}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Créé le</div>
+                <div className="font-medium">{viewUser.createdAt ? new Date(viewUser.createdAt).toLocaleString() : 'N/D'}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Mis à jour</div>
+                <div className="font-medium">{viewUser.updatedAt ? new Date(viewUser.updatedAt).toLocaleString() : 'N/D'}</div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewUser(null)}>Fermer</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
