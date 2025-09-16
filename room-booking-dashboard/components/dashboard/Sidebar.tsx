@@ -76,7 +76,7 @@ export function Sidebar({ activeSection, onSectionChange, sidebarOpen, onSidebar
               />
               <div className="flex flex-col">
                 <h1 className="text-sm font-bold text-sidebar-foreground">AL BARAKA</h1>
-                <p className="text-xs text-sidebar-foreground/70">ROOM BOOKING</p>
+                <p className="text-xs text-sidebar-foreground/70">RÉSERVATION DE SALLES</p>
               </div>
             </div>
             <Button 

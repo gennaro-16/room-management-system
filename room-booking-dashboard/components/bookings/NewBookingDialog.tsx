@@ -220,7 +220,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
               <Label htmlFor="booking-purpose" className="text-sm font-medium">Objectif de la réunion</Label>
               <Input 
                 id="booking-purpose" 
-                placeholder="e.g., Team Meeting, Client Presentation" 
+                placeholder="Ex. : réunion d'équipe, présentation client" 
                 value={formData.purpose}
                 onChange={(e) => handleInputChange('purpose', e.target.value)}
                 className="input-albaraka"
@@ -259,7 +259,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
                 <Label htmlFor="requiredAmenities" className="text-sm font-medium">Équipements requis</Label>
                 <Input 
                   id="requiredAmenities"
-                  placeholder="projector, whiteboard"
+                  placeholder="projecteur, tableau blanc"
                   value={amenitiesInput}
                   onChange={(e) => setAmenitiesInput(e.target.value)}
                   className="input-albaraka"

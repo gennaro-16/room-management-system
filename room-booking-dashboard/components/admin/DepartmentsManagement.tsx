@@ -62,13 +62,13 @@ export default function DepartmentsManagement() {
   return (
     <Card className="card-albaraka">
       <CardHeader>
-        <CardTitle className="text-[var(--albaraka-primary)]">Departments</CardTitle>
-        <CardDescription className="text-[var(--albaraka-muted)]">Manage departments (Super Admin)</CardDescription>
+        <CardTitle className="text-[var(--albaraka-primary)]">Départements</CardTitle>
+        <CardDescription className="text-[var(--albaraka-muted)]">Gérer les départements (Super Admin)</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Nom</Label>
             <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="space-y-2">
@@ -76,16 +76,16 @@ export default function DepartmentsManagement() {
             <Input id="description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="floor">Floor</Label>
+            <Label htmlFor="floor">Étage</Label>
             <Input id="floor" type="number" value={form.floor} onChange={(e) => setForm({ ...form, floor: e.target.value })} />
           </div>
 
           <div className="md:col-span-3 flex gap-2">
             <Button type="submit" disabled={creating || updating} className="btn-albaraka-primary">
-              {editId ? 'Update' : 'Create'} Department
+              {editId ? 'Mettre à jour' : 'Créer'} le département
             </Button>
             {editId && (
-              <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={resetForm}>Annuler</Button>
             )}
           </div>
           {formError && (
@@ -102,8 +102,8 @@ export default function DepartmentsManagement() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Floor</TableHead>
+              <TableHead>Nom</TableHead>
+              <TableHead>Étage</TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -115,8 +115,8 @@ export default function DepartmentsManagement() {
                 <TableCell>{dept.floor ?? '-'}</TableCell>
                 <TableCell>{dept.description ?? '-'}</TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => onEdit(dept)}>Edit</Button>
-                  <Button variant="destructive" size="sm" onClick={() => onDelete(dept.id)} disabled={deleting}>Delete</Button>
+                  <Button variant="outline" size="sm" onClick={() => onEdit(dept)}>Modifier</Button>
+                  <Button variant="destructive" size="sm" onClick={() => onDelete(dept.id)} disabled={deleting}>Supprimer</Button>
                 </TableCell>
               </TableRow>
             ))}

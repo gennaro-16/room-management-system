@@ -12,11 +12,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Search, UserPlus, Edit, Trash2, Shield, User, Crown, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { useUsers, usePendingUsers, useUpdateUser, useDeleteUser, useApproveUser } from '@/hooks/useApi';
+import { useUsers, usePendingUsers, useUpdateUser, useDeleteUser, useApproveUser, useDepartments } from '@/hooks/useApi';
 import { User as UserType, UserRole, UpdateUserDto, ApproveUserDto } from '@/lib/api';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { apiUtils } from '@/lib/api';
+import { useIsSuperAdmin } from '@/contexts/AuthContext';
 
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +26,31 @@ export function UserManagement() {
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
   const [approvalDialog, setApprovalDialog] = useState<{ user: UserType; action: 'approve' | 'reject' } | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const isSuperAdmin = useIsSuperAdmin();
+
+  // Edit form state
+  const [formValues, setFormValues] = useState<UpdateUserDto>({});
+
+  // Departments for selection
+  const { data: departments } = useDepartments();
+
+  // Sync form values when opening edit dialog (must be before any early returns)
+  React.useEffect(() => {
+    if (editingUser) {
+      setFormValues({
+        username: editingUser.username,
+        email: editingUser.email,
+        firstName: editingUser.firstName,
+        lastName: editingUser.lastName,
+        title: editingUser.title,
+        phone: editingUser.phone,
+        departmentId: typeof editingUser.department === 'object' ? editingUser.department?.id ?? undefined : editingUser.departmentId ?? undefined,
+        role: editingUser.role,
+        isActive: editingUser.isActive,
+        isApproved: editingUser.isApproved,
+      });
+    }
+  }, [editingUser]);
 
   // API hooks
   const { data: allUsers, loading: usersLoading, error: usersError, refetch: refetchUsers } = useUsers();
@@ -128,22 +154,26 @@ export function UserManagement() {
     return <ErrorAlert error={usersError || pendingError || 'Failed to load users'} onRetry={() => { refetchUsers(); refetchPending(); }} />;
   }
 
+  const updateField = <K extends keyof UpdateUserDto>(key: K, value: UpdateUserDto[K]) => {
+    setFormValues(prev => ({ ...prev, [key]: value }));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-balance">User Management</h2>
-          <p className="text-muted-foreground">Manage user accounts, roles, and approvals</p>
+          <h2 className="text-2xl font-bold text-balance">Gestion des utilisateurs</h2>
+          <p className="text-muted-foreground">Gérez les comptes, rôles et approbations</p>
         </div>
       </div>
 
       <Tabs defaultValue="all-users" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-users">
-            All Users ({allUsers?.length || 0})
+            Tous les utilisateurs ({allUsers?.length || 0})
           </TabsTrigger>
           <TabsTrigger value="pending-approvals">
-            Pending Approvals ({pendingUsers?.length || 0})
+            Approbations en attente ({pendingUsers?.length || 0})
           </TabsTrigger>
         </TabsList>
 
@@ -153,7 +183,7 @@ export function UserManagement() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <Input
-                    placeholder="Search users by name, email, or username..."
+                    placeholder="Rechercher par nom, e-mail ou nom d'utilisateur..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full"
@@ -162,24 +192,24 @@ export function UserManagement() {
                 <div className="flex gap-2">
                   <Select value={roleFilter} onValueChange={setRoleFilter}>
                     <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Role" />
+                      <SelectValue placeholder="Rôle" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+                      <SelectItem value="all">Tous les rôles</SelectItem>
+                      <SelectItem value="SUPER_ADMIN">Super administrateur</SelectItem>
                       <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="USER">User</SelectItem>
+                      <SelectItem value="USER">Utilisateur</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Status" />
+                      <SelectValue placeholder="Statut" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="all">Tous les statuts</SelectItem>
+                      <SelectItem value="active">Actif</SelectItem>
+                      <SelectItem value="inactive">Inactif</SelectItem>
+                      <SelectItem value="pending">En attente</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -189,11 +219,11 @@ export function UserManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>Utilisateur</TableHead>
+                    <TableHead>Rôle</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Département</TableHead>
+                    <TableHead>Créé le</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -222,9 +252,9 @@ export function UserManagement() {
                       <TableCell>
                         {getStatusBadge(user)}
                       </TableCell>
-                      <TableCell>{(typeof user.department === 'string' ? user.department : user.department?.name) || 'N/A'}</TableCell>
+                      <TableCell>{(typeof user.department === 'string' ? user.department : user.department?.name) || 'N/D'}</TableCell>
                       <TableCell>
-                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/D'}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
@@ -250,7 +280,7 @@ export function UserManagement() {
                 </TableBody>
               </Table>
               {filteredUsers.length === 0 && (
-                <p className="text-center text-muted-foreground py-4">No users found.</p>
+                <p className="text-center text-muted-foreground py-4">Aucun utilisateur trouvé.</p>
               )}
             </CardContent>
           </Card>
@@ -262,7 +292,7 @@ export function UserManagement() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <Input
-                    placeholder="Search pending users..."
+                    placeholder="Rechercher des utilisateurs en attente..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full"
@@ -274,9 +304,9 @@ export function UserManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Requested</TableHead>
+                    <TableHead>Utilisateur</TableHead>
+                    <TableHead>Département</TableHead>
+                    <TableHead>Demandé le</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -294,9 +324,9 @@ export function UserManagement() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{(typeof user.department === 'string' ? user.department : user.department?.name) || 'N/A'}</TableCell>
+                      <TableCell>{(typeof user.department === 'string' ? user.department : user.department?.name) || 'N/D'}</TableCell>
                       <TableCell>
-                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/D'}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
@@ -307,7 +337,7 @@ export function UserManagement() {
                             className="bg-green-600 hover:bg-green-700"
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
+                            Approuver
                           </Button>
                           <Button
                             variant="destructive"
@@ -315,7 +345,7 @@ export function UserManagement() {
                             onClick={() => setApprovalDialog({ user, action: 'reject' })}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
-                            Reject
+                            Rejeter
                           </Button>
                         </div>
                       </TableCell>
@@ -324,7 +354,7 @@ export function UserManagement() {
                 </TableBody>
               </Table>
               {filteredPendingUsers.length === 0 && (
-                <p className="text-center text-muted-foreground py-4">No pending approvals.</p>
+                <p className="text-center text-muted-foreground py-4">Aucune approbation en attente.</p>
               )}
             </CardContent>
           </Card>
@@ -336,21 +366,21 @@ export function UserManagement() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {approvalDialog?.action === 'approve' ? 'Approve User' : 'Reject User'}
+              {approvalDialog?.action === 'approve' ? "Approuver l'utilisateur" : "Rejeter l'utilisateur"}
             </DialogTitle>
             <DialogDescription>
               {approvalDialog?.action === 'approve' 
-                ? `Are you sure you want to approve ${approvalDialog?.user.username}?`
-                : `Are you sure you want to reject ${approvalDialog?.user.username}?`
+                ? `Êtes-vous sûr de vouloir approuver ${approvalDialog?.user.username} ?`
+                : `Êtes-vous sûr de vouloir rejeter ${approvalDialog?.user.username} ?`
               }
             </DialogDescription>
           </DialogHeader>
           {approvalDialog?.action === 'reject' && (
             <div className="space-y-2">
-              <Label htmlFor="rejection-reason">Rejection Reason (Optional)</Label>
+              <Label htmlFor="rejection-reason">Raison du refus (optionnel)</Label>
               <Textarea
                 id="rejection-reason"
-                placeholder="Enter reason for rejection..."
+                placeholder="Saisissez la raison du refus..."
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
               />
@@ -362,7 +392,7 @@ export function UserManagement() {
               onClick={() => setApprovalDialog(null)}
               disabled={approveLoading}
             >
-              Cancel
+              Annuler
             </Button>
             <Button
               variant={approvalDialog?.action === 'approve' ? 'default' : 'destructive'}
@@ -377,7 +407,91 @@ export function UserManagement() {
               }}
               disabled={approveLoading}
             >
-              {approveLoading ? 'Processing...' : approvalDialog?.action === 'approve' ? 'Approve' : 'Reject'}
+              {approveLoading ? 'Traitement...' : approvalDialog?.action === 'approve' ? 'Approuver' : 'Rejeter'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier l'utilisateur</DialogTitle>
+            <DialogDescription>Mettre à jour les informations de l'utilisateur{isSuperAdmin() ? ', y compris le rôle' : ''}.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="username">Nom d'utilisateur</Label>
+              <Input id="username" value={formValues.username || ''} onChange={(e) => updateField('username', e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="email">E-mail</Label>
+              <Input id="email" type="email" value={formValues.email || ''} onChange={(e) => updateField('email', e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="firstName">Prénom</Label>
+              <Input id="firstName" value={formValues.firstName || ''} onChange={(e) => updateField('firstName', e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Nom</Label>
+              <Input id="lastName" value={formValues.lastName || ''} onChange={(e) => updateField('lastName', e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="title">Titre</Label>
+              <Input id="title" value={formValues.title || ''} onChange={(e) => updateField('title', e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="phone">Téléphone</Label>
+              <Input id="phone" value={formValues.phone || ''} onChange={(e) => updateField('phone', e.target.value)} />
+            </div>
+            <div>
+              <Label>Département</Label>
+              <Select value={formValues.departmentId?.toString() || ''} onValueChange={(v) => updateField('departmentId', Number(v))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un département" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departments?.map((d) => (
+                    <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {isSuperAdmin() && (
+              <div>
+                <Label>Rôle</Label>
+                <Select value={formValues.role || ''} onValueChange={(v) => updateField('role', v as UserRole)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un rôle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SUPER_ADMIN">Super administrateur</SelectItem>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
+                    <SelectItem value="DIRECTOR">Directeur</SelectItem>
+                    <SelectItem value="SUB_DIRECTOR">Sous-directeur</SelectItem>
+                    <SelectItem value="EMPLOYEE">Employé</SelectItem>
+                    <SelectItem value="GUEST">Invité</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingUser(null)}>Annuler</Button>
+            <Button
+              onClick={() => {
+                if (!editingUser) return;
+                const data: UpdateUserDto = { ...formValues };
+                // If not super admin, do not send role changes
+                if (!isSuperAdmin()) {
+                  delete (data as any).role;
+                }
+                handleEditUser(editingUser.id, data);
+              }}
+              disabled={updateLoading}
+            >
+              {updateLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
             </Button>
           </DialogFooter>
         </DialogContent>

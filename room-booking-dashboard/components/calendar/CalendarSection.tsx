@@ -206,8 +206,8 @@ export function CalendarSection() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Calendar</CardTitle>
-          <CardDescription>Loading calendar data...</CardDescription>
+          <CardTitle>Calendrier</CardTitle>
+          <CardDescription>Chargement des données du calendrier...</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-64">
@@ -223,14 +223,14 @@ export function CalendarSection() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Calendar</h2>
-          <p className="text-muted-foreground">View and manage room reservations</p>
+          <h2 className="text-2xl font-bold">Calendrier</h2>
+          <p className="text-muted-foreground">Voir et gérer les réservations de salles</p>
         </div>
         
         <div className="flex gap-2">
           <Button onClick={() => setIsNewBookingOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            New Booking
+            Nouvelle réservation
           </Button>
         </div>
       </div>
@@ -241,14 +241,14 @@ export function CalendarSection() {
           {/* Group By Toggle for Admins */}
           {isAdminRole && (
             <div className="flex items-center gap-2">
-              <Label htmlFor="group-by">Group by:</Label>
+              <Label htmlFor="group-by">Grouper par :</Label>
               <Select value={groupBy} onValueChange={(value) => setGroupBy(value as 'room' | 'user')}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="room">Room</SelectItem>
-                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="room">Salle</SelectItem>
+                  <SelectItem value="user">Utilisateur</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -258,10 +258,10 @@ export function CalendarSection() {
           {groupBy === 'room' && (
             <Select value={selectedRoom} onValueChange={setSelectedRoom}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by room" />
+                <SelectValue placeholder="Filtrer par salle" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Rooms</SelectItem>
+                <SelectItem value="all">Toutes les salles</SelectItem>
                 {rooms.map((room) => (
                   <SelectItem key={room.id} value={room.id.toString()}>
                     {room.name}
@@ -275,10 +275,10 @@ export function CalendarSection() {
           {isAdminRole && groupBy === 'user' && (
             <Select value={selectedUser} onValueChange={setSelectedUser}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by user" />
+                <SelectValue placeholder="Filtrer par utilisateur" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Users</SelectItem>
+                <SelectItem value="all">Tous les utilisateurs</SelectItem>
                 {users?.map((user) => (
                   <SelectItem key={user.id} value={user.id.toString()}>
                     {user.firstName && user.lastName 
@@ -293,9 +293,9 @@ export function CalendarSection() {
         
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'month' | 'week' | 'day')}>
           <TabsList>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="day">Day</TabsTrigger>
+            <TabsTrigger value="month">Mois</TabsTrigger>
+            <TabsTrigger value="week">Semaine</TabsTrigger>
+            <TabsTrigger value="day">Jour</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -309,8 +309,8 @@ export function CalendarSection() {
                 <CardTitle className="flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5" />
                   {viewMode === 'month' && format(selectedDate, 'MMMM yyyy')}
-                  {viewMode === 'week' && `Week of ${format(getViewStartDate(), 'MMM d')}`}
-                  {viewMode === 'day' && format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                  {viewMode === 'week' && `Semaine du ${format(getViewStartDate(), 'dd MMM')}`}
+                  {viewMode === 'day' && format(selectedDate, 'EEEE dd MMMM yyyy')}
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button
@@ -325,7 +325,7 @@ export function CalendarSection() {
                     size="sm"
                     onClick={() => setSelectedDate(new Date())}
                   >
-                    Today
+                    Aujourd'hui
                   </Button>
                   <Button
                     variant="outline"
@@ -360,17 +360,17 @@ export function CalendarSection() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                {format(selectedDate, 'MMM d, yyyy')}
+                {format(selectedDate, 'dd MMM yyyy')}
               </CardTitle>
               <CardDescription>
-                {getBookingsForSelectedDate().length} booking(s) scheduled
+                {getBookingsForSelectedDate().length} réservation(s) planifiée(s)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {getBookingsForSelectedDate().length === 0 ? (
                   <p className="text-muted-foreground text-center py-4">
-                    No bookings scheduled for this date
+                    Aucune réservation prévue pour cette date
                   </p>
                 ) : (
                   getBookingsForSelectedDate().map((booking) => (
@@ -388,7 +388,7 @@ export function CalendarSection() {
                       <div className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Users className="h-3 w-3" />
-                          {booking.room?.name || 'Room'}
+                          {booking.room?.name || 'Salle'}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />

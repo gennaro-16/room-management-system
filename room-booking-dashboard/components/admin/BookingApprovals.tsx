@@ -82,18 +82,18 @@ export function BookingApprovals() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-[var(--albaraka-primary)]">
           <CheckCircle className="h-5 w-5 text-green-600" />
-          Booking Approvals
+          Approbations de réservations
         </CardTitle>
         <CardDescription className="text-[var(--albaraka-muted)]">
-          Manage pending booking requests
+          Gérer les demandes de réservation en attente
         </CardDescription>
       </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">All caught up!</h3>
+            <h3 className="text-lg font-semibold mb-2">Tout est à jour !</h3>
             <p className="text-muted-foreground">
-              There are no pending booking requests at the moment.
+              Il n'y a aucune demande de réservation en attente pour le moment.
             </p>
           </div>
         </CardContent>
@@ -106,13 +106,13 @@ export function BookingApprovals() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-[var(--albaraka-primary)]">
           <Clock className="h-5 w-5 text-yellow-600" />
-          Booking Approvals
+          Approbations de réservations
           <Badge variant="secondary" className="ml-2 bg-[var(--albaraka-secondary)] text-white">
-            {pendingBookings.length} pending
+            {pendingBookings.length} en attente
           </Badge>
         </CardTitle>
         <CardDescription className="text-[var(--albaraka-muted)]">
-          Review and approve or reject booking requests
+          Examiner et approuver ou rejeter les demandes de réservation
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -191,7 +191,7 @@ export function BookingApprovals() {
                           ) : (
                             <ChevronDown className="h-3 w-3 mr-1" />
                           )}
-                          {isExpanded ? 'Less' : 'Details'}
+                          {isExpanded ? 'Moins de détails' : 'Détails'}
                         </Button>
                         <Button
                           size="sm"
@@ -200,7 +200,7 @@ export function BookingApprovals() {
                           className="bg-green-600 hover:bg-green-700 text-white"
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
+                          Approuver
                         </Button>
                         <Button
                           size="sm"
@@ -210,7 +210,7 @@ export function BookingApprovals() {
                           className="bg-red-600 hover:bg-red-700 text-white"
                         >
                           <XCircle className="h-4 w-4 mr-1" />
-                          Reject
+                          Rejeter
                         </Button>
                       </div>
                     </div>
@@ -222,13 +222,13 @@ export function BookingApprovals() {
                         <div className="space-y-2">
                           <div className="font-medium text-sm flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
-                            Room Information
+                            Informations sur la salle
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                             {booking.room?.floor && (
                               <div className="flex items-center gap-1">
                                 <Layers className="h-3 w-3" />
-                                <span>Floor {booking.room.floor}</span>
+                                <span>Étage {booking.room.floor}</span>
                               </div>
                             )}
                             {booking.room?.department && (
@@ -279,7 +279,7 @@ export function BookingApprovals() {
                               <div className="flex items-start gap-2">
                                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                                 <div>
-                                  <div className="font-medium text-sm">Meeting Title</div>
+                                  <div className="font-medium text-sm">Titre de la réunion</div>
                                   <div className="text-sm text-muted-foreground">{booking.title}</div>
                                 </div>
                               </div>
@@ -289,7 +289,7 @@ export function BookingApprovals() {
                               <div className="flex items-start gap-2">
                                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                                 <div>
-                                  <div className="font-medium text-sm">Agenda</div>
+                                  <div className="font-medium text-sm">Ordre du jour</div>
                                   <div className="text-sm text-muted-foreground whitespace-pre-wrap">{booking.agenda}</div>
                                 </div>
                               </div>
@@ -298,7 +298,7 @@ export function BookingApprovals() {
                             <div className="flex items-center gap-2">
                               <Timer className="h-4 w-4 text-muted-foreground" />
                               <div>
-                                <div className="font-medium text-sm">Duration</div>
+                                <div className="font-medium text-sm">Durée</div>
                                 <div className="text-sm text-muted-foreground">
                                   {(() => {
                                     const start = new Date(booking.startTime);
@@ -306,7 +306,7 @@ export function BookingApprovals() {
                                     const durationMs = end.getTime() - start.getTime();
                                     const hours = Math.floor(durationMs / (1000 * 60 * 60));
                                     const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-                                    return `${hours}h ${minutes}m`;
+                                    return `${hours}h ${minutes}min`;
                                   })()}
                                 </div>
                               </div>
@@ -316,16 +316,16 @@ export function BookingApprovals() {
                               <div className="flex items-center gap-2">
                                 <Repeat className="h-4 w-4 text-muted-foreground" />
                                 <div>
-                                  <div className="font-medium text-sm">Recurrence</div>
+                                  <div className="font-medium text-sm">Récurrence</div>
                                   <div className="text-sm text-muted-foreground">
                                     {booking.recurrenceRule ? (
                                       <Badge variant="outline" className="text-xs">
-                                        {booking.recurrenceRule.includes('WEEKLY') ? 'Weekly' : 
-                                         booking.recurrenceRule.includes('DAILY') ? 'Daily' :
-                                         booking.recurrenceRule.includes('MONTHLY') ? 'Monthly' : 'Custom'}
+                                        {booking.recurrenceRule.includes('WEEKLY') ? 'Hebdomadaire' : 
+                                         booking.recurrenceRule.includes('DAILY') ? 'Quotidienne' :
+                                         booking.recurrenceRule.includes('MONTHLY') ? 'Mensuelle' : 'Personnalisée'}
                                       </Badge>
                                     ) : (
-                                      <Badge variant="outline" className="text-xs">Recurring</Badge>
+                                      <Badge variant="outline" className="text-xs">Récurrente</Badge>
                                     )}
                                   </div>
                                 </div>
@@ -339,7 +339,7 @@ export function BookingApprovals() {
                             <div className="flex items-start gap-2">
                               <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                               <div className="flex-1">
-                                <div className="font-medium text-sm">Organizer</div>
+                                <div className="font-medium text-sm">Organisateur</div>
                                 <div className="text-sm">
                                   {booking.organizer?.firstName && booking.organizer?.lastName
                                     ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
@@ -375,18 +375,18 @@ export function BookingApprovals() {
                             <div className="flex items-start gap-2">
                               <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
                               <div>
-                                <div className="font-medium text-sm">Expected Attendees</div>
+                                <div className="font-medium text-sm">Participants attendus</div>
                                 <div className="text-sm text-muted-foreground">
-                                  {booking.expectedAttendees} people
+                                  {booking.expectedAttendees} personnes
                                 </div>
                                 {booking.internalAttendees && booking.internalAttendees.length > 0 && (
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    {booking.internalAttendees.length} internal attendees
+                                    {booking.internalAttendees.length} participants internes
                                   </div>
                                 )}
                                 {booking.externalAttendees && booking.externalAttendees.length > 0 && (
                                   <div className="text-xs text-muted-foreground">
-                                    {booking.externalAttendees.length} external attendees
+                                    {booking.externalAttendees.length} participants externes
                                   </div>
                                 )}
                               </div>
@@ -397,7 +397,7 @@ export function BookingApprovals() {
                         {/* Room Amenities */}
                         {booking.room?.amenities && booking.room.amenities.length > 0 && (
                           <div className="space-y-2">
-                            <div className="font-medium text-sm">Room Amenities</div>
+                            <div className="font-medium text-sm">Équipements de la salle</div>
                             <div className="flex flex-wrap gap-1">
                               {booking.room.amenities.map((amenity, index) => {
                                 const getAmenityIcon = (amenity: string) => {
@@ -427,7 +427,7 @@ export function BookingApprovals() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2">
                               <Settings className="h-4 w-4" />
-                              Required Amenities & Tools
+                              Équipements et outils requis
                             </div>
                             <div className="flex flex-wrap gap-1">
                               {booking.requiredAmenities.map((amenity, index) => {
@@ -457,19 +457,19 @@ export function BookingApprovals() {
                         <div className="space-y-2">
                           <div className="font-medium text-sm flex items-center gap-2">
                             <Users className="h-4 w-4" />
-                            Capacity Analysis
+                            Analyse de capacité
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span>Room Capacity:</span>
-                              <span className="font-medium">{booking.room?.capacity} seats</span>
+                              <span>Capacité de la salle :</span>
+                              <span className="font-medium">{booking.room?.capacity} places</span>
                             </div>
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span>Expected Attendees:</span>
-                              <span className="font-medium">{booking.expectedAttendees} people</span>
+                              <span>Participants attendus :</span>
+                              <span className="font-medium">{booking.expectedAttendees} personnes</span>
                             </div>
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span>Capacity Usage:</span>
+                              <span>Taux d'occupation :</span>
                               <span className={`font-medium ${booking.expectedAttendees > (booking.room?.capacity || 0) ? 'text-red-600' : 'text-green-600'}`}>
                                 {Math.round((booking.expectedAttendees / (booking.room?.capacity || 1)) * 100)}%
                               </span>
@@ -478,7 +478,7 @@ export function BookingApprovals() {
                           {booking.expectedAttendees > (booking.room?.capacity || 0) && (
                             <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded">
                               <AlertTriangle className="h-4 w-4" />
-                              <span>Warning: Expected attendees exceed room capacity!</span>
+                              <span>Avertissement : les participants attendus dépassent la capacité de la salle !</span>
                             </div>
                           )}
                         </div>
@@ -540,10 +540,10 @@ export function BookingApprovals() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2 text-orange-600">
                               <AlertTriangle className="h-4 w-4" />
-                              Room Maintenance Alert
+                              Alerte de maintenance de la salle
                             </div>
                             <div className="p-3 bg-orange-50 border border-orange-200 rounded text-sm">
-                              <div className="font-medium text-orange-800">Room is currently under maintenance</div>
+                              <div className="font-medium text-orange-800">La salle est actuellement en maintenance</div>
                               {booking.room.maintenanceNotes && (
                                 <div className="text-orange-700 mt-1">{booking.room.maintenanceNotes}</div>
                               )}
@@ -555,16 +555,16 @@ export function BookingApprovals() {
                         <div className="pt-2 border-t border-gray-100">
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <div className="flex items-center gap-4">
-                              <span>Requested on {new Date(booking.createdAt).toLocaleDateString()}</span>
+                              <span>Demandée le {new Date(booking.createdAt).toLocaleDateString()}</span>
                               {booking.isRecurring && (
                                 <Badge variant="outline" className="text-xs">
-                                  Recurring
+                                  Récurrente
                                 </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              <span>Pending Approval</span>
+                              <span>En attente d'approbation</span>
                             </div>
                           </div>
                         </div>
@@ -581,9 +581,9 @@ export function BookingApprovals() {
         <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Reject Booking Request</DialogTitle>
+              <DialogTitle>Rejeter la demande de réservation</DialogTitle>
               <DialogDescription>
-                Please provide a reason for rejecting this booking request.
+                Veuillez indiquer la raison du rejet de cette demande de réservation.
               </DialogDescription>
             </DialogHeader>
             
@@ -598,7 +598,7 @@ export function BookingApprovals() {
                     }
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(selectedBooking.startTime).toLocaleDateString()} at{' '}
+                    {new Date(selectedBooking.startTime).toLocaleDateString()} à{' '}
                     {new Date(selectedBooking.startTime).toLocaleTimeString([], { 
                       hour: '2-digit', 
                       minute: '2-digit' 
@@ -607,9 +607,9 @@ export function BookingApprovals() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Rejection Reason</label>
+                  <label className="text-sm font-medium">Raison du refus</label>
                   <Textarea
-                    placeholder="Please explain why this booking is being rejected..."
+                    placeholder="Veuillez expliquer la raison du refus..."
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     rows={3}
@@ -627,14 +627,14 @@ export function BookingApprovals() {
                   setRejectionReason('');
                 }}
               >
-                Cancel
+                Annuler
               </Button>
               <Button
                 variant="destructive"
                 onClick={handleReject}
                 disabled={!rejectionReason.trim() || rejecting}
               >
-                {rejecting ? 'Rejecting...' : 'Reject Booking'}
+                {rejecting ? 'Rejet en cours...' : 'Rejeter la réservation'}
               </Button>
             </DialogFooter>
           </DialogContent>
