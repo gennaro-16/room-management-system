@@ -24,6 +24,7 @@ const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },
   { icon: Map, label: 'Plan des salles', id: 'map' },
+   { icon: Map, label: 'visiteurs', id: 'visiteurs' },
   ...(isAdmin ? [
     { icon: CheckCircle, label: 'Approbations', id: 'approvals' },
   ] : []),
