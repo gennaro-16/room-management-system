@@ -122,14 +122,10 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
     }));
   };
 
-  const handleInternalAttendeeChange = (userId: number, checked: boolean) => {
-    setSelectedInternalAttendees(prev => {
-      if (checked) {
-        return [...prev, userId];
-      } else {
-        return prev.filter(id => id !== userId);
-      }
-    });
+  // Legacy handler no longer used with string-based internal attendees.
+  // Kept as a no-op to avoid reference errors if invoked from older props.
+  const handleInternalAttendeeChange = (_userId: number, _checked: boolean) => {
+    // no-op
   };
 
   if (!booking) return null;

@@ -200,7 +200,7 @@ Votre rôle actuel et permissions système
                       <Calendar className="h-4 w-4 text-green-600" />
                       <span>Créer des réservations</span>
                     </div>
-                    {user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? (
+                    {displayUser.role === 'ADMIN' || displayUser.role === 'SUPER_ADMIN' ? (
                       <>
                         <div className="flex items-center gap-2 text-sm">
                           <Shield className="h-4 w-4 text-blue-600" />
@@ -212,7 +212,7 @@ Votre rôle actuel et permissions système
                         </div>
                       </>
                     ) : null}
-                    {user.role === 'SUPER_ADMIN' ? (
+                    {displayUser.role === 'SUPER_ADMIN' ? (
                       <div className="flex items-center gap-2 text-sm">
                         <Shield className="h-4 w-4 text-red-600" />
                         <span>Gérer les utilisateurs</span>
