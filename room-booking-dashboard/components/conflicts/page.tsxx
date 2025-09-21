@@ -1,0 +1,9 @@
+import ConflictsPage from "@/components/conflicts-page"
+
+export default function ConflictsPageRoute() {
+  return (
+    <div className="container mx-auto py-8">
+      <ConflictsPage />
+    </div>
+  )
+}

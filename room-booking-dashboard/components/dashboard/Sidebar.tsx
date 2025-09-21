@@ -12,9 +12,9 @@ import {
   BarChart3,
   Settings,
   Users,
-  CheckCircle,
   X,
   UserCircle,
+  AlertTriangle,
 } from 'lucide-react';
 
 const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
@@ -23,7 +23,7 @@ const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },
   ...(isAdmin ? [
-    { icon: CheckCircle, label: 'Approbations', id: 'approvals' },
+    { icon: AlertTriangle, label: 'Conflits', id: 'conflicts' },
     { icon: Building2, label: 'Départements', id: 'departments' },
   ] : []),
   ...(isSuperAdmin ? [

@@ -185,8 +185,8 @@ export class UsersService {
   }
 
   async getPendingUsers(currentUser: User) {
-    // Only super admins can view pending users
-    if (currentUser.role !== UserRole.SUPER_ADMIN) {
+    // Only admins and super admins can view pending users
+    if (currentUser.role !== UserRole.SUPER_ADMIN && currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -219,8 +219,8 @@ export class UsersService {
   }
 
   async approveUser(id: number, approveUserDto: ApproveUserDto, currentUser: User) {
-    // Only super admins can approve/reject users
-    if (currentUser.role !== UserRole.SUPER_ADMIN) {
+    // Only admins and super admins can approve/reject users
+    if (currentUser.role !== UserRole.SUPER_ADMIN && currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 

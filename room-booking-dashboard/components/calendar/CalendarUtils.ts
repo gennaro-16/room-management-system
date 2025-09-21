@@ -22,6 +22,26 @@ export interface CalendarView {
 
 export class CalendarUtils {
   /**
+   * Compute display status including time-based ongoing variants
+   */
+  static getDisplayStatus(booking: Booking): string {
+    // If booking is already marked as ONGOING by backend cron, use it directly
+    if (booking.status === 'ONGOING') {
+      return 'ONGOING';
+    }
+    
+    // For frontend-only ongoing detection (fallback)
+    const now = new Date();
+    const start = parseISO(booking.startTime);
+    const end = parseISO(booking.endTime);
+    const isOngoingNow = now >= start && now <= end;
+    if (isOngoingNow) {
+      if (booking.status === 'APPROVED') return 'ONGOING_APPROVED';
+      if (booking.status === 'PENDING') return 'ONGOING_PENDING';
+    }
+    return booking.status as unknown as string;
+  }
+  /**
    * Convert booking to calendar event
    */
   static bookingToEvent(booking: Booking): CalendarEvent {
@@ -38,7 +58,7 @@ export class CalendarUtils {
       user: userName,
       startTime: booking.startTime,
       endTime: booking.endTime,
-      status: booking.status,
+      status: this.getDisplayStatus(booking),
       purpose: booking.purpose,
       roomId: booking.roomId,
     };
@@ -132,6 +152,12 @@ export class CalendarUtils {
    */
   static getStatusColor(status: string): string {
     switch (status) {
+      case 'ONGOING':
+        return 'bg-purple-50 text-purple-800 border-purple-200';
+      case 'ONGOING_APPROVED':
+        return 'bg-purple-50 text-purple-800 border-purple-200';
+      case 'ONGOING_PENDING':
+        return 'bg-amber-50 text-amber-800 border-amber-200';
       case 'PENDING':
         return 'bg-red-50 text-red-800 border-red-200';
       case 'APPROVED':
@@ -152,6 +178,12 @@ export class CalendarUtils {
    */
   static getEventClasses(status: string): string {
     switch (status) {
+      case 'ONGOING':
+        return 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200';
+      case 'ONGOING_APPROVED':
+        return 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200';
+      case 'ONGOING_PENDING':
+        return 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200';
       case 'APPROVED':
         return 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200';
       case 'PENDING':

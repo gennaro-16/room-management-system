@@ -17,6 +17,7 @@ import { CreateBookingDto, Room, BookingStatus } from '@/lib/api';
 import { useRooms } from '@/hooks/useApi';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
+import { emitBookingsChanged } from '@/lib/events';
 
 interface NewBookingDialogProps {
   open: boolean;
@@ -119,6 +120,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
         endTime: endDateTime,
       });
       
+      // Notify listeners to refresh calendars/lists
+      emitBookingsChanged();
+
       // Reset form
       setFormData({
         roomId: 0,

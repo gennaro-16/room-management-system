@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { CheckCircle, XCircle, Clock, User, Calendar, MapPin, Users, Building2, Layers, Phone, Mail, FileText, Wifi, Coffee, Monitor, Presentation, Video, Settings, Wrench, AlertTriangle, Repeat, UserCheck, ExternalLink, Calendar as CalendarIcon, Timer, ChevronDown, ChevronUp } from 'lucide-react';
 import { apiUtils } from '@/lib/api';
+import { emitBookingsChanged } from '@/lib/events';
 
 export function BookingApprovals() {
   const { data: pendingBookings, loading, error, refetch } = usePendingBookings();
@@ -106,6 +107,7 @@ export function BookingApprovals() {
         if (!proceed) return;
       }
       await approveBooking(bookingId);
+      emitBookingsChanged();
       refetch();
     } catch (error) {
       console.error('Failed to approve booking:', error);
@@ -117,6 +119,7 @@ export function BookingApprovals() {
     
     try {
       await rejectBooking(selectedBooking.id, rejectionReason);
+      emitBookingsChanged();
       setRejectDialogOpen(false);
       setSelectedBooking(null);
       setRejectionReason('');

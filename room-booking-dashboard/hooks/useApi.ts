@@ -24,17 +24,24 @@ import { departmentsApi, Department, CreateDepartmentDto, UpdateDepartmentDto } 
 // Generic hook for API calls with loading and error states
 function useApiCall<T>(
   apiCall: () => Promise<T>,
-  dependencies: any[] = []
+  dependencies: any[] = [],
+  enabled: boolean = true
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const execute = useCallback(async () => {
+    if (!enabled) {
+      console.log('API call disabled, skipping...');
+      return;
+    }
     try {
+      console.log('Making API call...');
       setLoading(true);
       setError(null);
       const result = await apiCall();
+      console.log('API call result:', result);
       setData(result);
     } catch (err) {
       const errorMessage = err instanceof ApiError ? err.message : 'An unexpected error occurred';
@@ -46,8 +53,12 @@ function useApiCall<T>(
   }, dependencies);
 
   useEffect(() => {
-    execute();
-  }, [execute]);
+    if (enabled) {
+      execute();
+    } else {
+      setLoading(false);
+    }
+  }, [execute, enabled]);
 
   return { data, loading, error, refetch: execute };
 }
@@ -335,16 +346,16 @@ export function useBookingsSummary() {
 // Room Status hooks - Removed since room status is now calculated from bookings
 
 // User hooks (Admin only)
-export function useUsers() {
-  return useApiCall(() => usersApi.getAll());
+export function useUsers(enabled: boolean = true) {
+  return useApiCall(() => usersApi.getAll(), [], enabled);
 }
 
-export function usePendingUsers() {
-  return useApiCall(() => usersApi.getPending());
+export function usePendingUsers(enabled: boolean = true) {
+  return useApiCall(() => usersApi.getPending(), [], enabled);
 }
 
-export function useUser(id: number) {
-  return useApiCall(() => usersApi.getById(id), [id]);
+export function useUser(id: number, enabled: boolean = true) {
+  return useApiCall(() => usersApi.getById(id), [id], enabled);
 }
 
 // User management hooks with actions
@@ -412,8 +423,8 @@ export function useApproveUser() {
 }
 
 // Departments hooks (SUPER_ADMIN/ADMIN for mutating)
-export function useDepartments() {
-  return useApiCall(() => departmentsApi.getAll());
+export function useDepartments(enabled: boolean = true) {
+  return useApiCall(() => departmentsApi.getAll(), [], enabled);
 }
 
 export function useCreateDepartment() {

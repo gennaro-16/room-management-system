@@ -16,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UpdateBookingDto, Booking, BookingStatus, User } from '@/lib/api';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
-import { useUsers } from '@/hooks/useApi';
+import { useUsers, useRooms } from '@/hooks/useApi';
+import { emitBookingsChanged } from '@/lib/events';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface EditBookingDialogProps {
@@ -31,6 +32,7 @@ interface EditBookingDialogProps {
 export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loading, error }: EditBookingDialogProps) {
   const { hasRole } = useAuth();
   const { data: users } = useUsers();
+  const { data: rooms } = useRooms();
   
   const [formData, setFormData] = useState<UpdateBookingDto>({
     title: '',
@@ -50,6 +52,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
   const [selectedDate, setSelectedDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [externalInput, setExternalInput] = useState('');
   const [internalInput, setInternalInput] = useState('');
   const [amenitiesInput, setAmenitiesInput] = useState('');
@@ -80,6 +83,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
       setSelectedDate(startDate.toISOString().split('T')[0]);
       setStartTime(startDate.toTimeString().slice(0, 5));
       setEndTime(endDate.toTimeString().slice(0, 5));
+      setSelectedRoomId(booking.roomId);
       setExternalInput(booking.externalAttendees?.join(', ') || '');
       setInternalInput((booking.internalAttendees as any as string[] | undefined)?.join(', ') || '');
       setAmenitiesInput(booking.requiredAmenities?.join(', ') || '');
@@ -96,6 +100,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
 
       await onSubmit(booking.id, {
         ...formData,
+        roomId: selectedRoomId ?? booking.roomId,
         startTime: startDateTime,
         endTime: endDateTime,
         externalAttendees: externalInput
@@ -109,6 +114,8 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
           : [],
       });
       
+      // Notify listeners and close
+      emitBookingsChanged();
       onOpenChange(false);
     } catch (error) {
       // Error is handled by the parent component
@@ -167,6 +174,21 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
                 </Select>
               </div>
             )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="booking-room">Salle</Label>
+              <Select value={(selectedRoomId ?? booking?.roomId ?? 0).toString()} onValueChange={(v) => setSelectedRoomId(parseInt(v))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une salle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(rooms || []).filter(r => !r.isUnderMaintenance).map((r) => (
+                    <SelectItem key={r.id} value={r.id.toString()}>{r.name} (Capacité: {r.capacity})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

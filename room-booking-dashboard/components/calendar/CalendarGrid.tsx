@@ -122,7 +122,7 @@ export function CalendarGrid({
                       {dayBookings.slice(0, 3).map((booking) => (
                         <div
                           key={booking.id}
-                          className={`text-xs p-1 rounded cursor-pointer transition-colors border ${CalendarUtils.getEventClasses(booking.status)}`}
+                          className={`text-xs p-1 rounded cursor-pointer transition-colors border ${CalendarUtils.getEventClasses(CalendarUtils.getDisplayStatus(booking))}`}
                           onClick={() => onBookingClick?.(booking)}
                           title={`${booking.organizer && typeof booking.organizer === 'object' 
                             ? (booking.organizer.firstName && booking.organizer.lastName 
@@ -213,7 +213,7 @@ export function CalendarGrid({
                   {dayBookings.map((booking) => (
                     <div
                       key={booking.id}
-                      className={`p-2 rounded cursor-pointer transition-colors border ${CalendarUtils.getEventClasses(booking.status)}`}
+                      className={`p-2 rounded cursor-pointer transition-colors border ${CalendarUtils.getEventClasses(CalendarUtils.getDisplayStatus(booking))}`}
                       onClick={() => onBookingClick?.(booking)}
                     >
                       <div className="text-sm font-medium truncate">
@@ -230,9 +230,9 @@ export function CalendarGrid({
                         {booking.room?.name || 'Room'}
                       </div>
                       <Badge 
-                        className={`text-xs ${CalendarUtils.getStatusColor(booking.status)}`}
+                        className={`text-xs ${CalendarUtils.getStatusColor(CalendarUtils.getDisplayStatus(booking))}`}
                       >
-                        {booking.status}
+                        {CalendarUtils.getDisplayStatus(booking)}
                       </Badge>
                     </div>
                   ))}
@@ -317,8 +317,8 @@ export function CalendarGrid({
                                   <p className="text-sm mt-1">{booking.purpose}</p>
                                 )}
                               </div>
-                              <Badge className={CalendarUtils.getStatusColor(booking.status)}>
-                                {booking.status}
+                              <Badge className={CalendarUtils.getStatusColor(CalendarUtils.getDisplayStatus(booking))}>
+                                {CalendarUtils.getDisplayStatus(booking)}
                               </Badge>
                             </div>
                           </CardContent>
@@ -382,8 +382,8 @@ export function CalendarGrid({
                         <p className="text-sm mt-1">{booking.purpose}</p>
                       )}
                     </div>
-                    <Badge className={CalendarUtils.getStatusColor(booking.status)}>
-                      {booking.status}
+                    <Badge className={CalendarUtils.getStatusColor(CalendarUtils.getDisplayStatus(booking))}>
+                      {CalendarUtils.getDisplayStatus(booking)}
                     </Badge>
                   </div>
                 </CardContent>

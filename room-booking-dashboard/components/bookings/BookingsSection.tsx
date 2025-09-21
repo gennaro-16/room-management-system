@@ -85,6 +85,8 @@ export function BookingsSection() {
     switch (status) {
       case 'APPROVED':
         return 'bg-green-100 text-green-800 border-green-200';
+      case 'ONGOING':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'COMPLETED':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'CANCELLED':
@@ -95,6 +97,25 @@ export function BookingsSection() {
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getStatusText = (status: BookingStatus) => {
+    switch (status) {
+      case 'PENDING':
+        return 'En attente';
+      case 'APPROVED':
+        return 'Approuvée';
+      case 'ONGOING':
+        return 'En cours';
+      case 'REJECTED':
+        return 'Refusée';
+      case 'CANCELLED':
+        return 'Annulée';
+      case 'COMPLETED':
+        return 'Terminée';
+      default:
+        return status;
     }
   };
 
@@ -174,6 +195,7 @@ export function BookingsSection() {
                 <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="PENDING">En attente</SelectItem>
                 <SelectItem value="APPROVED">Approuvée</SelectItem>
+                <SelectItem value="ONGOING">En cours</SelectItem>
                 <SelectItem value="REJECTED">Refusée</SelectItem>
                 <SelectItem value="CANCELLED">Annulée</SelectItem>
                 <SelectItem value="COMPLETED">Terminée</SelectItem>
@@ -201,7 +223,7 @@ export function BookingsSection() {
                         <div className="flex items-center gap-3">
                           <h3 className="text-lg font-semibold">{booking.purpose}</h3>
                           <Badge className={getStatusColor(booking.status)}>
-                            {booking.status}
+                            {getStatusText(booking.status)}
                           </Badge>
                         </div>
                         
@@ -577,7 +599,7 @@ export function BookingsSection() {
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              <span>Statut : {booking.status}</span>
+                              <span>Statut : {getStatusText(booking.status)}</span>
                             </div>
                           </div>
                         </div>

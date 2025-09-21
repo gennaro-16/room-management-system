@@ -21,7 +21,7 @@ export class UsersController {
   }
 
   @Get('pending')
-  @Roles(UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   getPendingUsers(@CurrentUser() user: User) {
     return this.usersService.getPendingUsers(user);
   }
@@ -53,7 +53,7 @@ export class UsersController {
   }
 
   @Patch(':id/approve')
-  @Roles(UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   approveUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() approveUserDto: ApproveUserDto,

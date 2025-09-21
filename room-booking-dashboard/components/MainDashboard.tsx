@@ -7,10 +7,10 @@ import { DashboardSection } from './dashboard/DashboardSection';
 import { RoomsSection } from './rooms/RoomsSection';
 import { BookingsSection } from './bookings/BookingsSection';
 import { CalendarSection } from './calendar/CalendarSection';
-import { BookingApprovals } from './admin/BookingApprovals';
 import { UserManagement } from './admin/UserManagement';
 import { DashboardProfile } from './dashboard/DashboardProfile';
 import DepartmentsManagement from './admin/DepartmentsManagement';
+import { ConflictsSection } from './conflicts/ConflictsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -38,7 +38,7 @@ export function MainDashboard() {
         return <BookingsSection />;
       case 'calendar':
         return <CalendarSection />;
-      case 'approvals':
+      case 'conflicts':
         if (!isAdmin) {
           return (
             <Card>
@@ -47,12 +47,12 @@ export function MainDashboard() {
                 <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Seuls les administrateurs peuvent accéder aux approbations de réservation.</p>
+                <p className="text-muted-foreground">Seuls les administrateurs peuvent accéder à la gestion des conflits.</p>
               </CardContent>
             </Card>
           );
         }
-        return <BookingApprovals />;
+        return <ConflictsSection />;
       case 'users':
         if (!isSuperAdmin) {
           return (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarIcon, Clock, Users, Plus, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfDay, endOfDay, isSameDay, parseISO, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto, type UpdateBookingDto, type User } from '@/lib/api';
+import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto, type UpdateBookingDto, type User, type MoveBookingDto } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUsers, useCreateBooking, useUpdateBooking } from '@/hooks/useApi';
@@ -20,6 +20,7 @@ import { BookingDetailsDialog } from './BookingDetailsDialog';
 import { NewBookingDialog } from '@/components/bookings/NewBookingDialog';
 import { EditBookingDialog } from '@/components/bookings/EditBookingDialog';
 import DayTimeline from './DayTimeline';
+import { onBookingsChanged } from '@/lib/events';
 
 interface CalendarEvent {
   id: number;
@@ -34,7 +35,6 @@ interface CalendarEvent {
 
 export function CalendarSection() {
   const { hasRole } = useAuth();
-  const { data: users } = useUsers();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -42,11 +42,14 @@ export function CalendarSection() {
   const [selectedUser, setSelectedUser] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [groupBy, setGroupBy] = useState<'room' | 'user'>('room');
+  const { data: users } = useUsers(groupBy === 'user');
   const [loading, setLoading] = useState(true);
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isBookingDetailsOpen, setIsBookingDetailsOpen] = useState(false);
   const [isEditBookingOpen, setIsEditBookingOpen] = useState(false);
+  const bookingCacheRef = useRef<Map<string, Booking[]>>(new Map());
+  const debounceRef = useRef<number | null>(null);
   const { toast } = useToast();
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
   const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
@@ -58,9 +61,27 @@ export function CalendarSection() {
     loadData();
   }, []);
 
-  // Load bookings when date, room, user filter, or groupBy changes
+  // Global auto-refresh when other parts of the app modify bookings
   useEffect(() => {
-    loadBookings();
+    const off = onBookingsChanged(() => {
+      loadBookings();
+    });
+    return off;
+  }, [selectedDate, selectedRoom, selectedUser, viewMode, groupBy]);
+
+  // Load bookings when date, room, user filter, or groupBy changes (debounced)
+  useEffect(() => {
+    if (debounceRef.current) {
+      window.clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = window.setTimeout(() => {
+      loadBookings();
+    }, 200);
+    return () => {
+      if (debounceRef.current) {
+        window.clearTimeout(debounceRef.current);
+      }
+    };
   }, [selectedDate, selectedRoom, selectedUser, viewMode, groupBy]);
 
   const loadData = async () => {
@@ -99,8 +120,14 @@ export function CalendarSection() {
       } else if (groupBy === 'user' && selectedUser !== 'all') {
         filters.organizerId = parseInt(selectedUser);
       }
-      
+      const cacheKey = JSON.stringify({ start: filters.startDate, end: filters.endDate, roomId: filters.roomId || null, organizerId: filters.organizerId || null });
+      const cached = bookingCacheRef.current.get(cacheKey);
+      if (cached) {
+        setBookings(cached);
+        return;
+      }
       const bookingsData = await bookingsApi.getAll(filters);
+      bookingCacheRef.current.set(cacheKey, bookingsData);
       setBookings(bookingsData);
     } catch (error) {
       console.error('Error loading bookings:', error);
@@ -186,6 +213,31 @@ export function CalendarSection() {
         description: "Failed to cancel booking",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleMoveBooking = async (booking: Booking) => {
+    try {
+      // Move to same time window, different room (selectedRoom must be specific)
+      if (groupBy !== 'room' || selectedRoom === 'all') {
+        toast({ title: 'Sélectionnez une salle', description: 'Choisissez une salle spécifique pour déplacer la réservation', variant: 'destructive' });
+        return;
+      }
+      const targetRoomId = parseInt(selectedRoom);
+      if (Number.isNaN(targetRoomId)) {
+        toast({ title: 'Salle invalide', description: 'Salle sélectionnée invalide', variant: 'destructive' });
+        return;
+      }
+      const payload: MoveBookingDto = {
+        newRoomId: targetRoomId,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+      };
+      const moved = await bookingsApi.move(booking.id, payload);
+      toast({ title: 'Réservation déplacée', description: `Nouvelle demande créée pour la salle ${moved.room?.name || targetRoomId}` });
+      await loadBookings();
+    } catch (error: any) {
+      toast({ title: 'Erreur', description: error?.message || "Impossible de déplacer la réservation", variant: 'destructive' });
     }
   };
 
@@ -396,8 +448,8 @@ export function CalendarSection() {
                             ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
                             : booking.organizer?.username || 'Unknown User'}
                         </div>
-                        <Badge className={getStatusColor(booking.status)}>
-                          {booking.status}
+                        <Badge className={getStatusColor(CalendarUtils.getDisplayStatus(booking))}>
+                          {CalendarUtils.getDisplayStatus(booking)}
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -435,14 +487,17 @@ export function CalendarSection() {
       </div>
 
       {/* Booking Details Dialog */}
-      <BookingDetailsDialog
-        booking={selectedBooking}
-        room={selectedBooking ? rooms.find(r => r.id === selectedBooking.roomId) || null : null}
-        isOpen={isBookingDetailsOpen}
-        onClose={() => setIsBookingDetailsOpen(false)}
-        onEdit={handleEditBooking}
-        onDelete={handleDeleteBooking}
-      />
+      {selectedBooking && (
+        <BookingDetailsDialog
+          booking={selectedBooking}
+          room={rooms.find(r => r.id === selectedBooking.roomId) || null}
+          isOpen={isBookingDetailsOpen}
+          onClose={() => setIsBookingDetailsOpen(false)}
+          onEdit={handleEditBooking}
+          onDelete={handleDeleteBooking}
+          onMove={handleMoveBooking}
+        />
+      )}
 
       {/* Edit Booking Dialog */}
       <EditBookingDialog

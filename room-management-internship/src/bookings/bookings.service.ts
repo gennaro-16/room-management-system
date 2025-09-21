@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ConflictException, 
 import { PrismaService } from '@prisma/prisma.service';
 import { CreateBookingDto } from '../dto/create-booking.dto';
 import { UpdateBookingDto } from '../dto/update-booking.dto';
+import { MoveBookingDto } from '../dto/move-booking.dto';
 import { User, UserRole, BookingStatus } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -63,7 +64,7 @@ export class BookingsService {
       throw new ConflictException('Room is already booked for this time period');
     }
 
-    // Create the booking with PENDING status
+    // Create the booking with APPROVED status (auto-approval)
     const booking = await this.prisma.booking.create({
       data: {
         roomId,
@@ -79,7 +80,9 @@ export class BookingsService {
         requiredAmenities: requiredAmenities || [],
         isRecurring: isRecurring || false,
         recurrenceRule,
-        status: BookingStatus.PENDING,
+        status: BookingStatus.APPROVED,
+        approvedById: currentUser.id, // Auto-approve by the organizer
+        approvedAt: new Date(),
       },
       include: {
         room: true,
@@ -96,11 +99,16 @@ export class BookingsService {
       }
     });
 
-    // Send notification to approvers about new booking request
+    // Send notification to organizer about successful booking (no approval needed)
     try {
-      await this.notificationsService.notifyApprovers(booking.id, booking.title);
+      await this.notificationsService.createBookingNotification(
+        booking.organizerId,
+        'BOOKING_CREATED',
+        'Booking Created Successfully',
+        `Your booking "${booking.title}" for room ${booking.room.name} has been created and approved automatically.`
+      );
     } catch (error) {
-      console.error('Failed to send notification to approvers:', error);
+      console.error('Failed to send notification to organizer:', error);
       // Don't fail the booking creation if notification fails
     }
 
@@ -352,13 +360,14 @@ export class BookingsService {
       if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED) {
         throw new BadRequestException('Cannot update rejected or cancelled bookings');
       }
-      // If approved, allow update but force status back to PENDING for re-approval
+      // Keep bookings as APPROVED when updated (no re-approval needed)
       if (existingBooking.status === BookingStatus.APPROVED) {
-        updateBookingDto.status = BookingStatus.PENDING;
+        // Remove status from update to keep it APPROVED
+        delete updateBookingDto.status;
       } else {
-        // For pending bookings, prevent employees from changing status explicitly
-        if (updateBookingDto.status && updateBookingDto.status !== BookingStatus.PENDING) {
-          updateBookingDto.status = BookingStatus.PENDING;
+        // For other statuses, keep them as APPROVED for auto-approval system
+        if (updateBookingDto.status && updateBookingDto.status !== BookingStatus.APPROVED) {
+          updateBookingDto.status = BookingStatus.APPROVED;
         }
       }
     } else if (isAdminRole) {
@@ -370,41 +379,58 @@ export class BookingsService {
       throw new ForbiddenException('Insufficient permissions');
     }
 
-    // If updating time, check for conflicts
-    if (updateBookingDto.startTime || updateBookingDto.endTime) {
-      const startTime = updateBookingDto.startTime ? new Date(updateBookingDto.startTime) : existingBooking.startTime;
-      const endTime = updateBookingDto.endTime ? new Date(updateBookingDto.endTime) : existingBooking.endTime;
+    // Validate room/time changes similar to create()
+    const newStart = updateBookingDto.startTime ? new Date(updateBookingDto.startTime) : existingBooking.startTime;
+    const newEnd = updateBookingDto.endTime ? new Date(updateBookingDto.endTime) : existingBooking.endTime;
+    if (newStart >= newEnd) {
+      throw new BadRequestException('End time must be after start time');
+    }
 
-      if (startTime >= endTime) {
-        throw new BadRequestException('End time must be after start time');
-      }
+    const targetRoomId = typeof updateBookingDto.roomId === 'number' ? updateBookingDto.roomId : existingBooking.roomId;
+    const targetRoom = await this.prisma.room.findUnique({ where: { id: targetRoomId } });
+    if (!targetRoom) {
+      throw new NotFoundException(`Room with ID ${targetRoomId} not found`);
+    }
+    if (targetRoom.isUnderMaintenance) {
+      throw new BadRequestException('Room is under maintenance and cannot be booked');
+    }
 
-      // Check for conflicting approved bookings (excluding current booking)
-      const conflictingBooking = await this.prisma.booking.findFirst({
-        where: {
-          roomId: existingBooking.roomId,
-          id: { not: id },
-          status: BookingStatus.APPROVED,
-          OR: [
-            {
-              startTime: {
-                lt: endTime
-              },
-              endTime: {
-                gt: startTime
-              }
-            }
-          ]
-        }
-      });
-
-      if (conflictingBooking) {
-        throw new ConflictException('Room is already booked for this time period');
-      }
+    // Check conflicts in target room, excluding current booking
+    const conflictingBooking = await this.prisma.booking.findFirst({
+      where: {
+        roomId: targetRoomId,
+        id: { not: id },
+        status: BookingStatus.APPROVED,
+        OR: [
+          {
+            startTime: { lt: newEnd },
+            endTime: { gt: newStart },
+          },
+        ],
+      },
+    });
+    if (conflictingBooking) {
+      throw new ConflictException('Room is already booked for this time period');
     }
 
     // Transform the DTO to match Prisma's expected format
     const updateData: any = { ...updateBookingDto };
+    // Ensure computed values are applied if not supplied
+    updateData.startTime = newStart;
+    updateData.endTime = newEnd;
+    updateData.roomId = targetRoomId;
+
+    // Keep bookings as APPROVED even when employees modify key scheduling attributes (auto-approval)
+    const changedRoom = targetRoomId !== existingBooking.roomId;
+    const changedTime = newStart.getTime() !== existingBooking.startTime.getTime() || newEnd.getTime() !== existingBooking.endTime.getTime();
+    if (currentUser.role === UserRole.EMPLOYEE && (changedRoom || changedTime)) {
+      updateData.status = BookingStatus.APPROVED;
+      updateData.approvedById = currentUser.id; // Auto-approve by the organizer
+      updateData.approvedAt = new Date();
+      updateData.rejectedById = null;
+      updateData.rejectedAt = null;
+      updateData.rejectionReason = null;
+    }
 
     return this.prisma.booking.update({
       where: { id },
@@ -608,5 +634,94 @@ export class BookingsService {
         }
       }
     });
+  }
+
+  async moveBooking(id: number, dto: MoveBookingDto, currentUser: User) {
+    const existing = await this.findOne(id, currentUser);
+
+    // Permission checks: similar to update
+    const isAdminRole = currentUser.role === UserRole.ADMIN || 
+                        currentUser.role === UserRole.SUPER_ADMIN || 
+                        currentUser.role === UserRole.DIRECTOR;
+    const isOwner = existing.organizerId === currentUser.id;
+
+    if (currentUser.role === UserRole.EMPLOYEE && !isOwner) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+    if (existing.status === BookingStatus.REJECTED || existing.status === BookingStatus.CANCELLED) {
+      throw new BadRequestException('Cannot move rejected or cancelled bookings');
+    }
+
+    // Resolve new times
+    const start = dto.startTime ? new Date(dto.startTime) : existing.startTime;
+    const end = dto.endTime ? new Date(dto.endTime) : existing.endTime;
+    if (start >= end) {
+      throw new BadRequestException('End time must be after start time');
+    }
+
+    // Validate new room
+    const newRoom = await this.prisma.room.findUnique({ where: { id: dto.newRoomId } });
+    if (!newRoom) {
+      throw new NotFoundException(`Room with ID ${dto.newRoomId} not found`);
+    }
+    if (newRoom.isUnderMaintenance) {
+      throw new BadRequestException('Room is under maintenance and cannot be booked');
+    }
+
+    // Check conflict in new room (exclude current booking)
+    const conflicting = await this.prisma.booking.findFirst({
+      where: {
+        roomId: dto.newRoomId,
+        id: { not: id },
+        status: BookingStatus.APPROVED,
+        OR: [
+          {
+            startTime: { lt: end },
+            endTime: { gt: start },
+          },
+        ],
+      },
+    });
+    if (conflicting) {
+      throw new ConflictException('Room is already booked for this time period');
+    }
+
+    // Transaction: create new booking (pending), cancel old
+    const result = await this.prisma.$transaction(async (tx) => {
+      const moved = await tx.booking.create({
+        data: {
+          roomId: dto.newRoomId,
+          title: existing.title,
+          organizerId: existing.organizerId,
+          startTime: start,
+          endTime: end,
+          purpose: existing.purpose,
+          agenda: existing.agenda || undefined,
+          expectedAttendees: existing.expectedAttendees,
+          internalAttendees: existing.internalAttendees as any,
+          externalAttendees: existing.externalAttendees as any,
+          requiredAmenities: existing.requiredAmenities as any,
+          isRecurring: existing.isRecurring,
+          recurrenceRule: existing.recurrenceRule || undefined,
+          status: BookingStatus.APPROVED,
+          approvedById: currentUser.id, // Auto-approve by the organizer
+          approvedAt: new Date(),
+        },
+        include: { room: true },
+      });
+
+      await tx.booking.update({
+        where: { id },
+        data: { status: BookingStatus.CANCELLED },
+      });
+
+      return moved;
+    });
+
+    try {
+      await this.notificationsService.notifyApprovers(result.id, result.title);
+    } catch (_) {}
+
+    return result;
   }
 }

@@ -14,6 +14,7 @@ import {
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from '../dto/create-booking.dto';
 import { UpdateBookingDto } from '../dto/update-booking.dto';
+import { MoveBookingDto } from '../dto/move-booking.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -115,6 +116,16 @@ export class BookingsController {
     @CurrentUser() user: User
   ) {
     return this.bookingsService.completeBooking(id, user);
+  }
+
+  @Patch(':id/move')
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DIRECTOR)
+  move(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) dto: MoveBookingDto,
+    @CurrentUser() user: User
+  ) {
+    return this.bookingsService.moveBooking(id, dto, user);
   }
 
   @Patch(':id/cancel')

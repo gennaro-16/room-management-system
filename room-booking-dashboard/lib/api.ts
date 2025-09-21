@@ -126,7 +126,7 @@ export interface Booking {
   updatedAt: string;
 }
 
-export type BookingStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
+export type BookingStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED' | 'ONGOING';
 
 export interface CreateRoomDto {
   name: string;
@@ -176,6 +176,7 @@ export interface CreateBookingDto {
 }
 
 export interface UpdateBookingDto {
+  roomId?: number;
   title?: string;
   purpose?: string;
   agenda?: string;
@@ -188,6 +189,12 @@ export interface UpdateBookingDto {
   isRecurring?: boolean;
   recurrenceRule?: string;
   status?: BookingStatus;
+}
+
+export interface MoveBookingDto {
+  newRoomId: number;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface UpdateUserDto {
@@ -329,6 +336,94 @@ async function apiRequest<T>(
   }
 }
 
+// Enhanced Conflict Resolution Types
+export interface ConflictInfo {
+  hasConflict: boolean;
+  conflictingBookings: Array<{
+    id: number;
+    title: string;
+    organizer: string;
+    startTime: string;
+    endTime: string;
+    status: string;
+  }>;
+  conflictReason?: string;
+}
+
+export interface AlternativeSuggestion {
+  roomId: number;
+  roomName: string;
+  suggestedStartTime: string;
+  suggestedEndTime: string;
+  capacity: number;
+  available: boolean;
+  reason: 'same_time_different_room' | 'time_shift_same_room' | 'time_shift_different_room';
+  priority: 'high' | 'medium' | 'low';
+  description: string;
+}
+
+export interface ConflictResolutionResult {
+  bookingId: number;
+  status: 'APPROVED' | 'CONFLICT' | 'REJECTED';
+  alternatives: AlternativeSuggestion[];
+  conflictInfo?: ConflictInfo;
+  rejectionReason?: string;
+}
+
+// Conflicts API
+export const conflictsApi = {
+  // Basic conflicts API
+  getConflictingBookings: () => apiRequest<{
+    conflictingBookings: any[];
+    rejectedBookings: any[];
+  }>('/conflicts/bookings', {
+    method: 'GET',
+  }),
+  
+  checkBookingConflicts: (bookingId: number) => apiRequest<{
+    booking: any;
+    conflictInfo: any;
+    alternatives: any[];
+  }>(`/conflicts/check/${bookingId}`, {
+    method: 'GET',
+  }),
+  
+  resolveConflict: (bookingId: number, data: {
+    alternativeRoomId: number;
+    alternativeStartTime: string;
+    alternativeEndTime: string;
+  }) => apiRequest(`/conflicts/resolve/${bookingId}`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  // Enhanced conflicts API
+  processBookingConflict: (data: {
+    roomId: number;
+    startTime: string;
+    endTime: string;
+    requiredCapacity: number;
+  }) => apiRequest<ConflictResolutionResult>('/conflicts/process', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  getEnhancedConflictAnalysis: (bookingId: number) => apiRequest<ConflictResolutionResult>(`/conflicts/enhanced/${bookingId}`, {
+    method: 'GET',
+  }),
+
+  findAlternatives: (data: {
+    roomId: number;
+    startTime: string;
+    endTime: string;
+    requiredCapacity: number;
+    excludeBookingId?: number;
+  }) => apiRequest<AlternativeSuggestion[]>('/conflicts/alternatives', {
+    method: 'GET',
+    body: JSON.stringify(data),
+  }),
+};
+
 // Authentication API
 export const authApi = {
   // Login
@@ -396,7 +491,9 @@ export const usersApi = {
 
   // Get pending users (Super Admin only)
   getPending: (): Promise<User[]> => {
-    return apiRequest<User[]>('/users/pending');
+    return apiRequest<User[]>('/users/pending', {
+      method: 'GET',
+    });
   },
 
   // Approve or reject user (Super Admin only)
@@ -514,6 +611,14 @@ export const bookingsApi = {
   // Update booking
   update: (id: number, data: UpdateBookingDto): Promise<Booking> => {
     return apiRequest<Booking>(`/bookings/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Move booking: create a new booking in another room and cancel old
+  move: (id: number, data: MoveBookingDto): Promise<Booking> => {
+    return apiRequest<Booking>(`/bookings/${id}/move`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });

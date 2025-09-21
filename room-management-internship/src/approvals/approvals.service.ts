@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
 import { ApproveBookingDto } from '../dto/approve-booking.dto';
 import { ApproveUserDto } from '../dto/approve-user.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ConflictsService } from '../conflicts/conflicts.service';
 import { BookingStatus, UserRole } from '@prisma/client';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class ApprovalsService {
   constructor(
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
+    private conflictsService: ConflictsService,
   ) {}
 
   // Booking Approvals
@@ -42,8 +44,58 @@ export class ApprovalsService {
       throw new ForbiddenException('Only pending bookings can be approved or rejected');
     }
 
+    // Check for conflicts if approving
+    if (approveBookingDto.status === 'APPROVED') {
+      const conflictInfo = await this.conflictsService.checkBookingConflicts(
+        booking.roomId,
+        booking.startTime.toISOString(),
+        booking.endTime.toISOString(),
+        booking.id
+      );
+
+      if (conflictInfo.hasConflict) {
+        // Find alternatives for the conflict
+        const alternatives = await this.conflictsService.findAlternatives(
+          booking.roomId,
+          booking.startTime.toISOString(),
+          booking.endTime.toISOString(),
+          booking.expectedAttendees || 1,
+          booking.id
+        );
+
+        throw new BadRequestException({
+          message: 'Impossible to approve. Another booking is already approved in this room for that time.',
+          conflictInfo,
+          alternatives,
+        });
+      }
+    }
+
+    const now = new Date();
+    const startTime = new Date(booking.startTime);
+    const endTime = new Date(booking.endTime);
+
+    // Determine the appropriate status based on time
+    let finalStatus = approveBookingDto.status;
+    
+    if (approveBookingDto.status === 'APPROVED') {
+      // If booking time has passed, mark as COMPLETED
+      if (endTime < now) {
+        finalStatus = 'COMPLETED';
+      }
+      // If booking is currently ongoing, mark as ONGOING
+      else if (startTime <= now && now <= endTime) {
+        finalStatus = 'ONGOING';
+      }
+      // Otherwise, keep as APPROVED
+    } else if (approveBookingDto.status === 'REJECTED') {
+      // If booking time has passed, keep as REJECTED
+      // If booking time hasn't passed yet, keep as REJECTED
+      finalStatus = 'REJECTED';
+    }
+
     const updateData: any = {
-      status: approveBookingDto.status,
+      status: finalStatus,
     };
 
     if (approveBookingDto.status === 'APPROVED') {

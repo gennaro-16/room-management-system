@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,8 +32,11 @@ export function UserManagement() {
   // Edit form state
   const [formValues, setFormValues] = useState<UpdateUserDto>({});
 
-  // Departments for selection
-  const { data: departments } = useDepartments();
+  // Active tab for lazy fetching
+  const [activeTab, setActiveTab] = useState<'all-users' | 'pending-approvals'>('all-users');
+
+  // Departments for selection (load when component mounts)
+  const { data: departments } = useDepartments(true);
 
   // Sync form values when opening edit dialog (must be before any early returns)
   React.useEffect(() => {
@@ -54,35 +57,56 @@ export function UserManagement() {
   }, [editingUser]);
 
   // API hooks
-  const { data: allUsers, loading: usersLoading, error: usersError, refetch: refetchUsers } = useUsers();
-  const { data: pendingUsers, loading: pendingLoading, error: pendingError, refetch: refetchPending } = usePendingUsers();
+  // Lazy fetch based on active tab
+  const { data: allUsers, loading: usersLoading, error: usersError, refetch: refetchUsers } = useUsers(activeTab === 'all-users');
+  const { data: pendingUsers, loading: pendingLoading, error: pendingError, refetch: refetchPending } = usePendingUsers(activeTab === 'pending-approvals');
+  
+  // Debug logging
+  console.log('Active tab:', activeTab);
+  console.log('Should fetch pending users:', activeTab === 'pending-approvals');
+  console.log('Pending users data:', pendingUsers);
+  console.log('Pending users loading:', pendingLoading);
+  console.log('Pending users error:', pendingError);
   const { updateUser, loading: updateLoading, error: updateError } = useUpdateUser();
   const { deleteUser, loading: deleteLoading, error: deleteError } = useDeleteUser();
   const { approveUser, loading: approveLoading, error: approveError } = useApproveUser();
 
-  // Filter users based on search and filters
-  const filteredUsers = allUsers?.filter(user => {
-    const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' || 
-      (statusFilter === 'active' && user.isActive) ||
-      (statusFilter === 'inactive' && !user.isActive) ||
-      (statusFilter === 'pending' && !user.isApproved);
-    
-    return matchesSearch && matchesRole && matchesStatus;
-  }) || [];
+  // Debounce search to reduce re-renders
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  React.useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchTerm), 250);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
-  const filteredPendingUsers = pendingUsers?.filter(user => {
-    const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  }) || [];
+  // Memoized filters
+  const filteredUsers = useMemo(() => {
+    if (!allUsers) return [];
+    const term = debouncedSearch.toLowerCase();
+    return allUsers.filter(user => {
+      const matchesSearch = user.username.toLowerCase().includes(term) ||
+                           user.email.toLowerCase().includes(term) ||
+                           user.firstName?.toLowerCase().includes(term) ||
+                           user.lastName?.toLowerCase().includes(term);
+      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+      const matchesStatus = statusFilter === 'all' || 
+        (statusFilter === 'active' && user.isActive) ||
+        (statusFilter === 'inactive' && !user.isActive) ||
+        (statusFilter === 'pending' && !user.isApproved);
+      return matchesSearch && matchesRole && matchesStatus;
+    });
+  }, [allUsers, debouncedSearch, roleFilter, statusFilter]);
+
+  const filteredPendingUsers = useMemo(() => {
+    if (!pendingUsers) return [];
+    const term = debouncedSearch.toLowerCase();
+    return pendingUsers.filter(user => {
+      const matchesSearch = user.username.toLowerCase().includes(term) ||
+                           user.email.toLowerCase().includes(term) ||
+                           user.firstName?.toLowerCase().includes(term) ||
+                           user.lastName?.toLowerCase().includes(term);
+      return matchesSearch;
+    });
+  }, [pendingUsers, debouncedSearch]);
 
   const handleEditUser = async (userId: number, data: UpdateUserDto) => {
     try {
@@ -168,7 +192,7 @@ export function UserManagement() {
         </div>
       </div>
 
-      <Tabs defaultValue="all-users" className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-users">
             Tous les utilisateurs ({allUsers?.length || 0})
@@ -372,7 +396,17 @@ export function UserManagement() {
                   ))}
                 </TableBody>
               </Table>
-              {filteredPendingUsers.length === 0 && (
+              {pendingLoading && (
+                <div className="text-center py-4">
+                  <LoadingSpinner />
+                </div>
+              )}
+              {pendingError && (
+                <div className="text-center py-4">
+                  <ErrorAlert error={pendingError} onRetry={refetchPending} />
+                </div>
+              )}
+              {!pendingLoading && !pendingError && filteredPendingUsers.length === 0 && (
                 <p className="text-center text-muted-foreground py-4">Aucune approbation en attente.</p>
               )}
             </CardContent>
