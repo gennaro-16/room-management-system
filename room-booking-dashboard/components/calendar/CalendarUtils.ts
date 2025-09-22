@@ -25,10 +25,10 @@ export class CalendarUtils {
    * Convert booking to calendar event
    */
   static bookingToEvent(booking: Booking): CalendarEvent {
-    const userName = booking.user 
-      ? (booking.user.firstName && booking.user.lastName 
-          ? `${booking.user.firstName} ${booking.user.lastName}`
-          : booking.user.username)
+    const userName = booking.organizer 
+      ? (booking.organizer.firstName && booking.organizer.lastName 
+          ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+          : booking.organizer.username)
       : 'Unknown User';
     
     return {

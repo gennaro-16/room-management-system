@@ -151,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isUser = (): boolean => {
-    return hasRole('USER');
+    return hasRole('EMPLOYEE');
   };
 
   const contextValue: AuthContextType = {

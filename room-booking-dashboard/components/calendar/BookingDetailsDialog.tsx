@@ -70,11 +70,11 @@ export function BookingDetailsDialog({
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <User className="h-4 w-4" />
-                {booking.user && typeof booking.user === 'object' 
-                  ? (booking.user.firstName && booking.user.lastName 
-                      ? `${booking.user.firstName} ${booking.user.lastName}`
-                      : booking.user.username)
-                  : booking.user || 'Unknown User'}
+                {booking.organizer && typeof booking.organizer === 'object' 
+                  ? (booking.organizer.firstName && booking.organizer.lastName 
+                      ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                      : booking.organizer.username)
+                  : 'Unknown User'}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">

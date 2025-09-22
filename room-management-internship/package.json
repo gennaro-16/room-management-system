@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:seed": "ts-node prisma/seed.ts",
     "db:reset": "npx prisma migrate reset --force",
-    "db:deploy": "npx prisma migrate deploy"
+    "db:deploy": "npx prisma migrate deploy",
+    "db:migrate": "./scripts/migrate.sh"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -31,6 +32,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/schedule": "^6.0.0",
     "@nestjs/serve-static": "^5.0.3",
+    "@nestjs/swagger": "^11.2.0",
     "@prisma/client": "^6.15.0",
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",
@@ -39,7 +41,8 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

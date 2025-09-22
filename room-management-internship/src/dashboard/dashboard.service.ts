@@ -89,7 +89,7 @@ export class DashboardService {
       },
       include: {
         room: true,
-        user: true
+        organizer: true
       },
       orderBy: { startTime: 'asc' }
     });
@@ -103,7 +103,7 @@ export class DashboardService {
       },
       include: {
         room: true,
-        user: true
+        organizer: true
       },
       orderBy: { startTime: 'asc' },
       take: 10
@@ -112,9 +112,9 @@ export class DashboardService {
     return {
       todayBookings: todayBookings.map(booking => ({
         id: booking.id,
-        user: booking.user?.firstName && booking.user?.lastName 
-          ? `${booking.user.firstName} ${booking.user.lastName}`
-          : booking.user?.username || 'Unknown User',
+        user: booking.organizer?.firstName && booking.organizer?.lastName
+          ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+          : booking.organizer?.username || 'Unknown User',
         room: booking.room.name,
         startTime: booking.startTime,
         endTime: booking.endTime,
@@ -123,9 +123,9 @@ export class DashboardService {
       })),
       upcomingBookings: upcomingBookings.map(booking => ({
         id: booking.id,
-        user: booking.user?.firstName && booking.user?.lastName 
-          ? `${booking.user.firstName} ${booking.user.lastName}`
-          : booking.user?.username || 'Unknown User',
+        user: booking.organizer?.firstName && booking.organizer?.lastName
+          ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+          : booking.organizer?.username || 'Unknown User',
         room: booking.room.name,
         startTime: booking.startTime,
         endTime: booking.endTime,

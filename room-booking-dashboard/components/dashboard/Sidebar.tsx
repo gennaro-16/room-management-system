@@ -9,7 +9,6 @@ import {
   Building2,
   BookOpen,
   Calendar,
-  Map,
   BarChart3,
   Settings,
   Users,
@@ -23,10 +22,10 @@ const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
   { icon: Building2, label: 'Salles', id: 'rooms' },
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },
-  { icon: Map, label: 'Plan des salles', id: 'map' },
-   { icon: Map, label: 'visiteurs', id: 'visiteurs' },
+    { icon: Calendar, label: 'Visiteurs', id: 'Visiteurs' },
   ...(isAdmin ? [
     { icon: CheckCircle, label: 'Approbations', id: 'approvals' },
+    { icon: Building2, label: 'Départements', id: 'departments' },
   ] : []),
   ...(isSuperAdmin ? [
     { icon: Users, label: 'Gestion des utilisateurs', id: 'users' }
@@ -63,7 +62,7 @@ export function Sidebar({ activeSection, onSectionChange, sidebarOpen, onSidebar
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 h-full w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-200 ease-in-out lg:translate-x-0 sidebar-albaraka",
+          "fixed left-0 top-0 z-50 h-full w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 sidebar-albaraka",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -84,7 +83,7 @@ export function Sidebar({ activeSection, onSectionChange, sidebarOpen, onSidebar
             <Button 
               variant="ghost" 
               size="sm" 
-              className="lg:hidden" 
+              className="lg:hidden hover:bg-sidebar-accent/50" 
               onClick={() => onSidebarToggle(false)}
             >
               <X className="h-4 w-4" />
@@ -92,16 +91,16 @@ export function Sidebar({ activeSection, onSectionChange, sidebarOpen, onSidebar
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 p-4">
+          <nav className="flex-1 space-y-2 p-4 overflow-y-auto">
             {sidebarItems.map((item) => (
               <Button
                 key={item.id}
                 variant={activeSection === item.id ? "default" : "ghost"}
                 className={cn(
-                  "w-full justify-start gap-3 h-11",
+                  "w-full justify-start gap-3 h-12 text-sm font-medium transition-all duration-200",
                   activeSection === item.id
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-sm",
                 )}
                 onClick={() => {
                   onSectionChange(item.id);
@@ -109,10 +108,18 @@ export function Sidebar({ activeSection, onSectionChange, sidebarOpen, onSidebar
                 }}
               >
                 <item.icon className="h-4 w-4" />
-                {item.label}
+                <span className="truncate">{item.label}</span>
               </Button>
             ))}
           </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-sidebar-border">
+            <div className="text-xs text-sidebar-foreground/60 text-center">
+              <p>Version 1.0.0</p>
+              <p className="mt-1">© 2024 alBaraka Bank</p>
+            </div>
+          </div>
         </div>
       </aside>
     </>

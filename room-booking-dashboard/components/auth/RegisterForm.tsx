@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
+import { departmentsApi, Department } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,43 +12,105 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 
-const registerSchema = z.object({
-  username: z.string().min(3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères'),
-  email: z.string().email('Veuillez saisir une adresse e-mail valide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-  confirmPassword: z.string(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  department: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    employeeId: '',
+    firstName: '',
+    lastName: '',
+    username: '',
+    email: '',
+    title: '',
+    phone: '',
+    departmentId: '' as string | number,
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [departments, setDepartments] = useState<Department[]>([]);
   const { register: registerUser, isLoading, error, clearError } = useAuth();
   const router = useRouter();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitted },
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-    mode: 'onSubmit',
-  });
+  useEffect(() => {
+    departmentsApi.getPublic().then(setDepartments).catch(() => setDepartments([]));
+  }, []);
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {};
+
+    if (!formData.employeeId.trim()) {
+      newErrors.employeeId = "L'identifiant employé est requis";
+    }
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'Le prénom est requis';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Le nom est requis';
+    }
+
+    if (!formData.username.trim()) {
+      newErrors.username = "Le nom d'utilisateur est requis";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Le nom d'utilisateur doit contenir au moins 3 caractères";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "L'e-mail est requis";
+    } else if (!formData.email.includes('@')) {
+      newErrors.email = 'Veuillez saisir une adresse e-mail valide';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Le mot de passe est requis';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Le mot de passe doit contenir au moins 6 caractères';
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "La confirmation du mot de passe est requise";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
+    }
+
+    if (!formData.departmentId) {
+      newErrors.departmentId = "Le département est requis";
+    }
+
+    return newErrors;
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Clear previous errors
+    setErrors({});
+    clearError();
+    
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
-      clearError();
-      const { confirmPassword, ...registerData } = data;
-      await registerUser(registerData);
-      router.push("/login?message=Inscription réussie ! Votre compte est en attente d'approbation d'un super administrateur. Vous serez notifié une fois approuvé.");
+      const { confirmPassword, departmentId, ...rest } = formData;
+      await registerUser({
+        ...rest,
+        departmentId: departmentId ? Number(departmentId) : undefined,
+      } as any);
+      router.push("/login?message=Inscription réussie ! Votre compte est en attente d'approbation d'un  administrateur. Vous serez notifié une fois approuvé.");
     } catch (error) {
       // Error is handled by the auth context
     }
@@ -64,7 +125,7 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -73,15 +134,30 @@ export function RegisterForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="employeeId">Identifiant Employé</Label>
+              <Input
+                id="employeeId"
+                placeholder="EMP001"
+                value={formData.employeeId}
+                onChange={(e) => handleInputChange('employeeId', e.target.value)}
+                disabled={isLoading}
+              />
+              {errors.employeeId && (
+                <p className="text-sm text-red-600">{errors.employeeId}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="firstName">Prénom</Label>
               <Input
                 id="firstName"
                 placeholder="Jean"
-                {...register('firstName')}
+                value={formData.firstName}
+                onChange={(e) => handleInputChange('firstName', e.target.value)}
                 disabled={isLoading}
               />
-              {isSubmitted && errors.firstName && (
-                <p className="text-sm text-red-600">{errors.firstName.message}</p>
+              {errors.firstName && (
+                <p className="text-sm text-red-600">{errors.firstName}</p>
               )}
             </div>
 
@@ -90,11 +166,12 @@ export function RegisterForm() {
               <Input
                 id="lastName"
                 placeholder="Dupont"
-                {...register('lastName')}
+                value={formData.lastName}
+                onChange={(e) => handleInputChange('lastName', e.target.value)}
                 disabled={isLoading}
               />
-              {isSubmitted && errors.lastName && (
-                <p className="text-sm text-red-600">{errors.lastName.message}</p>
+              {errors.lastName && (
+                <p className="text-sm text-red-600">{errors.lastName}</p>
               )}
             </div>
           </div>
@@ -104,11 +181,12 @@ export function RegisterForm() {
             <Input
               id="username"
               placeholder="jeandupont"
-              {...register('username')}
+              value={formData.username}
+              onChange={(e) => handleInputChange('username', e.target.value)}
               disabled={isLoading}
             />
-            {isSubmitted && errors.username && (
-              <p className="text-sm text-red-600">{errors.username.message}</p>
+            {errors.username && (
+              <p className="text-sm text-red-600">{errors.username}</p>
             )}
           </div>
 
@@ -118,24 +196,56 @@ export function RegisterForm() {
               id="email"
               type="email"
               placeholder="jean@company.com"
-              {...register('email')}
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
               disabled={isLoading}
             />
-            {isSubmitted && errors.email && (
-              <p className="text-sm text-red-600">{errors.email.message}</p>
+            {errors.email && (
+              <p className="text-sm text-red-600">{errors.email}</p>
             )}
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Titre (optionnel)</Label>
+              <Input
+                id="title"
+                placeholder="Ingénieur"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Téléphone (optionnel)</Label>
+              <Input
+                id="phone"
+                placeholder="06 12 34 56 78"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="department">Département</Label>
-            <Input
-              id="department"
-              placeholder="Ingénierie"
-              {...register('department')}
+            <Label htmlFor="departmentId">Département *</Label>
+            <select
+              id="departmentId"
+              className="border rounded h-9 px-3"
+              value={formData.departmentId}
+              onChange={(e) => handleInputChange('departmentId', e.target.value)}
               disabled={isLoading}
-            />
-            {isSubmitted && errors.department && (
-              <p className="text-sm text-red-600">{errors.department.message}</p>
+              required
+            >
+              <option value="">Sélectionner un département...</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}{d.floor ? ` (Etage ${d.floor})` : ''}</option>
+              ))}
+            </select>
+            {errors.departmentId && (
+              <p className="text-sm text-red-600">{errors.departmentId}</p>
             )}
           </div>
 
@@ -146,7 +256,8 @@ export function RegisterForm() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Saisissez votre mot de passe"
-                {...register('password')}
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
                 disabled={isLoading}
               />
               <Button
@@ -164,8 +275,8 @@ export function RegisterForm() {
                 )}
               </Button>
             </div>
-            {isSubmitted && errors.password && (
-              <p className="text-sm text-red-600">{errors.password.message}</p>
+            {errors.password && (
+              <p className="text-sm text-red-600">{errors.password}</p>
             )}
           </div>
 
@@ -176,7 +287,8 @@ export function RegisterForm() {
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirmez votre mot de passe"
-                {...register('confirmPassword')}
+                value={formData.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                 disabled={isLoading}
               />
               <Button
@@ -194,8 +306,8 @@ export function RegisterForm() {
                 )}
               </Button>
             </div>
-            {isSubmitted && errors.confirmPassword && (
-              <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600">{errors.confirmPassword}</p>
             )}
           </div>
 

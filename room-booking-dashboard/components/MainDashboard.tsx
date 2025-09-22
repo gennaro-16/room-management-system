@@ -7,10 +7,10 @@ import { DashboardSection } from './dashboard/DashboardSection';
 import { RoomsSection } from './rooms/RoomsSection';
 import { BookingsSection } from './bookings/BookingsSection';
 import { CalendarSection } from './calendar/CalendarSection';
-import { RoomMapSection } from './dashboard/RoomMapSection';
 import { BookingApprovals } from './admin/BookingApprovals';
 import { UserManagement } from './admin/UserManagement';
 import { DashboardProfile } from './dashboard/DashboardProfile';
+import DepartmentsManagement from './admin/DepartmentsManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import VisitorsPage from './visitors/visitors';
@@ -28,7 +28,7 @@ export function MainDashboard() {
     switch (activeSection) {
       case 'dashboard':
         return <DashboardSection />;
-      case 'visiteurs':
+      case 'Visiteurs':
         return <VisitorsPage />;  
       case 'rooms':
         return <RoomsSection />;
@@ -36,8 +36,6 @@ export function MainDashboard() {
         return <BookingsSection />;
       case 'calendar':
         return <CalendarSection />;
-      case 'map':
-        return <RoomMapSection />;
       case 'approvals':
         if (!isAdmin) {
           return (
@@ -68,6 +66,21 @@ export function MainDashboard() {
           );
         }
         return <UserManagement />;
+      case 'departments':
+        if (!isAdmin) {
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle>Accès refusé</CardTitle>
+                <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Seuls les administrateurs peuvent gérer les départements.</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <DepartmentsManagement />;
       case 'reports':
         if (!isAdmin) {
           return (

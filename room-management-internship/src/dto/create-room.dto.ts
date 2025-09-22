@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional, Min, Max } from 'class-validator';
+import { IsString, IsInt, IsOptional, Min, Max, IsArray, IsBoolean } from 'class-validator';
 
 export class CreateRoomDto {
   @IsString()
@@ -12,6 +12,17 @@ export class CreateRoomDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  amenities: string[];
+
+  @IsInt()
+  floor: number;
+
+  @IsOptional()
+  @IsString()
+  building?: string;
 
   @IsOptional()
   @IsInt()
@@ -28,4 +39,15 @@ export class CreateRoomDto {
   @IsOptional()
   @IsInt()
   height?: number;
+
+  @IsInt()
+  departmentId: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isUnderMaintenance?: boolean;
+
+  @IsOptional()
+  @IsString()
+  maintenanceNotes?: string;
 }

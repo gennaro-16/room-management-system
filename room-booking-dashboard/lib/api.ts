@@ -4,21 +4,28 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 // Authentication types
 export interface User {
   id: number;
+  employeeId: string;
   username: string;
   email: string;
-  role?: UserRole;
-  firstName?: string;
-  lastName?: string;
-  department?: string;
-  isActive?: boolean;
-  isApproved?: boolean;
-  approvedBy?: number;
-  approvedAt?: string;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+  title?: string;
+  phone?: string;
+  departmentId?: number | null;
+  department?: { id: number; name: string } | null;
+  isActive: boolean;
+  isApproved: boolean;
+  approvedById?: number | null;
+  approvedAt?: string | null;
+  rejectedById?: number | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
 
-export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'DIRECTOR' | 'SUB_DIRECTOR' | 'EMPLOYEE' | 'GUEST';
 export type RoomStatus = 'FREE' | 'BUSY' | 'MAINTENANCE' | 'RESERVED';
 
 export interface LoginDto {
@@ -27,12 +34,15 @@ export interface LoginDto {
 }
 
 export interface RegisterDto {
+  employeeId: string;
   username: string;
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
-  department?: string;
+  firstName: string;
+  lastName: string;
+  title?: string;
+  phone?: string;
+  departmentId?: number;
   role?: UserRole;
 }
 
@@ -47,11 +57,17 @@ export interface Room {
   name: string;
   capacity: number;
   description?: string;
+  amenities: string[];
+  floor: number;
+  building?: string; // Optional - excluded from API responses
+  departmentId?: number | null;
+  department?: Department;
   x?: number;
   y?: number;
   width?: number;
   height?: number;
   isUnderMaintenance: boolean;
+  maintenanceNotes?: string;
   isAvailable?: boolean;
   currentBooking?: Booking;
   createdAt: string;
@@ -59,23 +75,53 @@ export interface Room {
   bookings?: Booking[];
 }
 
+// Department types
+export interface Department {
+  id: number;
+  name: string;
+  description?: string | null;
+  floor?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateDepartmentDto {
+  name: string;
+  description?: string;
+  floor?: number;
+}
+
+export interface UpdateDepartmentDto {
+  name?: string;
+  description?: string | null;
+  floor?: number | null;
+}
+
 export interface Booking {
   id: number;
   roomId: number;
   room?: Room;
-  userId: number;
-  user?: User;
-  purpose?: string;
+  organizerId: number;
+  organizer?: User;
+  title: string;
+  purpose: string;
+  agenda?: string | null;
+  expectedAttendees: number;
+  internalAttendees?: User[]; // populated when included
+  externalAttendees?: string[];
+  requiredAmenities?: string[];
+  isRecurring?: boolean;
+  recurrenceRule?: string | null;
   startTime: string;
   endTime: string;
   status: BookingStatus;
-  approvedBy?: number;
+  approvedById?: number | null;
   approvedAt?: string;
-  rejectedBy?: number;
+  rejectedById?: number | null;
   rejectedAt?: string;
   rejectionReason?: string;
-  approver?: User;
-  rejecter?: User;
+  approvedBy?: User;
+  rejectedBy?: User;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,34 +132,61 @@ export interface CreateRoomDto {
   name: string;
   capacity: number;
   description?: string;
+  amenities: string[];
+  floor: number;
+  building?: string;
+  departmentId?: number;
   x?: number;
   y?: number;
   width?: number;
   height?: number;
+  isUnderMaintenance?: boolean;
+  maintenanceNotes?: string;
 }
 
 export interface UpdateRoomDto {
   name?: string;
   capacity?: number;
   description?: string;
+  amenities?: string[];
+  floor?: number;
+  building?: string;
+  departmentId?: number | null;
   x?: number;
   y?: number;
   width?: number;
   height?: number;
+  isUnderMaintenance?: boolean;
+  maintenanceNotes?: string | null;
 }
 
 export interface CreateBookingDto {
   roomId: number;
-  purpose?: string;
+  title: string;
+  purpose: string;
+  agenda?: string;
   startTime: string;
   endTime: string;
+  expectedAttendees: number;
+  internalAttendees?: number[]; // user IDs
+  externalAttendees?: string[];
+  requiredAmenities?: string[];
+  isRecurring?: boolean;
+  recurrenceRule?: string;
 }
 
 export interface UpdateBookingDto {
-  roomId?: number;
+  title?: string;
   purpose?: string;
+  agenda?: string;
   startTime?: string;
   endTime?: string;
+  expectedAttendees?: number;
+  internalAttendees?: number[]; // user IDs
+  externalAttendees?: string[];
+  requiredAmenities?: string[];
+  isRecurring?: boolean;
+  recurrenceRule?: string;
   status?: BookingStatus;
 }
 
@@ -122,7 +195,9 @@ export interface UpdateUserDto {
   email?: string;
   firstName?: string;
   lastName?: string;
-  department?: string;
+  title?: string;
+  phone?: string;
+  departmentId?: number | null;
   role?: UserRole;
   isActive?: boolean;
   isApproved?: boolean;
@@ -197,6 +272,81 @@ export const setAuthToken = (token: string | null) => {
   }
 };
 
+// Visitors API
+export interface VisitBooking {
+  id: number;
+  title: string;
+  room: { id?: number; name: string };
+  organizer: { id?: number; firstName: string; lastName: string };
+}
+
+export interface VisitItem {
+  id: number;
+  checkedIn: string; // ISO string from backend
+  checkedOut?: string | null;
+  purpose?: string | null;
+  bookingId: number;
+  booking: VisitBooking;
+  visitorId: number;
+}
+
+export interface VisitorItem {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+  phone?: string | null;
+  visits: VisitItem[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateVisitorDto {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface UpdateVisitorDtoFront {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface CreateVisitDto {
+  bookingId: number;
+  checkedIn?: string; // ISO
+  purpose?: string;
+}
+
+export const visitorsApi = {
+  getAll: (
+    params?: { search?: string; status?: 'active' | 'checkedout' | 'all'; date?: string }
+  ): Promise<VisitorItem[]> => {
+    const qs = new URLSearchParams();
+    if (params?.search) qs.set('search', params.search);
+    if (params?.status) qs.set('status', params.status);
+    if (params?.date) qs.set('date', params.date);
+    const query = qs.toString();
+    return apiRequest<VisitorItem[]>(`/visitors${query ? `?${query}` : ''}`);
+  },
+
+  getById: (id: number): Promise<VisitorItem> => apiRequest<VisitorItem>(`/visitors/${id}`),
+
+  create: (data: CreateVisitorDto): Promise<VisitorItem> =>
+    apiRequest<VisitorItem>('/visitors', { method: 'POST', body: JSON.stringify(data) }),
+
+  update: (id: number, data: UpdateVisitorDtoFront): Promise<VisitorItem> =>
+    apiRequest<VisitorItem>(`/visitors/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  createVisit: (visitorId: number, data: CreateVisitDto): Promise<VisitItem> =>
+    apiRequest<VisitItem>(`/visitors/${visitorId}/visits`, { method: 'POST', body: JSON.stringify(data) }),
+
+  checkout: (visitId: number): Promise<VisitItem> =>
+    apiRequest<VisitItem>(`/visitors/visits/${visitId}/checkout`, { method: 'PATCH' }),
+};
 export const getAuthToken = (): string | null => {
   if (authToken) return authToken;
   if (typeof window !== 'undefined') {
@@ -407,12 +557,14 @@ export const bookingsApi = {
     startDate?: string;
     endDate?: string;
     status?: 'approved' | 'upcoming' | 'pending';
+    organizerId?: number;
   }): Promise<Booking[]> => {
     const params = new URLSearchParams();
     if (filters?.roomId) params.append('roomId', filters.roomId.toString());
     if (filters?.startDate) params.append('startDate', filters.startDate);
     if (filters?.endDate) params.append('endDate', filters.endDate);
     if (filters?.status) params.append('status', filters.status);
+    if (filters?.organizerId) params.append('organizerId', filters.organizerId.toString());
 
     const queryString = params.toString();
     return apiRequest<Booking[]>(`/bookings${queryString ? `?${queryString}` : ''}`);
@@ -446,16 +598,17 @@ export const bookingsApi = {
 
   // Approve booking (Admin only)
   approve: (id: number): Promise<Booking> => {
-    return apiRequest<Booking>(`/bookings/${id}/approve`, {
-      method: 'PATCH',
+    return apiRequest<Booking>(`/approvals/bookings/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ status: 'APPROVED' as BookingStatus }),
     });
   },
 
   // Reject booking (Admin only)
   reject: (id: number, rejectionReason: string): Promise<Booking> => {
-    return apiRequest<Booking>(`/bookings/${id}/reject`, {
-      method: 'PATCH',
-      body: JSON.stringify({ rejectionReason }),
+    return apiRequest<Booking>(`/approvals/bookings/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ status: 'REJECTED' as BookingStatus, rejectionReason }),
     });
   },
 
@@ -490,6 +643,19 @@ export const dashboardApi = {
   getBookingsSummary: (): Promise<BookingSummary> => {
     return apiRequest<BookingSummary>('/dashboard/bookings-summary');
   },
+};
+
+// Departments API
+export const departmentsApi = {
+  getAll: (): Promise<Department[]> => apiRequest<Department[]>('/departments'),
+  getPublic: (): Promise<Department[]> => apiRequest<Department[]>('/departments/public'),
+  getById: (id: number): Promise<Department> => apiRequest<Department>(`/departments/${id}`),
+  create: (data: CreateDepartmentDto): Promise<Department> =>
+    apiRequest<Department>('/departments', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: number, data: UpdateDepartmentDto): Promise<Department> =>
+    apiRequest<Department>(`/departments/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  remove: (id: number): Promise<void> =>
+    apiRequest<void>(`/departments/${id}`, { method: 'DELETE' }),
 };
 
 // Room Status API - Removed since room status is now calculated from bookings
@@ -601,8 +767,14 @@ export const apiUtils = {
         return 'bg-purple-50 text-purple-800 border-purple-200';
       case 'ADMIN':
         return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'USER':
+      case 'DIRECTOR':
+        return 'bg-amber-50 text-amber-800 border-amber-200';
+      case 'SUB_DIRECTOR':
+        return 'bg-orange-50 text-orange-800 border-orange-200';
+      case 'EMPLOYEE':
         return 'bg-green-50 text-green-800 border-green-200';
+      case 'GUEST':
+        return 'bg-gray-50 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-50 text-gray-800 border-gray-200';
     }

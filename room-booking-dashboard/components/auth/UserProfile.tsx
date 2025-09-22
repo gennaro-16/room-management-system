@@ -76,14 +76,14 @@ export function UserProfile() {
               {getRoleIcon(user.role)}
               <Badge 
                 variant="secondary" 
-                className={`text-xs ${apiUtils.getRoleColor(user.role || 'USER')}`}
+                className={`text-xs ${apiUtils.getRoleColor(user.role)}`}
               >
-                {(user.role || 'USER').replace('_', ' ')}
+                {user.role.replace('_', ' ')}
               </Badge>
             </div>
             {user.department && (
               <p className="text-xs leading-none text-muted-foreground">
-                {user.department}
+                {typeof user.department === 'string' ? user.department : user.department?.name}
               </p>
             )}
           </div>
@@ -139,12 +139,12 @@ export function UserProfileCard() {
             <div className="flex items-center gap-2">
               <Badge 
                 variant="secondary" 
-                className={apiUtils.getRoleColor(user.role || 'USER')}
+                className={apiUtils.getRoleColor(user.role)}
               >
-                {(user.role || 'USER').replace('_', ' ')}
+                {user.role.replace('_', ' ')}
               </Badge>
               {user.department && (
-                <Badge variant="outline">{user.department}</Badge>
+                <Badge variant="outline">{typeof user.department === 'string' ? user.department : user.department?.name}</Badge>
               )}
             </div>
           </div>

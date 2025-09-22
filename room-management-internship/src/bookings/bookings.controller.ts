@@ -40,7 +40,8 @@ export class BookingsController {
     @Query('roomId') roomId?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('status') status?: string
+    @Query('status') status?: string,
+    @Query('organizerId') organizerId?: string
   ) {
     if (roomId) {
       return this.bookingsService.getBookingsByRoom(parseInt(roomId), user);
@@ -49,7 +50,8 @@ export class BookingsController {
       return this.bookingsService.getBookingsByDateRange(
         new Date(startDate),
         new Date(endDate),
-        user
+        user,
+        organizerId ? parseInt(organizerId) : undefined
       );
     }
     if (status === 'approved') {
@@ -79,6 +81,7 @@ export class BookingsController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DIRECTOR)
   update(
     @Param('id', ParseIntPipe) id: number, 
     @Body(ValidationPipe) updateBookingDto: UpdateBookingDto,

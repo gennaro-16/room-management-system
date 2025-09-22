@@ -10,7 +10,7 @@ export class RoomsService {
 
   async create(createRoomDto: CreateRoomDto, currentUser: User) {
     // Only admins can create rooms
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -30,7 +30,24 @@ export class RoomsService {
 
   async findAll() {
     const rooms = await this.prisma.room.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        description: true,
+        amenities: true,
+        floor: true,
+        // building: true, // Excluded from response
+        x: true,
+        y: true,
+        width: true,
+        height: true,
+        departmentId: true,
+        department: true,
+        isUnderMaintenance: true,
+        maintenanceNotes: true,
+        createdAt: true,
+        updatedAt: true,
         bookings: {
           where: {
             status: BookingStatus.APPROVED,
@@ -42,7 +59,7 @@ export class RoomsService {
             }
           },
           include: {
-            user: {
+            organizer: {
               select: {
                 id: true,
                 username: true,
@@ -68,24 +85,37 @@ export class RoomsService {
   async findOne(id: number) {
     const room = await this.prisma.room.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        description: true,
+        amenities: true,
+        floor: true,
+        // building: true, // Excluded from response
+        x: true,
+        y: true,
+        width: true,
+        height: true,
+        departmentId: true,
+        department: true,
+        isUnderMaintenance: true,
+        maintenanceNotes: true,
+        createdAt: true,
+        updatedAt: true,
         bookings: {
           where: {
-            status: BookingStatus.APPROVED
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                firstName: true,
-                lastName: true,
-                department: true,
+            status: BookingStatus.APPROVED,
+            OR: [
+              {
+                startTime: {
+                  lte: new Date()
+                },
+                endTime: {
+                  gte: new Date()
+                }
               }
-            }
-          },
-          orderBy: {
-            startTime: 'asc'
+            ]
           }
         }
       }
@@ -103,7 +133,7 @@ export class RoomsService {
 
   async update(id: number, updateRoomDto: UpdateRoomDto, currentUser: User) {
     // Only admins can update rooms
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -128,7 +158,7 @@ export class RoomsService {
 
   async remove(id: number, currentUser: User) {
     // Only admins can delete rooms
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -156,7 +186,7 @@ export class RoomsService {
 
   async toggleMaintenance(id: number, currentUser: User) {
     // Only admins can toggle maintenance status
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -198,6 +228,25 @@ export class RoomsService {
         },
         isUnderMaintenance: false
       },
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        description: true,
+        amenities: true,
+        floor: true,
+        // building: true, // Excluded from response
+        x: true,
+        y: true,
+        width: true,
+        height: true,
+        departmentId: true,
+        department: true,
+        isUnderMaintenance: true,
+        maintenanceNotes: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: [
         { name: 'asc' }
       ]
@@ -231,7 +280,7 @@ export class RoomsService {
         ]
       },
       include: {
-        user: {
+        organizer: {
           select: {
             username: true,
             firstName: true,

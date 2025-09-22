@@ -6,18 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarIcon, Clock, Users, Plus, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfDay, endOfDay, isSameDay, parseISO, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto } from '@/lib/api';
+import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto, type User } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUsers, useCreateBooking } from '@/hooks/useApi';
 import { CalendarGrid } from './CalendarGrid';
 import { CalendarUtils } from './CalendarUtils';
 import { BookingDetailsDialog } from './BookingDetailsDialog';
+import { NewBookingDialog } from '@/components/bookings/NewBookingDialog';
 
 interface CalendarEvent {
   id: number;
@@ -31,31 +31,33 @@ interface CalendarEvent {
 }
 
 export function CalendarSection() {
+  const { hasRole } = useAuth();
+  const { data: users } = useUsers();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string>('all');
+  const [selectedUser, setSelectedUser] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
+  const [groupBy, setGroupBy] = useState<'room' | 'user'>('room');
   const [loading, setLoading] = useState(true);
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
-  const [newBooking, setNewBooking] = useState<Partial<CreateBookingDto>>({
-    purpose: '',
-    startTime: '',
-    endTime: '',
-  });
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isBookingDetailsOpen, setIsBookingDetailsOpen] = useState(false);
   const { toast } = useToast();
+  const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
+
+  const isAdminRole = hasRole(['ADMIN', 'SUPER_ADMIN']);
 
   // Load data
   useEffect(() => {
     loadData();
   }, []);
 
-  // Load bookings when date or room filter changes
+  // Load bookings when date, room, user filter, or groupBy changes
   useEffect(() => {
     loadBookings();
-  }, [selectedDate, selectedRoom, viewMode]);
+  }, [selectedDate, selectedRoom, selectedUser, viewMode, groupBy]);
 
   const loadData = async () => {
     try {
@@ -88,8 +90,10 @@ export function CalendarSection() {
         endDate: endDate.toISOString(),
       };
       
-      if (selectedRoom !== 'all') {
+      if (groupBy === 'room' && selectedRoom !== 'all') {
         filters.roomId = parseInt(selectedRoom);
+      } else if (groupBy === 'user' && selectedUser !== 'all') {
+        filters.organizerId = parseInt(selectedUser);
       }
       
       const bookingsData = await bookingsApi.getAll(filters);
@@ -134,36 +138,18 @@ export function CalendarSection() {
     return getBookingsForDate(selectedDate);
   };
 
-  const handleCreateBooking = async () => {
-    if (!newBooking.roomId || !newBooking.startTime || !newBooking.endTime) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleCreateBooking = async (data: CreateBookingDto) => {
     try {
-      await bookingsApi.create(newBooking as CreateBookingDto);
+      await createBooking(data);
       toast({
         title: "Success",
         description: "Booking created successfully",
       });
       setIsNewBookingOpen(false);
-      setNewBooking({
-        purpose: '',
-        startTime: '',
-        endTime: '',
-      });
       loadBookings();
     } catch (error) {
+      // Error is handled by the createBooking hook
       console.error('Error creating booking:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create booking",
-        variant: "destructive",
-      });
     }
   };
 
@@ -200,11 +186,13 @@ export function CalendarSection() {
   };
 
   const handleNewBooking = (date: Date) => {
-    setNewBooking({
-      ...newBooking,
-      startTime: format(date, "yyyy-MM-dd'T'09:00"),
-      endTime: format(date, "yyyy-MM-dd'T'10:00"),
-    });
+    // Prevent creating bookings in the past (before today)
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    if (date < startOfToday) {
+      toast({ title: 'Action non autorisée', description: "Vous ne pouvez pas réserver dans le passé" });
+      return;
+    }
     setIsNewBookingOpen(true);
   };
 
@@ -240,102 +228,67 @@ export function CalendarSection() {
         </div>
         
         <div className="flex gap-2">
-          <Dialog open={isNewBookingOpen} onOpenChange={setIsNewBookingOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                New Booking
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Create New Booking</DialogTitle>
-                <DialogDescription>
-                  Book a room for a specific time period
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="room">Room</Label>
-                  <Select
-                    value={newBooking.roomId?.toString() || ''}
-                    onValueChange={(value) => setNewBooking({ ...newBooking, roomId: parseInt(value) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a room" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rooms.map((room) => (
-                        <SelectItem key={room.id} value={room.id.toString()}>
-                          {room.name} (Capacity: {room.capacity})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                
-                <div>
-                  <Label htmlFor="purpose">Purpose (Optional)</Label>
-                  <Textarea
-                    id="purpose"
-                    value={newBooking.purpose || ''}
-                    onChange={(e) => setNewBooking({ ...newBooking, purpose: e.target.value })}
-                    placeholder="Meeting purpose"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="startTime">Start Time</Label>
-                    <Input
-                      id="startTime"
-                      type="datetime-local"
-                      value={newBooking.startTime || ''}
-                      onChange={(e) => setNewBooking({ ...newBooking, startTime: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="endTime">End Time</Label>
-                    <Input
-                      id="endTime"
-                      type="datetime-local"
-                      value={newBooking.endTime || ''}
-                      onChange={(e) => setNewBooking({ ...newBooking, endTime: e.target.value })}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsNewBookingOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateBooking}>
-                    Create Booking
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setIsNewBookingOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Booking
+          </Button>
         </div>
       </div>
 
       {/* Filters and View Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex gap-2">
-          <Select value={selectedRoom} onValueChange={setSelectedRoom}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by room" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Rooms</SelectItem>
-              {rooms.map((room) => (
-                <SelectItem key={room.id} value={room.id.toString()}>
-                  {room.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex gap-2 flex-wrap">
+          {/* Group By Toggle for Admins */}
+          {isAdminRole && (
+            <div className="flex items-center gap-2">
+              <Label htmlFor="group-by">Group by:</Label>
+              <Select value={groupBy} onValueChange={(value) => setGroupBy(value as 'room' | 'user')}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="room">Room</SelectItem>
+                  <SelectItem value="user">User</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {/* Room Filter */}
+          {groupBy === 'room' && (
+            <Select value={selectedRoom} onValueChange={setSelectedRoom}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by room" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Rooms</SelectItem>
+                {rooms.map((room) => (
+                  <SelectItem key={room.id} value={room.id.toString()}>
+                    {room.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
+          {/* User Filter for Admins */}
+          {isAdminRole && groupBy === 'user' && (
+            <Select value={selectedUser} onValueChange={setSelectedUser}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by user" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Users</SelectItem>
+                {users?.map((user) => (
+                  <SelectItem key={user.id} value={user.id.toString()}>
+                    {user.firstName && user.lastName 
+                      ? `${user.firstName} ${user.lastName}` 
+                      : user.username}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'month' | 'week' | 'day')}>
@@ -394,6 +347,8 @@ export function CalendarSection() {
                 onBookingClick={handleBookingClick}
                 onNewBooking={handleNewBooking}
                 selectedRoom={selectedRoom}
+                groupBy={groupBy}
+                users={users || []}
               />
             </CardContent>
           </Card>
@@ -422,11 +377,9 @@ export function CalendarSection() {
                     <div key={booking.id} className="border rounded-lg p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="font-medium">
-                          {booking.user && typeof booking.user === 'object' 
-                            ? (booking.user.firstName && booking.user.lastName 
-                                ? `${booking.user.firstName} ${booking.user.lastName}`
-                                : booking.user.username)
-                            : booking.user || 'Unknown User'}
+                          {booking.organizer?.firstName && booking.organizer?.lastName 
+                            ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                            : booking.organizer?.username || 'Unknown User'}
                         </div>
                         <Badge className={getStatusColor(booking.status)}>
                           {booking.status}
@@ -462,6 +415,15 @@ export function CalendarSection() {
         onClose={() => setIsBookingDetailsOpen(false)}
         onEdit={handleEditBooking}
         onDelete={handleDeleteBooking}
+      />
+
+      {/* New Booking Dialog */}
+      <NewBookingDialog
+        open={isNewBookingOpen}
+        onOpenChange={setIsNewBookingOpen}
+        onSubmit={handleCreateBooking}
+        loading={createLoading}
+        error={createError}
       />
     </div>
   );

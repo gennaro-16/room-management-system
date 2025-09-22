@@ -3,13 +3,17 @@ import { PrismaService } from '@prisma/prisma.service';
 import { CreateBookingDto } from '../dto/create-booking.dto';
 import { UpdateBookingDto } from '../dto/update-booking.dto';
 import { User, UserRole, BookingStatus } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(createBookingDto: CreateBookingDto, currentUser: User) {
-    const { roomId, startTime, endTime, purpose } = createBookingDto;
+    const { roomId, startTime, endTime, purpose, title, expectedAttendees, internalAttendees, externalAttendees, requiredAmenities, isRecurring, recurrenceRule, agenda } = createBookingDto;
 
     // Validate room exists
     const room = await this.prisma.room.findUnique({
@@ -63,15 +67,25 @@ export class BookingsService {
     const booking = await this.prisma.booking.create({
       data: {
         roomId,
-        userId: currentUser.id,
+        title,
+        organizerId: currentUser.id,
         startTime: start,
         endTime: end,
         purpose,
+        agenda,
+        expectedAttendees,
+        internalAttendees: internalAttendees ? {
+          connect: internalAttendees.map(id => ({ id }))
+        } : undefined,
+        externalAttendees: externalAttendees || [],
+        requiredAmenities: requiredAmenities || [],
+        isRecurring: isRecurring || false,
+        recurrenceRule,
         status: BookingStatus.PENDING,
       },
       include: {
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -84,20 +98,28 @@ export class BookingsService {
       }
     });
 
+    // Send notification to approvers about new booking request
+    try {
+      await this.notificationsService.notifyApprovers(booking.id, booking.title);
+    } catch (error) {
+      console.error('Failed to send notification to approvers:', error);
+      // Don't fail the booking creation if notification fails
+    }
+
     return booking;
   }
 
   async findAll(currentUser: User) {
     // Admins can see all bookings, users can only see their own
-    const whereClause = currentUser.role === UserRole.USER 
-      ? { userId: currentUser.id }
+    const whereClause = currentUser.role === UserRole.EMPLOYEE 
+      ? { organizerId: currentUser.id }
       : {};
 
     return this.prisma.booking.findMany({
       where: whereClause,
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -114,7 +136,7 @@ export class BookingsService {
 
   async findPendingBookings(currentUser: User) {
     // Only admins can see pending bookings
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -122,7 +144,7 @@ export class BookingsService {
       where: { status: BookingStatus.PENDING },
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -139,7 +161,7 @@ export class BookingsService {
 
   async approveBooking(id: number, currentUser: User) {
     // Only admins can approve bookings
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -183,12 +205,12 @@ export class BookingsService {
       where: { id },
       data: {
         status: BookingStatus.APPROVED,
-        approvedBy: currentUser.id,
+        approvedById: currentUser.id,
         approvedAt: new Date(),
       },
       include: {
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -198,7 +220,7 @@ export class BookingsService {
             department: true,
           }
         },
-        approver: {
+        approvedBy: {
           select: {
             id: true,
             username: true,
@@ -211,7 +233,7 @@ export class BookingsService {
 
   async rejectBooking(id: number, rejectionReason: string, currentUser: User) {
     // Only admins can reject bookings
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -231,13 +253,13 @@ export class BookingsService {
       where: { id },
       data: {
         status: BookingStatus.REJECTED,
-        rejectedBy: currentUser.id,
+        rejectedById: currentUser.id,
         rejectedAt: new Date(),
         rejectionReason,
       },
       include: {
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -247,7 +269,7 @@ export class BookingsService {
             department: true,
           }
         },
-        rejecter: {
+        rejectedBy: {
           select: {
             id: true,
             username: true,
@@ -263,7 +285,7 @@ export class BookingsService {
       where: { id },
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -273,14 +295,14 @@ export class BookingsService {
             department: true,
           }
         },
-        approver: {
+        approvedBy: {
           select: {
             id: true,
             username: true,
             email: true,
           }
         },
-        rejecter: {
+        rejectedBy: {
           select: {
             id: true,
             username: true,
@@ -295,7 +317,7 @@ export class BookingsService {
     }
 
     // Users can only view their own bookings, admins can view any booking
-    if (currentUser.role === UserRole.USER && booking.userId !== currentUser.id) {
+    if (currentUser.role === UserRole.EMPLOYEE && booking.organizerId !== currentUser.id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -305,14 +327,27 @@ export class BookingsService {
   async update(id: number, updateBookingDto: UpdateBookingDto, currentUser: User) {
     const existingBooking = await this.findOne(id, currentUser);
 
-    // Only users can update their own pending bookings
-    if (currentUser.role === UserRole.USER && existingBooking.userId !== currentUser.id) {
+    // Check permissions based on user role and booking status
+    const isAdminRole = currentUser.role === UserRole.ADMIN || 
+                       currentUser.role === UserRole.SUPER_ADMIN || 
+                       currentUser.role === UserRole.DIRECTOR;
+    const isOwner = existingBooking.organizerId === currentUser.id;
+    
+    if (currentUser.role === UserRole.EMPLOYEE) {
+      // Employees can only update their own pending bookings
+      if (!isOwner) {
+        throw new ForbiddenException('Insufficient permissions');
+      }
+      if (existingBooking.status !== BookingStatus.PENDING) {
+        throw new BadRequestException('Only pending bookings can be updated');
+      }
+    } else if (isAdminRole) {
+      // Admins, Super Admins, and Directors can update approved bookings
+      if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED) {
+        throw new BadRequestException('Cannot update rejected or cancelled bookings');
+      }
+    } else {
       throw new ForbiddenException('Insufficient permissions');
-    }
-
-    // Only pending bookings can be updated
-    if (existingBooking.status !== BookingStatus.PENDING) {
-      throw new BadRequestException('Only pending bookings can be updated');
     }
 
     // If updating time, check for conflicts
@@ -348,12 +383,22 @@ export class BookingsService {
       }
     }
 
+    // Transform the DTO to match Prisma's expected format
+    const updateData: any = { ...updateBookingDto };
+    
+    // Handle internal attendees connection
+    if (updateData.internalAttendees) {
+      updateData.internalAttendees = {
+        set: updateData.internalAttendees.map(id => ({ id }))
+      };
+    }
+
     return this.prisma.booking.update({
       where: { id },
-      data: updateBookingDto,
+      data: updateData,
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -371,7 +416,7 @@ export class BookingsService {
     const booking = await this.findOne(id, currentUser);
 
     // Only users can cancel their own bookings, or admins can cancel any booking
-    if (currentUser.role === UserRole.USER && booking.userId !== currentUser.id) {
+    if (currentUser.role === UserRole.EMPLOYEE && booking.organizerId !== currentUser.id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -385,7 +430,7 @@ export class BookingsService {
       data: { status: BookingStatus.CANCELLED },
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -413,7 +458,7 @@ export class BookingsService {
       where: { roomId },
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -428,24 +473,25 @@ export class BookingsService {
     });
   }
 
-  async getBookingsByDateRange(startDate: Date, endDate: Date, currentUser: User) {
+  async getBookingsByDateRange(startDate: Date, endDate: Date, currentUser: User, organizerId?: number) {
     // Users can only see their own bookings in date range
-    const whereClause = currentUser.role === UserRole.USER 
+    const whereClause = currentUser.role === UserRole.EMPLOYEE 
       ? { 
-          userId: currentUser.id,
+          organizerId: currentUser.id,
           startTime: { gte: startDate },
           endTime: { lte: endDate }
         }
       : {
           startTime: { gte: startDate },
-          endTime: { lte: endDate }
+          endTime: { lte: endDate },
+          ...(organizerId && { organizerId })
         };
 
     return this.prisma.booking.findMany({
       where: whereClause,
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -470,7 +516,7 @@ export class BookingsService {
       },
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -495,7 +541,7 @@ export class BookingsService {
       },
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,
@@ -522,7 +568,7 @@ export class BookingsService {
       data: { status: BookingStatus.COMPLETED },
       include: { 
         room: true,
-        user: {
+        organizer: {
           select: {
             id: true,
             username: true,

@@ -118,7 +118,7 @@ Vos détails de compte et informations personnelles
                   <div>
                     <label className="text-sm font-medium text-[var(--albaraka-muted)]">Département</label>
                     <p className="text-lg text-[var(--albaraka-primary)]">
-                      {user.department || 'Non spécifié'}
+                      {user.department?.name || 'Non spécifié'}
                     </p>
                   </div>
                   

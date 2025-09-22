@@ -10,7 +10,7 @@ export class UsersService {
 
   async findAll(currentUser: User) {
     // Only admins and super admins can view all users
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -41,7 +41,7 @@ export class UsersService {
 
   async findOne(id: number, currentUser: User) {
     // Users can only view their own profile, admins can view any profile
-    if (currentUser.role === UserRole.USER && currentUser.id !== id) {
+    if (currentUser.role === UserRole.EMPLOYEE && currentUser.id !== id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -76,7 +76,7 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto, currentUser: User) {
     // Only admins and super admins can update other users
-    if (currentUser.role === UserRole.USER && currentUser.id !== id) {
+    if (currentUser.role === UserRole.EMPLOYEE && currentUser.id !== id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -143,7 +143,7 @@ export class UsersService {
 
   async deactivate(id: number, currentUser: User) {
     // Only admins and super admins can deactivate users
-    if (currentUser.role === UserRole.USER) {
+    if (currentUser.role === UserRole.EMPLOYEE) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -275,6 +275,123 @@ export class UsersService {
         rejectionReason: true,
         createdAt: true,
         updatedAt: true,
+      },
+    });
+  }
+
+  async getUsersByDepartment(departmentId: number, currentUser: User) {
+    // Only admins and department members can view department users
+    if (currentUser.role === UserRole.EMPLOYEE && currentUser.departmentId !== departmentId) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+
+    return this.prisma.user.findMany({
+      where: { departmentId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        firstName: true,
+        lastName: true,
+        title: true,
+        phone: true,
+        isActive: true,
+        isApproved: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        firstName: 'asc',
+      },
+    });
+  }
+
+  async getPendingApprovals() {
+    return this.prisma.user.findMany({
+      where: {
+        isApproved: false,
+        isActive: true,
+      },
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+  }
+
+  async getUserStats() {
+    const stats = await this.prisma.user.groupBy({
+      by: ['role', 'isApproved'],
+      _count: {
+        id: true,
+      },
+    });
+
+    const total = await this.prisma.user.count();
+    const active = await this.prisma.user.count({
+      where: { isActive: true },
+    });
+    const approved = await this.prisma.user.count({
+      where: { isApproved: true },
+    });
+    const pending = await this.prisma.user.count({
+      where: { isApproved: false, isActive: true },
+    });
+
+    return {
+      total,
+      active,
+      approved,
+      pending,
+      byRole: stats.reduce((acc, stat) => {
+        const key = `${stat.role}_${stat.isApproved ? 'approved' : 'pending'}`;
+        acc[key] = stat._count.id;
+        return acc;
+      }, {}),
+    };
+  }
+
+  async updateUserDepartment(userId: number, departmentId: number, currentUser: User) {
+    // Only admins can change user departments
+    if (currentUser.role === UserRole.EMPLOYEE) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Validate department exists
+    const department = await this.prisma.department.findUnique({
+      where: { id: departmentId },
+    });
+
+    if (!department) {
+      throw new NotFoundException(`Department with ID ${departmentId} not found`);
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { departmentId },
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
   }

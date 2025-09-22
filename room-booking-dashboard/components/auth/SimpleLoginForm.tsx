@@ -134,6 +134,15 @@ export function SimpleLoginForm() {
             <p><strong>Utilisateur :</strong> john@company.com / password123</p>
           </div>
         </div>
+
+        <div className="mt-4 text-center text-sm">
+          <p className="text-muted-foreground">
+            Vous n'avez pas de compte ?{' '}
+            <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/register')}>
+              S'inscrire
+            </Button>
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

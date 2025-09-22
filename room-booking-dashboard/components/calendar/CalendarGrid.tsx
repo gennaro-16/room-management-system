@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { Booking, Room } from '@/lib/api';
+import { Booking, Room, User } from '@/lib/api';
 import { CalendarUtils } from './CalendarUtils';
 
 interface CalendarGridProps {
@@ -18,6 +18,8 @@ interface CalendarGridProps {
   onBookingClick?: (booking: Booking) => void;
   onNewBooking?: (date: Date) => void;
   selectedRoom?: string;
+  groupBy?: 'room' | 'user';
+  users?: User[];
 }
 
 export function CalendarGrid({
@@ -28,11 +30,41 @@ export function CalendarGrid({
   onDateSelect,
   onBookingClick,
   onNewBooking,
-  selectedRoom = 'all'
+  selectedRoom = 'all',
+  groupBy = 'room',
+  users = []
 }: CalendarGridProps) {
-  const filteredBookings = selectedRoom === 'all' 
-    ? bookings 
-    : bookings.filter(booking => booking.roomId.toString() === selectedRoom);
+  const filteredBookings = groupBy === 'room' 
+    ? (selectedRoom === 'all' 
+        ? bookings 
+        : bookings.filter(booking => booking.roomId.toString() === selectedRoom))
+    : bookings;
+
+  // Group bookings by user for user-based view
+  const getBookingsByUser = () => {
+    const grouped: { [userId: string]: Booking[] } = {};
+    filteredBookings.forEach(booking => {
+      const userId = booking.organizerId.toString();
+      if (!grouped[userId]) {
+        grouped[userId] = [];
+      }
+      grouped[userId].push(booking);
+    });
+    return grouped;
+  };
+
+  // Group bookings by room for room-based view
+  const getBookingsByRoom = () => {
+    const grouped: { [roomId: string]: Booking[] } = {};
+    filteredBookings.forEach(booking => {
+      const roomId = booking.roomId.toString();
+      if (!grouped[roomId]) {
+        grouped[roomId] = [];
+      }
+      grouped[roomId].push(booking);
+    });
+    return grouped;
+  };
 
   const renderMonthView = () => {
     const weeks = CalendarUtils.generateMonthGrid(selectedDate);
@@ -92,18 +124,18 @@ export function CalendarGrid({
                           key={booking.id}
                           className="text-xs p-1 rounded bg-red-100 text-red-800 cursor-pointer hover:bg-red-200 transition-colors border border-red-200"
                           onClick={() => onBookingClick?.(booking)}
-                          title={`${booking.user && typeof booking.user === 'object' 
-                            ? (booking.user.firstName && booking.user.lastName 
-                                ? `${booking.user.firstName} ${booking.user.lastName}`
-                                : booking.user.username)
-                            : booking.user || 'Unknown User'} - ${booking.room?.name || 'Room'}`}
+                          title={`${booking.organizer && typeof booking.organizer === 'object' 
+                            ? (booking.organizer.firstName && booking.organizer.lastName 
+                                ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                : booking.organizer.username)
+                            : 'Unknown User'} - ${booking.room?.name || 'Room'}`}
                         >
                           <div className="truncate font-medium">
-                            {booking.user && typeof booking.user === 'object' 
-                              ? (booking.user.firstName && booking.user.lastName 
-                                  ? `${booking.user.firstName} ${booking.user.lastName}`
-                                  : booking.user.username)
-                              : booking.user || 'Unknown User'}
+                            {booking.organizer && typeof booking.organizer === 'object' 
+                              ? (booking.organizer.firstName && booking.organizer.lastName 
+                                  ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                                  : booking.organizer.username)
+                              : 'Unknown User'}
                           </div>
                           <div className="text-xs opacity-70">
                             {CalendarUtils.formatTimeRange(booking.startTime, booking.endTime)}
@@ -185,11 +217,11 @@ export function CalendarGrid({
                       onClick={() => onBookingClick?.(booking)}
                     >
                       <div className="text-sm font-medium truncate">
-                        {booking.user && typeof booking.user === 'object' 
-                          ? (booking.user.firstName && booking.user.lastName 
-                              ? `${booking.user.firstName} ${booking.user.lastName}`
-                              : booking.user.username)
-                          : booking.user || 'Unknown User'}
+                        {booking.organizer && typeof booking.organizer === 'object' 
+                          ? (booking.organizer.firstName && booking.organizer.lastName 
+                              ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                              : booking.organizer.username)
+                          : 'Unknown User'}
                       </div>
                       <div className="text-xs opacity-70">
                         {CalendarUtils.formatTimeRange(booking.startTime, booking.endTime)}
@@ -217,6 +249,92 @@ export function CalendarGrid({
     const dayBookings = CalendarUtils.getBookingsForDate(filteredBookings, selectedDate);
     const isToday = CalendarUtils.isToday(selectedDate);
     
+    if (groupBy === 'user') {
+      const bookingsByUser = getBookingsByUser();
+      const dayBookingsByUser: { [userId: string]: Booking[] } = {};
+      
+      // Filter day bookings by user
+      dayBookings.forEach(booking => {
+        const userId = booking.organizerId.toString();
+        if (!dayBookingsByUser[userId]) {
+          dayBookingsByUser[userId] = [];
+        }
+        dayBookingsByUser[userId].push(booking);
+      });
+      
+      return (
+        <div className="space-y-4">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold">
+              {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+            </h3>
+            {isToday && (
+              <Badge className="mt-1">Today</Badge>
+            )}
+          </div>
+          
+          <div className="space-y-6">
+            {Object.keys(dayBookingsByUser).length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No bookings scheduled for this day</p>
+                <Button
+                  variant="outline"
+                  className="mt-2"
+                  onClick={() => onNewBooking?.(selectedDate)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Booking
+                </Button>
+              </div>
+            ) : (
+              Object.entries(dayBookingsByUser).map(([userId, userBookings]) => {
+                const user = users.find(u => u.id.toString() === userId);
+                const userName = user 
+                  ? (user.firstName && user.lastName 
+                      ? `${user.firstName} ${user.lastName}` 
+                      : user.username)
+                  : 'Unknown User';
+                
+                return (
+                  <div key={userId} className="space-y-3">
+                    <h4 className="text-md font-semibold text-primary border-b pb-2">
+                      {userName} ({userBookings.length} booking{userBookings.length !== 1 ? 's' : ''})
+                    </h4>
+                    <div className="grid gap-3">
+                      {userBookings.map((booking) => (
+                        <Card key={booking.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h5 className="font-medium">{booking.title || 'Untitled Meeting'}</h5>
+                                <p className="text-sm text-muted-foreground">
+                                  {booking.room?.name || 'Room'}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {CalendarUtils.formatTimeRange(booking.startTime, booking.endTime)}
+                                </p>
+                                {booking.purpose && (
+                                  <p className="text-sm mt-1">{booking.purpose}</p>
+                                )}
+                              </div>
+                              <Badge className={CalendarUtils.getStatusColor(booking.status)}>
+                                {booking.status}
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    // Default room-based view
     return (
       <div className="space-y-4">
         <div className="text-center">
@@ -248,11 +366,11 @@ export function CalendarGrid({
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className="font-medium">
-                        {booking.user && typeof booking.user === 'object' 
-                          ? (booking.user.firstName && booking.user.lastName 
-                              ? `${booking.user.firstName} ${booking.user.lastName}`
-                              : booking.user.username)
-                          : booking.user || 'Unknown User'}
+                        {booking.organizer && typeof booking.organizer === 'object' 
+                          ? (booking.organizer.firstName && booking.organizer.lastName 
+                              ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
+                              : booking.organizer.username)
+                          : 'Unknown User'}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {booking.room?.name || 'Room'}

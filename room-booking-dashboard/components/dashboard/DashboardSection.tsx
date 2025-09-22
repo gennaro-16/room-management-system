@@ -4,7 +4,6 @@ import React from 'react';
 import { StatsCards } from './StatsCards';
 import { RoomStatusOverview } from './RoomStatusOverview';
 import { TodaysBookings } from './TodaysBookings';
-import { RoomMapSection } from './RoomMapSection';
 import { UserDashboard } from './UserDashboard';
 import { useDashboardOverview, useRooms, useBookingsSummary } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -63,8 +62,6 @@ export function DashboardSection() {
         />
       </div>
 
-      {/* Room Map */}
-      <RoomMapSection />
     </div>
   );
 }

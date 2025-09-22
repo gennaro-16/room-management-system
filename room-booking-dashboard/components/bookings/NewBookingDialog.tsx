@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreateBookingDto, Room } from '@/lib/api';
+import { CreateBookingDto, Room, BookingStatus } from '@/lib/api';
 import { useRooms } from '@/hooks/useApi';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
@@ -30,14 +30,24 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
   const { data: rooms } = useRooms();
   const [formData, setFormData] = useState<CreateBookingDto>({
     roomId: 0,
+    title: '',
     purpose: '',
+    agenda: '',
     startTime: '',
     endTime: '',
+    expectedAttendees: 1,
+    internalAttendees: [],
+    externalAttendees: [],
+    requiredAmenities: [],
+    isRecurring: false,
+    recurrenceRule: '',
   });
 
   const [selectedDate, setSelectedDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [externalInput, setExternalInput] = useState('');
+  const [amenitiesInput, setAmenitiesInput] = useState('');
 
   useEffect(() => {
     // Set default date to today
@@ -48,7 +58,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.roomId || !selectedDate || !startTime || !endTime) {
+    if (!formData.roomId || !selectedDate || !startTime || !endTime || !formData.title || !formData.purpose) {
       return;
     }
 
@@ -58,6 +68,12 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
 
       await onSubmit({
         ...formData,
+        externalAttendees: externalInput
+          ? externalInput.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
+        requiredAmenities: amenitiesInput
+          ? amenitiesInput.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
         startTime: startDateTime,
         endTime: endDateTime,
       });
@@ -65,19 +81,29 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
       // Reset form
       setFormData({
         roomId: 0,
+        title: '',
         purpose: '',
+        agenda: '',
         startTime: '',
         endTime: '',
+        expectedAttendees: 1,
+        internalAttendees: [],
+        externalAttendees: [],
+        requiredAmenities: [],
+        isRecurring: false,
+        recurrenceRule: '',
       });
       setStartTime('');
       setEndTime('');
+      setExternalInput('');
+      setAmenitiesInput('');
       onOpenChange(false);
     } catch (error) {
       // Error is handled by the parent component
     }
   };
 
-  const handleInputChange = (field: keyof CreateBookingDto, value: string | number) => {
+  const handleInputChange = (field: keyof CreateBookingDto, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -88,96 +114,203 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Créer une nouvelle réservation</DialogTitle>
-          <DialogDescription>Planifiez une réservation de salle avec une plage de date et d'heure</DialogDescription>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-xl font-semibold">Créer une nouvelle réservation</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Planifiez une réservation de salle avec une plage de date et d'heure
+          </DialogDescription>
         </DialogHeader>
         
-        {error && <ErrorAlert error={error} />}
+        {error && <ErrorAlert error={error} compact={true} onDismiss={() => {}} />}
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          {/* Date and Room Selection */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground border-b pb-2">Informations de base</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="booking-date" className="text-sm font-medium">Date de réservation</Label>
+                <Input 
+                  id="booking-date" 
+                  type="date" 
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  required
+                  className="input-albaraka"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="booking-room" className="text-sm font-medium">Salle</Label>
+                <Select value={formData.roomId.toString()} onValueChange={(value) => handleInputChange('roomId', parseInt(value))}>
+                  <SelectTrigger className="input-albaraka">
+                    <SelectValue placeholder="Sélectionner une salle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRooms.map((room) => (
+                      <SelectItem key={room.id} value={room.id.toString()}>
+                        {room.name} (Capacité : {room.capacity})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Time Selection */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground border-b pb-2">Horaires</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start-time" className="text-sm font-medium">Heure de début</Label>
+                <Input 
+                  id="start-time" 
+                  type="time" 
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  required
+                  className="input-albaraka"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end-time" className="text-sm font-medium">Heure de fin</Label>
+                <Input 
+                  id="end-time" 
+                  type="time" 
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                  className="input-albaraka"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Meeting Details */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground border-b pb-2">Détails de la réunion</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-sm font-medium">Titre de la réunion</Label>
+                <Input 
+                  id="title" 
+                  placeholder="Titre de la réunion" 
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  required
+                  className="input-albaraka"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expectedAttendees" className="text-sm font-medium">Participants attendus</Label>
+                <Input 
+                  id="expectedAttendees" 
+                  type="number"
+                  min="1"
+                  value={formData.expectedAttendees}
+                  onChange={(e) => handleInputChange('expectedAttendees', parseInt(e.target.value) || 1)}
+                  required
+                  className="input-albaraka"
+                />
+              </div>
+            </div>
+            
             <div className="space-y-2">
-              <Label htmlFor="booking-date">Date</Label>
+              <Label htmlFor="booking-purpose" className="text-sm font-medium">Objectif de la réunion</Label>
               <Input 
-                id="booking-date" 
-                type="date" 
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                required
+                id="booking-purpose" 
+                placeholder="e.g., Team Meeting, Client Presentation" 
+                value={formData.purpose}
+                onChange={(e) => handleInputChange('purpose', e.target.value)}
+                className="input-albaraka"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="booking-room">Salle</Label>
-              <Select value={formData.roomId.toString()} onValueChange={(value) => handleInputChange('roomId', parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une salle" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableRooms.map((room) => (
-                    <SelectItem key={room.id} value={room.id.toString()}>
-                      {room.name} (Capacité : {room.capacity})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start-time">Heure de début</Label>
-              <Input 
-                id="start-time" 
-                type="time" 
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end-time">Heure de fin</Label>
-              <Input 
-                id="end-time" 
-                type="time" 
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
+              <Label htmlFor="agenda" className="text-sm font-medium">Agenda (optionnel)</Label>
+              <Textarea 
+                id="agenda" 
+                placeholder="Détails supplémentaires (agenda)" 
+                rows={3} 
+                value={formData.agenda}
+                onChange={(e) => handleInputChange('agenda', e.target.value)}
+                className="input-albaraka"
               />
             </div>
           </div>
 
-
-          <div className="space-y-2">
-            <Label htmlFor="booking-purpose">Objectif de la réunion</Label>
-            <Input 
-              id="booking-purpose" 
-              placeholder="e.g., Team Meeting, Client Presentation" 
-              value={formData.purpose}
-              onChange={(e) => handleInputChange('purpose', e.target.value)}
-            />
+          {/* Additional Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground border-b pb-2">Informations supplémentaires</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="externalAttendees" className="text-sm font-medium">Participants externes</Label>
+                <Input 
+                  id="externalAttendees"
+                  placeholder="Nom1, Nom2"
+                  value={externalInput}
+                  onChange={(e) => setExternalInput(e.target.value)}
+                  className="input-albaraka"
+                />
+                <p className="text-xs text-muted-foreground">Séparés par des virgules</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="requiredAmenities" className="text-sm font-medium">Équipements requis</Label>
+                <Input 
+                  id="requiredAmenities"
+                  placeholder="projector, whiteboard"
+                  value={amenitiesInput}
+                  onChange={(e) => setAmenitiesInput(e.target.value)}
+                  className="input-albaraka"
+                />
+                <p className="text-xs text-muted-foreground">Séparés par des virgules</p>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="booking-description">Description (optionnelle)</Label>
-            <Textarea 
-              id="booking-description" 
-              placeholder="Détails supplémentaires sur la réunion" 
-              rows={3} 
-            />
+          {/* Recurring Options */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground border-b pb-2">Options de récurrence</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="isRecurring" className="text-sm font-medium">Récurrent</Label>
+                <Select value={formData.isRecurring ? 'yes' : 'no'} onValueChange={(v) => handleInputChange('isRecurring', v === 'yes') }>
+                  <SelectTrigger className="input-albaraka">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="no">Non</SelectItem>
+                    <SelectItem value="yes">Oui</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {formData.isRecurring && (
+                <div className="space-y-2">
+                  <Label htmlFor="recurrenceRule" className="text-sm font-medium">Règle RRULE</Label>
+                  <Input 
+                    id="recurrenceRule"
+                    placeholder="RRULE:FREQ=WEEKLY;INTERVAL=1"
+                    value={formData.recurrenceRule || ''}
+                    onChange={(e) => handleInputChange('recurrenceRule', e.target.value)}
+                    className="input-albaraka"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t border-border">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => onOpenChange(false)}
               disabled={loading}
+              className="px-6"
             >
               Annuler
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="btn-albaraka-primary px-6">
               {loading ? <LoadingSpinner size="sm" /> : 'Créer la réservation'}
             </Button>
           </div>

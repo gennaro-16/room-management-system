@@ -214,15 +214,15 @@ export function UserManagement() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {getRoleIcon(user.role || 'USER')}
-                          <Badge className={apiUtils.getRoleColor(user.role || 'USER')}>
-                            {(user.role || 'USER').replace('_', ' ')}
+                          <Badge className={apiUtils.getRoleColor(user.role)}>
+                            {user.role.replace('_', ' ')}
                           </Badge>
                         </div>
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(user)}
                       </TableCell>
-                      <TableCell>{user.department || 'N/A'}</TableCell>
+                      <TableCell>{(typeof user.department === 'string' ? user.department : user.department?.name) || 'N/A'}</TableCell>
                       <TableCell>
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                       </TableCell>
@@ -294,7 +294,7 @@ export function UserManagement() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{user.department || 'N/A'}</TableCell>
+                      <TableCell>{(typeof user.department === 'string' ? user.department : user.department?.name) || 'N/A'}</TableCell>
                       <TableCell>
                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                       </TableCell>
