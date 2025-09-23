@@ -21,22 +21,31 @@ export class VisitService {
 async getVisits({
   page,
   limit,
-  date,
+  startDate,
+  endDate,
   visitorName,
   room,
   department,
-  status, // "active" | "checkedout" | "all" | undefined
+  status,
 }) {
   const skip = (page - 1) * limit;
   const take = limit;
 
   const where: any = {};
 
-  // ✅ Date filter
-  if (date) {
+  // ✅ Date range filter
+  if (startDate && endDate) {
     where.checkedIn = {
-      gte: new Date(date + 'T00:00:00Z'),
-      lte: new Date(date + 'T23:59:59Z'),
+      gte: new Date(startDate + 'T00:00:00Z'),
+      lte: new Date(endDate + 'T23:59:59Z'),
+    };
+  } else if (startDate) {
+    where.checkedIn = {
+      gte: new Date(startDate + 'T00:00:00Z'),
+    };
+  } else if (endDate) {
+    where.checkedIn = {
+      lte: new Date(endDate + 'T23:59:59Z'),
     };
   }
 
@@ -69,13 +78,10 @@ async getVisits({
 
   // ✅ Status filter
   if (status === 'isActive') {
-    // visits currently checked in
     where.checkedOut = null;
-  } else if (status === 'isCheckedout') {
-    // visits already checked out
+  } else if (status === 'isCheckedOut') {
     where.checkedOut = { not: null };
   }
-  // if status is "all" or undefined → no filter applied
 
   // ✅ Query Prisma
   const [data, total] = await Promise.all([
@@ -104,6 +110,8 @@ async getVisits({
     totalPages: Math.ceil(total / take),
   };
 }
+
+
 
 
   async create(dto: CreateVisitDto) {

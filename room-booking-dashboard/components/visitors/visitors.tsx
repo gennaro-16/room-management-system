@@ -167,6 +167,7 @@ export default function VisitorsPage() {
   // Save visitor edit
   const handleEditVisitor = async (visitor: VisitorItem, editForm: UpdateVisitorDtoFront) => {
     setEditLoading(true)
+    setShowVisitorDetails(null)
     setEditError(null)
     try {
       await visitorsApi.update(visitor.id, editForm)
@@ -174,7 +175,7 @@ export default function VisitorsPage() {
       await loadVisitors()
       // Refresh details popup
       const updated = visitors.find((v) => v.id === visitor.id)
-      setShowVisitorDetails(updated || null)
+      setShowVisitorDetails( null)
     } catch (err: any) {
       setEditError(err.message || "Error updating visitor.")
       setEditLoading(false)
@@ -249,11 +250,10 @@ const handleCreateBooking = async (data: CreateBookingDto) => {
 
   return (
     <div className="max-w-6xl mx-auto flex flex-col py-9 px-4 min-h-screen">
-      <h1 className="text-4xl font-bold text-center mb-10 text-foreground">Visitor & Visit Management</h1>
+      {/* <h1 className="text-4xl font-bold text-center mb-10 text-foreground">Visitor & Visit Management</h1>
 
       {/* Stats cards */}
-      <VisitorStats todayCount={todayCount} activeCount={activeCount} checkedOutCount={checkedOutCount} />
-
+      {/* <VisitorStats todayCount={todayCount} activeCount={activeCount} checkedOutCount={checkedOutCount} /> */} 
       {/* Filters & Add button */}
       <VisitorFilters filters={filters} onFiltersChange={setFilters} onAddVisitor={handleShowAddVisitor} />
 

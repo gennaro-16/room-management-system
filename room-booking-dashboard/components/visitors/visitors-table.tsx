@@ -55,33 +55,31 @@ export function VisitorsTable({
 
   return (
     <div className="rounded-xl shadow-lg bg-card border border-border overflow-hidden">
-      <div className="overflow-x-auto max-h-[60vh]">
+      <div className="max-h-[60vh] overflow-y-auto">
         <table className="w-full border-collapse text-base">
-          <thead>
-            <tr className="bg-primary text-primary-foreground">
-              <th className="p-4 font-semibold text-left">Visitor</th>
-              <th className="p-4 font-semibold text-left">Date</th>
-                            <th className="p-4 font-semibold text-left">Check-in</th>
-
-              <th className="p-4 font-semibold text-left">Purpose</th>
-              <th className="p-4 font-semibold text-left">Room</th>
-              <th className="p-4 font-semibold text-left">Department</th>
-                            <th className="p-4 font-semibold text-left">Check-out</th>
-
+          <thead className="sticky top-0 bg-primary text-primary-foreground z-10">
+            <tr>
+              <th className="py-4 px-2 font-semibold text-center">Visiteur</th>
+              <th className="py-4 px-2 font-semibold text-center">Date</th>
+              <th className="py-4 px-2 font-semibold text-center">Arrivée</th>
+              <th className="py-4 px-2 font-semibold text-center">Motif</th>
+              <th className="py-4 px-2 font-semibold text-center">Salle</th>
+              <th className="py-4 px-2 font-semibold text-center">Département</th>
+              <th className="py-4 px-2 font-semibold text-center">Départ</th>
             </tr>
-          </thead>
-          <tbody>
+          </thead>  
+          <tbody className="overflow-y-auto">
             {!loading && visits.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center py-12 text-muted-foreground">
-                  No visitors found.
+                  Aucun visiteur trouvé.
                 </td>
               </tr>
             )}
             {loading && (
               <tr>
                 <td colSpan={7} className="text-center py-12 text-muted-foreground">
-                  Loading...
+                  Chargement...
                 </td>
               </tr>
             )}
@@ -91,19 +89,23 @@ export function VisitorsTable({
                 className="hover:bg-accent/50 cursor-pointer transition-colors border-b border-border"
                 onClick={() => onVisitorClick(visit.visitor)}
               >
-                <td className="px-4 py-3">
+                <td className="px-2 py-3 text-center">
                   {visit.visitor.firstName} {visit.visitor.lastName}
                 </td>
-                <td className="px-4 py-3">{format(new Date(visit.checkedIn), "yyyy-MM-dd")}</td>
-                                <td className="px-4 py-3">{format(new Date(visit.checkedIn), "HH:mm")}</td>
-
-                <td className="px-4 py-3">{visit.purpose ?? "-"}</td>
-
-                <td className="px-4 py-3">{visit.booking?.room?.name ?? visit.booking?.room ?? "-"}</td>
-                <td className="px-4 py-3">
+                <td className="px-2 py-3 text-center">
+                  {format(new Date(visit.checkedIn), "yyyy-MM-dd")}
+                </td>
+                <td className="px-2 py-3 text-center">
+                  {format(new Date(visit.checkedIn), "HH:mm")}
+                </td>
+                <td className="px-2 py-3 text-center">{visit.purpose ?? "-"}</td>
+                <td className="px-2 py-3 text-center">
+                  {visit.booking?.room?.name ?? visit.booking?.room ?? "-"}
+                </td>
+                <td className="px-2 py-3 text-center">
                   {visit.booking?.room?.department?.name ?? visit.booking?.room?.department ?? "-"}
                 </td>
-                                <td className="px-4 py-3">
+                <td className="px-2 py-3 text-center">
                   {visit.checkedOut ? (
                     format(new Date(visit.checkedOut), "HH:mm")
                   ) : (
@@ -114,7 +116,7 @@ export function VisitorsTable({
                       }}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90 px-3 py-1 rounded-lg font-semibold transition-colors"
                     >
-                      Checkout
+                      Départ
                     </button>
                   )}
                 </td>
@@ -127,8 +129,8 @@ export function VisitorsTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-6 py-4 bg-muted/30 border-t border-border">
           <div className="text-sm text-muted-foreground">
-            Showing {Math.min((currentPage - 1) * 8 + 1, totalVisits)} to {Math.min(currentPage * 8, totalVisits)} of{" "}
-            {totalVisits} visits
+            Affichage de {Math.min((currentPage - 1) * 8 + 1, totalVisits)} à{" "}
+            {Math.min(currentPage * 8, totalVisits)} sur {totalVisits} visites
           </div>
 
           <div className="flex items-center gap-2">
@@ -138,7 +140,7 @@ export function VisitorsTable({
               className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              Précédent
             </button>
 
             <div className="flex items-center gap-1">
@@ -162,7 +164,7 @@ export function VisitorsTable({
               disabled={currentPage === totalPages}
               className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Next
+              Suivant
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>

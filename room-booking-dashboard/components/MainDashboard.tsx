@@ -14,6 +14,7 @@ import DepartmentsManagement from './admin/DepartmentsManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import VisitorsPage from './visitors/visitors';
+import StatisticsPage from './visitors/statistics';
 export function MainDashboard() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,7 +30,9 @@ export function MainDashboard() {
       case 'dashboard':
         return <DashboardSection />;
       case 'Visiteurs':
-        return <VisitorsPage />;  
+        return <VisitorsPage />; 
+      case 'statistiques':
+        return <StatisticsPage/>  
       case 'rooms':
         return <RoomsSection />;
       case 'bookings':

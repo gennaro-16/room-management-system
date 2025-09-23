@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VisitorsModule } from './visitors/visitors.module';
 import { VisitModule } from './visits/visits.module';
+import { StatisticsModule } from './statistics/statistics.module';
 @Module({
   imports: [
     PrismaModule,
@@ -24,7 +25,8 @@ import { VisitModule } from './visits/visits.module';
     AuthModule,
     UsersModule,
     VisitModule,
-    VisitorsModule
+    VisitorsModule,
+    StatisticsModule
   ],
   controllers: [AppController],
   providers: [AppService],

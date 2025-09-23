@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Patch, Param, Body,ParseIntPipe, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body,ParseIntPipe, NotFoundException,UseGuards } from '@nestjs/common';
 import type { CreateVisitorWithVisitDto } from './visitors.service';
 import { VisitorService } from './visitors.service';
 import { VisitService } from '../visits/visits.service';
 import { CreateVisitorDto } from './dto/create-visitor.dto';
 import { UpdateVisitorDto } from './dto/update-visitor.dto';
 import { CreateVisitDto } from '../visits/dto/create-visit.dto';
-
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('visitors')
 export class VisitorController {
   constructor(

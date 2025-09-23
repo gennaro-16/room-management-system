@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Patch, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query ,UseGuards} from '@nestjs/common';
 import { VisitService } from './visits.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitDto } from './dto/update-visit.dto';
-
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('visits')
 export class VisitController {
   constructor(private readonly visitService: VisitService) {}
@@ -11,26 +13,29 @@ export class VisitController {
     const filters = await this.visitService.getFilters();
     return filters; // { rooms: [...], departments: [...] }
   }
-@Get()
+ @Get()
 async getVisits(
   @Query('page') page = '1',
   @Query('limit') limit = '8',
-  @Query('date') date?: string,
+  @Query('startDate') startDate?: string,
+  @Query('endDate') endDate?: string,
   @Query('visitorName') visitorName?: string,
   @Query('room') room?: string,
   @Query('department') department?: string,
-  @Query('status') status?: string, // 👈 added status query param
+  @Query('status') status?: string,
 ) {
   return this.visitService.getVisits({
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
-    date,
+    startDate,
+    endDate,
     visitorName,
     room,
     department,
-    status, // 👈 pass to service
+    status,
   });
 }
+
 
 
 

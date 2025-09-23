@@ -80,7 +80,8 @@ async getAllVisitsOfVisitor(visitorId: number): Promise<VisitorItem> {
   },
 
   async getAll({
-    date,
+    startDate,
+    endDate,
     status,
     search,
     room,
@@ -88,7 +89,8 @@ async getAllVisitsOfVisitor(visitorId: number): Promise<VisitorItem> {
     page = 1,
     limit = 8,
   }: {
-    date?: string;
+    startDate?: string;
+    endDate?: string;
     status?: string;
     search?: string;
     room?: string;
@@ -99,7 +101,8 @@ async getAllVisitsOfVisitor(visitorId: number): Promise<VisitorItem> {
     const params = new URLSearchParams();
     params.append('page', String(page));
     params.append('limit', String(limit));
-    if (date) params.append('date', date);
+    if (startDate) params.append('startDate', startDate);
+    if(endDate) params.append('endDate', endDate);
  
 if (status === 'isActive' || status === 'isCheckedOut') {
   params.append('status', status);
