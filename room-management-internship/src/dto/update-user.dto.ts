@@ -27,7 +27,8 @@ export class UpdateUserDto {
   phone?: string;
 
   @IsInt()
-  departmentId: number;
+  @IsOptional()
+  departmentId?: number;
 
   @IsEnum(UserRole)
   @IsOptional()

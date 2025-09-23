@@ -26,8 +26,8 @@ export class CreateBookingDto {
 
   @IsOptional()
   @IsArray()
-  @IsInt({ each: true })
-  internalAttendees?: number[];
+  @IsString({ each: true })
+  internalAttendees?: string[];
 
   @IsOptional()
   @IsArray()

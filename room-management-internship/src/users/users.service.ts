@@ -242,15 +242,15 @@ export class UsersService {
     };
 
     if (approveUserDto.isApproved) {
-      updateData.approvedBy = currentUser.id;
+      updateData.approvedById = currentUser.id;
       updateData.approvedAt = new Date();
-      updateData.rejectedBy = null;
+      updateData.rejectedById = null;
       updateData.rejectedAt = null;
       updateData.rejectionReason = null;
     } else {
-      updateData.approvedBy = null;
+      updateData.approvedById = null;
       updateData.approvedAt = null;
-      updateData.rejectedBy = currentUser.id;
+      updateData.rejectedById = currentUser.id;
       updateData.rejectedAt = new Date();
       updateData.rejectionReason = approveUserDto.rejectionReason;
     }

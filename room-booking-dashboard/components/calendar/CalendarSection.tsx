@@ -10,14 +10,16 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarIcon, Clock, Users, Plus, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfDay, endOfDay, isSameDay, parseISO, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto, type User } from '@/lib/api';
+import { bookingsApi, roomsApi, type Booking, type Room, type CreateBookingDto, type UpdateBookingDto, type User } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUsers, useCreateBooking } from '@/hooks/useApi';
+import { useUsers, useCreateBooking, useUpdateBooking } from '@/hooks/useApi';
 import { CalendarGrid } from './CalendarGrid';
 import { CalendarUtils } from './CalendarUtils';
 import { BookingDetailsDialog } from './BookingDetailsDialog';
 import { NewBookingDialog } from '@/components/bookings/NewBookingDialog';
+import { EditBookingDialog } from '@/components/bookings/EditBookingDialog';
+import DayTimeline from './DayTimeline';
 
 interface CalendarEvent {
   id: number;
@@ -44,8 +46,10 @@ export function CalendarSection() {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isBookingDetailsOpen, setIsBookingDetailsOpen] = useState(false);
+  const [isEditBookingOpen, setIsEditBookingOpen] = useState(false);
   const { toast } = useToast();
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
+  const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
 
   const isAdminRole = hasRole(['ADMIN', 'SUPER_ADMIN']);
 
@@ -163,8 +167,8 @@ export function CalendarSection() {
   };
 
   const handleEditBooking = (booking: Booking) => {
-    // TODO: Implement edit booking functionality
-    console.log('Edit booking:', booking);
+    setSelectedBooking(booking);
+    setIsEditBookingOpen(true);
   };
 
   const handleDeleteBooking = async (booking: Booking) => {
@@ -182,6 +186,17 @@ export function CalendarSection() {
         description: "Failed to cancel booking",
         variant: "destructive",
       });
+    }
+  };
+
+  // Approve from timeline helper (admin only UI passes here)
+  const handleApproveBookingFromTimeline = async (booking: Booking) => {
+    try {
+      await bookingsApi.approve(booking.id);
+      toast({ title: 'Succès', description: 'Réservation approuvée' });
+      loadBookings();
+    } catch (error) {
+      toast({ title: 'Erreur', description: "Impossible d'approuver cette réservation", variant: 'destructive' });
     }
   };
 
@@ -206,8 +221,8 @@ export function CalendarSection() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Calendar</CardTitle>
-          <CardDescription>Loading calendar data...</CardDescription>
+          <CardTitle>Calendrier</CardTitle>
+          <CardDescription>Chargement des données du calendrier...</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-64">
@@ -223,14 +238,14 @@ export function CalendarSection() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Calendar</h2>
-          <p className="text-muted-foreground">View and manage room reservations</p>
+          <h2 className="text-2xl font-bold">Calendrier</h2>
+          <p className="text-muted-foreground">Voir et gérer les réservations de salles</p>
         </div>
         
         <div className="flex gap-2">
           <Button onClick={() => setIsNewBookingOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            New Booking
+            Nouvelle réservation
           </Button>
         </div>
       </div>
@@ -241,14 +256,14 @@ export function CalendarSection() {
           {/* Group By Toggle for Admins */}
           {isAdminRole && (
             <div className="flex items-center gap-2">
-              <Label htmlFor="group-by">Group by:</Label>
+              <Label htmlFor="group-by">Grouper par :</Label>
               <Select value={groupBy} onValueChange={(value) => setGroupBy(value as 'room' | 'user')}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="room">Room</SelectItem>
-                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="room">Salle</SelectItem>
+                  <SelectItem value="user">Utilisateur</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -258,10 +273,10 @@ export function CalendarSection() {
           {groupBy === 'room' && (
             <Select value={selectedRoom} onValueChange={setSelectedRoom}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by room" />
+                <SelectValue placeholder="Filtrer par salle" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Rooms</SelectItem>
+                <SelectItem value="all">Toutes les salles</SelectItem>
                 {rooms.map((room) => (
                   <SelectItem key={room.id} value={room.id.toString()}>
                     {room.name}
@@ -275,10 +290,10 @@ export function CalendarSection() {
           {isAdminRole && groupBy === 'user' && (
             <Select value={selectedUser} onValueChange={setSelectedUser}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by user" />
+                <SelectValue placeholder="Filtrer par utilisateur" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Users</SelectItem>
+                <SelectItem value="all">Tous les utilisateurs</SelectItem>
                 {users?.map((user) => (
                   <SelectItem key={user.id} value={user.id.toString()}>
                     {user.firstName && user.lastName 
@@ -293,9 +308,9 @@ export function CalendarSection() {
         
         <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'month' | 'week' | 'day')}>
           <TabsList>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="day">Day</TabsTrigger>
+            <TabsTrigger value="month">Mois</TabsTrigger>
+            <TabsTrigger value="week">Semaine</TabsTrigger>
+            <TabsTrigger value="day">Jour</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -309,8 +324,8 @@ export function CalendarSection() {
                 <CardTitle className="flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5" />
                   {viewMode === 'month' && format(selectedDate, 'MMMM yyyy')}
-                  {viewMode === 'week' && `Week of ${format(getViewStartDate(), 'MMM d')}`}
-                  {viewMode === 'day' && format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                  {viewMode === 'week' && `Semaine du ${format(getViewStartDate(), 'dd MMM')}`}
+                  {viewMode === 'day' && format(selectedDate, 'EEEE dd MMMM yyyy')}
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button
@@ -325,7 +340,7 @@ export function CalendarSection() {
                     size="sm"
                     onClick={() => setSelectedDate(new Date())}
                   >
-                    Today
+                    Aujourd'hui
                   </Button>
                   <Button
                     variant="outline"
@@ -360,17 +375,17 @@ export function CalendarSection() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                {format(selectedDate, 'MMM d, yyyy')}
+                {format(selectedDate, 'dd MMM yyyy')}
               </CardTitle>
               <CardDescription>
-                {getBookingsForSelectedDate().length} booking(s) scheduled
+                {getBookingsForSelectedDate().length} réservation(s) planifiée(s)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {getBookingsForSelectedDate().length === 0 ? (
                   <p className="text-muted-foreground text-center py-4">
-                    No bookings scheduled for this date
+                    Aucune réservation prévue pour cette date
                   </p>
                 ) : (
                   getBookingsForSelectedDate().map((booking) => (
@@ -388,7 +403,7 @@ export function CalendarSection() {
                       <div className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Users className="h-3 w-3" />
-                          {booking.room?.name || 'Room'}
+                          {booking.room?.name || 'Salle'}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
@@ -407,6 +422,18 @@ export function CalendarSection() {
         </div>
       </div>
 
+      {/* Day timeline as a separate, large section */}
+      <div>
+        <DayTimeline 
+          date={selectedDate} 
+          bookings={getBookingsForSelectedDate()} 
+          rooms={rooms} 
+          isAdmin={isAdminRole}
+          onBookingClick={(b) => handleBookingClick(b)}
+          onApprove={(b) => handleApproveBookingFromTimeline(b)}
+        />
+      </div>
+
       {/* Booking Details Dialog */}
       <BookingDetailsDialog
         booking={selectedBooking}
@@ -415,6 +442,25 @@ export function CalendarSection() {
         onClose={() => setIsBookingDetailsOpen(false)}
         onEdit={handleEditBooking}
         onDelete={handleDeleteBooking}
+      />
+
+      {/* Edit Booking Dialog */}
+      <EditBookingDialog
+        open={isEditBookingOpen}
+        onOpenChange={setIsEditBookingOpen}
+        booking={selectedBooking}
+        onSubmit={async (id: number, data: UpdateBookingDto) => {
+          // If user edits an approved booking, set back to PENDING (re-approval flow)
+          if (selectedBooking?.status === 'APPROVED') {
+            data = { ...data, status: 'PENDING' };
+          }
+          await updateBooking(id, data);
+          setIsEditBookingOpen(false);
+          setIsBookingDetailsOpen(false);
+          loadBookings();
+        }}
+        loading={updateLoading}
+        error={updateError}
       />
 
       {/* New Booking Dialog */}

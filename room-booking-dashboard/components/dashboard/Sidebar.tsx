@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
-  { icon: Home, label: 'Tableau de bord', id: 'dashboard' },
+  ...(isAdmin ? [{ icon: Home, label: 'Tableau de bord', id: 'dashboard' }] : []),
   { icon: Building2, label: 'Salles', id: 'rooms' },
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },
@@ -78,7 +78,7 @@ export function Sidebar({ activeSection, onSectionChange, sidebarOpen, onSidebar
               />
               <div className="flex flex-col">
                 <h1 className="text-sm font-bold text-sidebar-foreground">AL BARAKA</h1>
-                <p className="text-xs text-sidebar-foreground/70">ROOM BOOKING</p>
+                <p className="text-xs text-sidebar-foreground/70">RÉSERVATION DE SALLES</p>
               </div>
             </div>
             <Button 

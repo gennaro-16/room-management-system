@@ -237,23 +237,27 @@ export function RoomsSection() {
       )}
 
       {/* Add Room Dialog */}
-      <AddRoomDialog
-        open={isAddRoomOpen}
-        onOpenChange={setIsAddRoomOpen}
-        onSubmit={handleCreateRoom}
-        loading={createLoading}
-        error={createError}
-      />
+      {isAdmin() && (
+        <AddRoomDialog
+          open={isAddRoomOpen}
+          onOpenChange={setIsAddRoomOpen}
+          onSubmit={handleCreateRoom}
+          loading={createLoading}
+          error={createError}
+        />
+      )}
 
       {/* Edit Room Dialog */}
-      <EditRoomDialog
-        open={isEditRoomOpen}
-        onOpenChange={setIsEditRoomOpen}
-        room={selectedRoom}
-        onSubmit={handleEditRoom}
-        loading={updateRoomLoading}
-        error={updateRoomError}
-      />
+      {isAdmin() && (
+        <EditRoomDialog
+          open={isEditRoomOpen}
+          onOpenChange={setIsEditRoomOpen}
+          room={selectedRoom}
+          onSubmit={handleEditRoom}
+          loading={updateRoomLoading}
+          error={updateRoomError}
+        />
+      )}
 
       {/* New Booking Dialog */}
       <NewBookingDialog

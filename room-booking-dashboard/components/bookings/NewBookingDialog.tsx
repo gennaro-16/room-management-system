@@ -47,7 +47,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [externalInput, setExternalInput] = useState('');
+  const [internalInput, setInternalInput] = useState('');
   const [amenitiesInput, setAmenitiesInput] = useState('');
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     // Set default date to today
@@ -57,8 +59,44 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.roomId || !selectedDate || !startTime || !endTime || !formData.title || !formData.purpose) {
+    setFormErrors({});
+
+    const errors: { [key: string]: string } = {};
+
+    // Basic validations
+    if (!formData.roomId) {
+      errors.roomId = 'Veuillez sélectionner une salle';
+    }
+    if (!selectedDate) {
+      errors.selectedDate = 'Veuillez sélectionner une date';
+    } else {
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (selectedDate < todayStr) {
+        errors.selectedDate = 'La date ne peut pas être dans le passé';
+      }
+    }
+    if (!startTime) {
+      errors.startTime = "L'heure de début est requise";
+    }
+    if (!endTime) {
+      errors.endTime = "L'heure de fin est requise";
+    }
+    if (selectedDate && startTime && endTime) {
+      const start = new Date(`${selectedDate}T${startTime}`);
+      const end = new Date(`${selectedDate}T${endTime}`);
+      if (end <= start) {
+        errors.endTime = "L'heure de fin doit être après l'heure de début";
+      }
+    }
+    if (!formData.title.trim()) {
+      errors.title = 'Le titre est requis';
+    }
+    if (!formData.purpose.trim()) {
+      errors.purpose = "L'objectif est requis";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -68,6 +106,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
 
       await onSubmit({
         ...formData,
+        internalAttendees: internalInput
+          ? internalInput.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
         externalAttendees: externalInput
           ? externalInput.split(',').map(s => s.trim()).filter(Boolean)
           : [],
@@ -96,7 +137,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
       setStartTime('');
       setEndTime('');
       setExternalInput('');
+      setInternalInput('');
       setAmenitiesInput('');
+      setFormErrors({});
       onOpenChange(false);
     } catch (error) {
       // Error is handled by the parent component
@@ -138,7 +181,11 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
                   onChange={(e) => setSelectedDate(e.target.value)}
                   required
                   className="input-albaraka"
+                  min={new Date().toISOString().split('T')[0]}
                 />
+                {formErrors.selectedDate && (
+                  <p className="text-xs text-red-600">{formErrors.selectedDate}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="booking-room" className="text-sm font-medium">Salle</Label>
@@ -154,6 +201,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
                     ))}
                   </SelectContent>
                 </Select>
+                {formErrors.roomId && (
+                  <p className="text-xs text-red-600">{formErrors.roomId}</p>
+                )}
               </div>
             </div>
           </div>
@@ -172,6 +222,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
                   required
                   className="input-albaraka"
                 />
+                {formErrors.startTime && (
+                  <p className="text-xs text-red-600">{formErrors.startTime}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="end-time" className="text-sm font-medium">Heure de fin</Label>
@@ -183,6 +236,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
                   required
                   className="input-albaraka"
                 />
+                {formErrors.endTime && (
+                  <p className="text-xs text-red-600">{formErrors.endTime}</p>
+                )}
               </div>
             </div>
           </div>
@@ -201,6 +257,9 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
                   required
                   className="input-albaraka"
                 />
+                {formErrors.title && (
+                  <p className="text-xs text-red-600">{formErrors.title}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="expectedAttendees" className="text-sm font-medium">Participants attendus</Label>
@@ -220,11 +279,14 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
               <Label htmlFor="booking-purpose" className="text-sm font-medium">Objectif de la réunion</Label>
               <Input 
                 id="booking-purpose" 
-                placeholder="e.g., Team Meeting, Client Presentation" 
+                placeholder="Ex. : réunion d'équipe, présentation client" 
                 value={formData.purpose}
                 onChange={(e) => handleInputChange('purpose', e.target.value)}
                 className="input-albaraka"
               />
+              {formErrors.purpose && (
+                <p className="text-xs text-red-600">{formErrors.purpose}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -245,6 +307,17 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
             <h3 className="text-sm font-semibold text-foreground border-b pb-2">Informations supplémentaires</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label htmlFor="internalAttendees" className="text-sm font-medium">Participants internes</Label>
+                <Input 
+                  id="internalAttendees"
+                  placeholder="Nom1, Nom2"
+                  value={internalInput}
+                  onChange={(e) => setInternalInput(e.target.value)}
+                  className="input-albaraka"
+                />
+                <p className="text-xs text-muted-foreground">Séparés par des virgules</p>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="externalAttendees" className="text-sm font-medium">Participants externes</Label>
                 <Input 
                   id="externalAttendees"
@@ -259,7 +332,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
                 <Label htmlFor="requiredAmenities" className="text-sm font-medium">Équipements requis</Label>
                 <Input 
                   id="requiredAmenities"
-                  placeholder="projector, whiteboard"
+                  placeholder="projecteur, tableau blanc"
                   value={amenitiesInput}
                   onChange={(e) => setAmenitiesInput(e.target.value)}
                   className="input-albaraka"

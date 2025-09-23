@@ -174,13 +174,6 @@ export class ApprovalsService {
             capacity: true,
           },
         },
-        internalAttendees: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
       },
       orderBy: {
         createdAt: 'asc',

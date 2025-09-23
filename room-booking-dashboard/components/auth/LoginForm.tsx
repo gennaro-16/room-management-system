@@ -125,12 +125,12 @@ export function LoginForm() {
 
         <div className="mt-6 text-center text-sm">
           <p className="text-muted-foreground">
-            Demo credentials:
+            Identifiants de démonstration :
           </p>
           <div className="mt-2 space-y-1 text-xs">
-            <p><strong>Super Admin:</strong> admin@company.com / password123</p>
-            <p><strong>Manager:</strong> manager@company.com / password123</p>
-            <p><strong>User:</strong> john@company.com / password123</p>
+            <p><strong>Super administrateur :</strong> admin@company.com / password123</p>
+            <p><strong>Gestionnaire :</strong> manager@company.com / password123</p>
+            <p><strong>Utilisateur :</strong> john@company.com / password123</p>
           </div>
         </div>
       </CardContent>

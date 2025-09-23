@@ -20,11 +20,11 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 
 @Controller('departments')
-@UseGuards(JwtAuthGuard)
 export class DepartmentsController {
   constructor(private readonly departmentsService: DepartmentsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseGuards(RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   create(@Body() createDepartmentDto: CreateDepartmentDto) {
@@ -32,28 +32,31 @@ export class DepartmentsController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.departmentsService.findAll();
   }
 
   // Public lightweight list for registration (no auth)
   @Get('public')
-  @UseGuards()
   findAllPublic() {
     return this.departmentsService.findAll();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.departmentsService.findOne(id);
   }
 
   @Get(':id/stats')
+  @UseGuards(JwtAuthGuard)
   getStats(@Param('id', ParseIntPipe) id: number) {
     return this.departmentsService.getDepartmentStats(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @UseGuards(RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   update(
@@ -64,6 +67,7 @@ export class DepartmentsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   @UseGuards(RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)

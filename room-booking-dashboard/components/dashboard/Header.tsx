@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, Search, Bell } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { UserProfile } from '@/components/auth/UserProfile';
 
 const sidebarItems = [
@@ -23,6 +25,8 @@ interface HeaderProps {
 }
 
 export function Header({ activeSection, onSidebarToggle }: HeaderProps) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const currentSection = sidebarItems.find((item) => item.id === activeSection);
 
   return (
@@ -51,15 +55,13 @@ export function Header({ activeSection, onSidebarToggle }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" className="hidden sm:flex hover:bg-muted/50">
-          <Search className="h-4 w-4 mr-2" />
-          <span className="text-sm">Rechercher</span>
-        </Button>
-        <Button variant="outline" size="sm" className="relative hover:bg-muted/50">
-          <Bell className="h-4 w-4" />
-          <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full"></span>
-        </Button>
-        <UserProfile />
+        <div
+          role="button"
+          className="rounded-full overflow-hidden cursor-pointer"
+          onClick={() => router.push('/profile')}
+        >
+          <UserProfile />
+        </div>
       </div>
     </header>
   );

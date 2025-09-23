@@ -124,16 +124,7 @@ export function SimpleLoginForm() {
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm">
-          <p className="text-muted-foreground">
-            Identifiants de démonstration :
-          </p>
-          <div className="mt-2 space-y-1 text-xs">
-            <p><strong>Super Admin :</strong> admin@company.com / password123</p>
-            <p><strong>Manager :</strong> manager@company.com / password123</p>
-            <p><strong>Utilisateur :</strong> john@company.com / password123</p>
-          </div>
-        </div>
+        {/* Production: no demo credentials displayed */}
 
         <div className="mt-4 text-center text-sm">
           <p className="text-muted-foreground">

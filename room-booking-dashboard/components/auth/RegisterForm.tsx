@@ -17,10 +17,8 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    employeeId: '',
     firstName: '',
     lastName: '',
-    username: '',
     email: '',
     title: '',
     phone: '',
@@ -48,10 +46,6 @@ export function RegisterForm() {
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
 
-    if (!formData.employeeId.trim()) {
-      newErrors.employeeId = "L'identifiant employé est requis";
-    }
-
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'Le prénom est requis';
     }
@@ -60,11 +54,7 @@ export function RegisterForm() {
       newErrors.lastName = 'Le nom est requis';
     }
 
-    if (!formData.username.trim()) {
-      newErrors.username = "Le nom d'utilisateur est requis";
-    } else if (formData.username.length < 3) {
-      newErrors.username = "Le nom d'utilisateur doit contenir au moins 3 caractères";
-    }
+    // username is auto-généré côté serveur
 
     if (!formData.email.trim()) {
       newErrors.email = "L'e-mail est requis";
@@ -134,20 +124,6 @@ export function RegisterForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="employeeId">Identifiant Employé</Label>
-              <Input
-                id="employeeId"
-                placeholder="EMP001"
-                value={formData.employeeId}
-                onChange={(e) => handleInputChange('employeeId', e.target.value)}
-                disabled={isLoading}
-              />
-              {errors.employeeId && (
-                <p className="text-sm text-red-600">{errors.employeeId}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="firstName">Prénom</Label>
               <Input
                 id="firstName"
@@ -174,20 +150,6 @@ export function RegisterForm() {
                 <p className="text-sm text-red-600">{errors.lastName}</p>
               )}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="username">Nom d'utilisateur</Label>
-            <Input
-              id="username"
-              placeholder="jeandupont"
-              value={formData.username}
-              onChange={(e) => handleInputChange('username', e.target.value)}
-              disabled={isLoading}
-            />
-            {errors.username && (
-              <p className="text-sm text-red-600">{errors.username}</p>
-            )}
           </div>
 
           <div className="space-y-2">

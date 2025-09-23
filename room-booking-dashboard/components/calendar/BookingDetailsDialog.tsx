@@ -50,10 +50,10 @@ export function BookingDetailsDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Booking Details
+            Détails de la réservation
           </DialogTitle>
           <DialogDescription>
-            View and manage booking information
+            Informations de la réservation
           </DialogDescription>
         </DialogHeader>
 
@@ -108,7 +108,7 @@ export function BookingDetailsDialog({
               <div className="flex items-center gap-3">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div className="font-medium">Duration</div>
+                  <div className="font-medium">Durée</div>
                   <div className="text-sm text-muted-foreground">
                     {CalendarUtils.formatDuration(duration)}
                   </div>
@@ -122,7 +122,7 @@ export function BookingDetailsDialog({
                   <div className="flex items-start gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
-                      <div className="font-medium">Purpose</div>
+                      <div className="font-medium">Objectif</div>
                       <div className="text-sm text-muted-foreground">
                         {booking.purpose}
                       </div>
@@ -130,6 +130,40 @@ export function BookingDetailsDialog({
                   </div>
                 </>
               )}
+
+              {/* Participants */}
+              {(booking.internalAttendees && booking.internalAttendees.length > 0) ||
+               (booking.externalAttendees && booking.externalAttendees.length > 0) ? (
+                <>
+                  <Separator />
+                  <div className="space-y-3">
+                    {booking.internalAttendees && booking.internalAttendees.length > 0 && (
+                      <div>
+                        <div className="font-medium mb-2 flex items-center gap-2">
+                          <Users className="h-4 w-4" /> Participants internes ({booking.internalAttendees.length})
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {booking.internalAttendees.map((name, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">{name}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {booking.externalAttendees && booking.externalAttendees.length > 0 && (
+                      <div>
+                        <div className="font-medium mb-2 flex items-center gap-2">
+                          <Users className="h-4 w-4" /> Participants externes ({booking.externalAttendees.length})
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {booking.externalAttendees.map((name, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">{name}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : null}
 
               {/* Room Details */}
               {room?.description && (
@@ -158,18 +192,18 @@ export function BookingDetailsDialog({
           {/* Actions */}
           <div className="flex gap-2 pt-4">
             <Button variant="outline" onClick={onClose} className="flex-1">
-              Close
+              Fermer
             </Button>
             {onEdit && (
               <Button variant="outline" onClick={handleEdit} className="flex-1">
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                Modifier
               </Button>
             )}
             {onDelete && (
               <Button variant="destructive" onClick={handleDelete} className="flex-1">
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                Supprimer
               </Button>
             )}
           </div>

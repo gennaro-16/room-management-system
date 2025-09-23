@@ -112,8 +112,8 @@ export function BookingsSection() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-balance">Booking Management</h2>
-            <p className="text-muted-foreground">View and manage all room reservations</p>
+            <h2 className="text-2xl font-bold text-balance">Gestion des réservations</h2>
+            <p className="text-muted-foreground">Voir et gérer toutes les réservations de salles</p>
           </div>
         </div>
         <div className="flex items-center justify-center py-12">
@@ -128,8 +128,8 @@ export function BookingsSection() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-balance">Booking Management</h2>
-            <p className="text-muted-foreground">View and manage all room reservations</p>
+            <h2 className="text-2xl font-bold text-balance">Gestion des réservations</h2>
+            <p className="text-muted-foreground">Voir et gérer toutes les réservations de salles</p>
           </div>
         </div>
         <ErrorAlert error={error} />
@@ -147,7 +147,7 @@ export function BookingsSection() {
         </div>
         <Button onClick={() => setIsNewBookingOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Booking
+          Nouvelle réservation
         </Button>
       </div>
 
@@ -159,7 +159,7 @@ export function BookingsSection() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search bookings..."
+                  placeholder="Rechercher des réservations..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -169,15 +169,15 @@ export function BookingsSection() {
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as BookingStatus | 'all')}>
               <SelectTrigger className="w-full sm:w-40">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="APPROVED">Approved</SelectItem>
-                <SelectItem value="REJECTED">Rejected</SelectItem>
-                <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="PENDING">En attente</SelectItem>
+                <SelectItem value="APPROVED">Approuvée</SelectItem>
+                <SelectItem value="REJECTED">Refusée</SelectItem>
+                <SelectItem value="CANCELLED">Annulée</SelectItem>
+                <SelectItem value="COMPLETED">Terminée</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -209,8 +209,8 @@ export function BookingsSection() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">{booking.room?.name || 'Room not found'}</span>
-                            <span className="text-muted-foreground">({booking.room?.capacity || 0} people)</span>
+                            <span className="font-medium">{booking.room?.name || 'Salle introuvable'}</span>
+                            <span className="text-muted-foreground">({booking.room?.capacity || 0} personnes)</span>
                           </div>
                           
                           <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export function BookingsSection() {
                                 ? (booking.organizer.firstName && booking.organizer.lastName 
                                     ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
                                     : booking.organizer.username)
-                                : 'Unknown User'}
+                                : 'Utilisateur inconnu'}
                             </span>
                           </div>
                           
@@ -247,7 +247,7 @@ export function BookingsSection() {
                           ) : (
                             <ChevronDown className="h-3 w-3 mr-1" />
                           )}
-                          {isExpanded ? 'Less' : 'Details'}
+                          {isExpanded ? 'Moins de détails' : 'Détails'}
                         </Button>
                         <Button 
                           variant="outline" 
@@ -255,7 +255,7 @@ export function BookingsSection() {
                           onClick={() => handleEditClick(booking)}
                         >
                           <Edit className="h-3 w-3 mr-1" />
-                          Edit
+                          Modifier
                         </Button>
                         <Button
                           variant="outline"
@@ -275,13 +275,13 @@ export function BookingsSection() {
                         <div className="space-y-2">
                           <div className="font-medium text-sm flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
-                            Room Information
+                            Informations sur la salle
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                             {booking.room?.floor && (
                               <div className="flex items-center gap-1">
                                 <Layers className="h-3 w-3" />
-                                <span>Floor {booking.room.floor}</span>
+                                <span>Étage {booking.room.floor}</span>
                               </div>
                             )}
                             {booking.room?.department && (
@@ -308,7 +308,7 @@ export function BookingsSection() {
                               <div className="flex items-start gap-2">
                                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                                 <div>
-                                  <div className="font-medium text-sm">Meeting Title</div>
+                                  <div className="font-medium text-sm">Titre de la réunion</div>
                                   <div className="text-sm text-muted-foreground">{booking.title}</div>
                                 </div>
                               </div>
@@ -318,7 +318,7 @@ export function BookingsSection() {
                               <div className="flex items-start gap-2">
                                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                                 <div>
-                                  <div className="font-medium text-sm">Agenda</div>
+                                  <div className="font-medium text-sm">Ordre du jour</div>
                                   <div className="text-sm text-muted-foreground whitespace-pre-wrap">{booking.agenda}</div>
                                 </div>
                               </div>
@@ -327,7 +327,7 @@ export function BookingsSection() {
                             <div className="flex items-center gap-2">
                               <Timer className="h-4 w-4 text-muted-foreground" />
                               <div>
-                                <div className="font-medium text-sm">Duration</div>
+                                <div className="font-medium text-sm">Durée</div>
                                 <div className="text-sm text-muted-foreground">
                                   {(() => {
                                     const start = new Date(booking.startTime);
@@ -335,7 +335,7 @@ export function BookingsSection() {
                                     const durationMs = end.getTime() - start.getTime();
                                     const hours = Math.floor(durationMs / (1000 * 60 * 60));
                                     const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-                                    return `${hours}h ${minutes}m`;
+                                    return `${hours}h ${minutes}min`;
                                   })()}
                                 </div>
                               </div>
@@ -345,16 +345,16 @@ export function BookingsSection() {
                               <div className="flex items-center gap-2">
                                 <Repeat className="h-4 w-4 text-muted-foreground" />
                                 <div>
-                                  <div className="font-medium text-sm">Recurrence</div>
+                                  <div className="font-medium text-sm">Récurrence</div>
                                   <div className="text-sm text-muted-foreground">
                                     {booking.recurrenceRule ? (
                                       <Badge variant="outline" className="text-xs">
-                                        {booking.recurrenceRule.includes('WEEKLY') ? 'Weekly' : 
-                                         booking.recurrenceRule.includes('DAILY') ? 'Daily' :
-                                         booking.recurrenceRule.includes('MONTHLY') ? 'Monthly' : 'Custom'}
+                                        {booking.recurrenceRule.includes('WEEKLY') ? 'Hebdomadaire' : 
+                                         booking.recurrenceRule.includes('DAILY') ? 'Quotidienne' :
+                                         booking.recurrenceRule.includes('MONTHLY') ? 'Mensuelle' : 'Personnalisée'}
                                       </Badge>
                                     ) : (
-                                      <Badge variant="outline" className="text-xs">Recurring</Badge>
+                                      <Badge variant="outline" className="text-xs">Récurrente</Badge>
                                     )}
                                   </div>
                                 </div>
@@ -367,13 +367,13 @@ export function BookingsSection() {
                             <div className="flex items-start gap-2">
                               <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                               <div className="flex-1">
-                                <div className="font-medium text-sm">Organizer</div>
+                                <div className="font-medium text-sm">Organisateur</div>
                                 <div className="text-sm">
                                   {booking.organizer && typeof booking.organizer === 'object' 
                                     ? (booking.organizer.firstName && booking.organizer.lastName 
                                         ? `${booking.organizer.firstName} ${booking.organizer.lastName}`
                                         : booking.organizer.username)
-                                    : 'Unknown User'}
+                                    : 'Utilisateur inconnu'}
                                   {booking.organizer && typeof booking.organizer === 'object' && booking.organizer.title && (
                                     <div className="text-xs text-muted-foreground">{booking.organizer.title}</div>
                                   )}
@@ -404,18 +404,18 @@ export function BookingsSection() {
                             <div className="flex items-start gap-2">
                               <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
                               <div>
-                                <div className="font-medium text-sm">Expected Attendees</div>
+                                <div className="font-medium text-sm">Participants attendus</div>
                                 <div className="text-sm text-muted-foreground">
-                                  {booking.expectedAttendees} people
+                                  {booking.expectedAttendees} personnes
                                 </div>
                                 {booking.internalAttendees && booking.internalAttendees.length > 0 && (
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    {booking.internalAttendees.length} internal attendees
+                                    {booking.internalAttendees.length} participants internes
                                   </div>
                                 )}
                                 {booking.externalAttendees && booking.externalAttendees.length > 0 && (
                                   <div className="text-xs text-muted-foreground">
-                                    {booking.externalAttendees.length} external attendees
+                                    {booking.externalAttendees.length} participants externes
                                   </div>
                                 )}
                               </div>
@@ -426,7 +426,7 @@ export function BookingsSection() {
                         {/* Room Amenities */}
                         {booking.room?.amenities && booking.room.amenities.length > 0 && (
                           <div className="space-y-2">
-                            <div className="font-medium text-sm">Room Amenities</div>
+                            <div className="font-medium text-sm">Équipements de la salle</div>
                             <div className="flex flex-wrap gap-1">
                               {booking.room.amenities.map((amenity, index) => {
                                 const getAmenityIcon = (amenity: string) => {
@@ -456,7 +456,7 @@ export function BookingsSection() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2">
                               <Settings className="h-4 w-4" />
-                              Required Amenities & Tools
+                              Équipements et outils requis
                             </div>
                             <div className="flex flex-wrap gap-1">
                               {booking.requiredAmenities.map((amenity, index) => {
@@ -486,19 +486,19 @@ export function BookingsSection() {
                         <div className="space-y-2">
                           <div className="font-medium text-sm flex items-center gap-2">
                             <Users className="h-4 w-4" />
-                            Capacity Analysis
+                            Analyse de capacité
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span>Room Capacity:</span>
-                              <span className="font-medium">{booking.room?.capacity} seats</span>
+                              <span>Capacité de la salle :</span>
+                              <span className="font-medium">{booking.room?.capacity} places</span>
                             </div>
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span>Expected Attendees:</span>
-                              <span className="font-medium">{booking.expectedAttendees} people</span>
+                              <span>Participants attendus :</span>
+                              <span className="font-medium">{booking.expectedAttendees} personnes</span>
                             </div>
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                              <span>Capacity Usage:</span>
+                              <span>Taux d'occupation :</span>
                               <span className={`font-medium ${booking.expectedAttendees > (booking.room?.capacity || 0) ? 'text-red-600' : 'text-green-600'}`}>
                                 {Math.round((booking.expectedAttendees / (booking.room?.capacity || 1)) * 100)}%
                               </span>
@@ -507,7 +507,7 @@ export function BookingsSection() {
                           {booking.expectedAttendees > (booking.room?.capacity || 0) && (
                             <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded">
                               <AlertTriangle className="h-4 w-4" />
-                              <span>Warning: Expected attendees exceed room capacity!</span>
+                              <span>Avertissement : les participants attendus dépassent la capacité de la salle !</span>
                             </div>
                           )}
                         </div>
@@ -517,30 +517,15 @@ export function BookingsSection() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2">
                               <UserCheck className="h-4 w-4" />
-                              Internal Attendees ({booking.internalAttendees.length})
+                              Participants internes ({booking.internalAttendees.length})
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {booking.internalAttendees.map((attendee, index) => (
+                              {booking.internalAttendees.map((name, index) => (
                                 <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-sm">
                                   <User className="h-3 w-3 text-muted-foreground" />
                                   <div className="flex-1">
-                                    <div className="font-medium">
-                                      {attendee.firstName && attendee.lastName
-                                        ? `${attendee.firstName} ${attendee.lastName}`
-                                        : attendee.username
-                                      }
-                                    </div>
-                                    {attendee.title && (
-                                      <div className="text-xs text-muted-foreground">{attendee.title}</div>
-                                    )}
+                                    <div className="font-medium">{name}</div>
                                   </div>
-                                  {attendee.department && (
-                                    <Badge variant="outline" className="text-xs">
-                                      {typeof attendee.department === 'string' 
-                                        ? attendee.department 
-                                        : attendee.department?.name}
-                                    </Badge>
-                                  )}
                                 </div>
                               ))}
                             </div>
@@ -552,7 +537,7 @@ export function BookingsSection() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2">
                               <ExternalLink className="h-4 w-4" />
-                              External Attendees ({booking.externalAttendees.length})
+                              Participants externes ({booking.externalAttendees.length})
                             </div>
                             <div className="flex flex-wrap gap-1">
                               {booking.externalAttendees.map((attendee, index) => (
@@ -569,10 +554,10 @@ export function BookingsSection() {
                           <div className="space-y-2">
                             <div className="font-medium text-sm flex items-center gap-2 text-orange-600">
                               <AlertTriangle className="h-4 w-4" />
-                              Room Maintenance Alert
+                              Alerte de maintenance de la salle
                             </div>
                             <div className="p-3 bg-orange-50 border border-orange-200 rounded text-sm">
-                              <div className="font-medium text-orange-800">Room is currently under maintenance</div>
+                              <div className="font-medium text-orange-800">La salle est actuellement en maintenance</div>
                               {booking.room.maintenanceNotes && (
                                 <div className="text-orange-700 mt-1">{booking.room.maintenanceNotes}</div>
                               )}
@@ -584,16 +569,16 @@ export function BookingsSection() {
                         <div className="pt-2 border-t border-gray-100">
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <div className="flex items-center gap-4">
-                              <span>Created on {new Date(booking.createdAt).toLocaleDateString()}</span>
+                              <span>Créée le {new Date(booking.createdAt).toLocaleDateString()}</span>
                               {booking.isRecurring && (
                                 <Badge variant="outline" className="text-xs">
-                                  Recurring
+                                  Récurrente
                                 </Badge>
                               )}
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              <span>Status: {booking.status}</span>
+                              <span>Statut : {booking.status}</span>
                             </div>
                           </div>
                         </div>
@@ -609,11 +594,11 @@ export function BookingsSection() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No bookings found</h3>
+            <h3 className="text-lg font-semibold mb-2">Aucune réservation trouvée</h3>
             <p className="text-muted-foreground text-center mb-4">
               {searchTerm || statusFilter !== 'all' 
-                ? 'No bookings match your current filters. Try adjusting your search criteria.'
-                : 'No bookings have been created yet. Create your first booking to get started.'
+                ? 'Aucune réservation ne correspond à vos filtres actuels. Essayez d\'ajuster vos critères.'
+                : 'Aucune réservation n\'a encore été créée. Créez votre première réservation pour commencer.'
               }
             </p>
             <div className="flex gap-2">
@@ -625,12 +610,12 @@ export function BookingsSection() {
                     setStatusFilter('all');
                   }}
                 >
-                  Clear Filters
+                  Effacer les filtres
                 </Button>
               ) : null}
               <Button onClick={() => setIsNewBookingOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Create Booking
+                Créer une réservation
               </Button>
             </div>
           </CardContent>

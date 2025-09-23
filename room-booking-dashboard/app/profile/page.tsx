@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { authApi, type User as ApiUser } from '@/lib/api';
 import { UserProfileCard } from '@/components/auth/UserProfile';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +14,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export default function ProfilePage() {
   const { user, logout, isLoading, isAuthenticated } = useAuth();
+  const [freshUser, setFreshUser] = useState<ApiUser | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -20,6 +22,19 @@ export default function ProfilePage() {
       router.push('/login');
     }
   }, [isAuthenticated, isLoading, router]);
+
+  // Fetch a fresh profile to ensure department, status, and dates are current
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await authApi.getProfile();
+        setFreshUser(profile);
+      } catch (_) {
+        // ignore; fallback to context user
+      }
+    };
+    if (isAuthenticated) fetchProfile();
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -29,7 +44,9 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
+  const displayUser = freshUser || user;
+
+  if (!displayUser) {
     return null;
   }
 
@@ -98,27 +115,27 @@ Vos détails de compte et informations personnelles
                   <div>
                     <label className="text-sm font-medium text-[var(--albaraka-muted)]">Nom complet</label>
                     <p className="text-lg font-semibold text-[var(--albaraka-primary)]">
-                      {user.firstName && user.lastName 
-                        ? `${user.firstName} ${user.lastName}`
-                        : user.username
+                      {displayUser.firstName && displayUser.lastName 
+                        ? `${displayUser.firstName} ${displayUser.lastName}`
+                        : displayUser.username
                       }
                     </p>
                   </div>
                   
                   <div>
                     <label className="text-sm font-medium text-[var(--albaraka-muted)]">Adresse e-mail</label>
-                    <p className="text-lg text-[var(--albaraka-primary)]">{user.email}</p>
+                    <p className="text-lg text-[var(--albaraka-primary)]">{displayUser.email}</p>
                   </div>
                   
                   <div>
                     <label className="text-sm font-medium text-[var(--albaraka-muted)]">Nom d'utilisateur</label>
-                    <p className="text-lg text-[var(--albaraka-primary)]">{user.username}</p>
+                    <p className="text-lg text-[var(--albaraka-primary)]">{displayUser.username}</p>
                   </div>
                   
                   <div>
                     <label className="text-sm font-medium text-[var(--albaraka-muted)]">Département</label>
                     <p className="text-lg text-[var(--albaraka-primary)]">
-                      {user.department?.name || 'Non spécifié'}
+                      {(typeof (displayUser as any).department === 'object' ? (displayUser as any).department?.name : (displayUser as any).department) || 'Non spécifié'}
                     </p>
                   </div>
                   
@@ -126,10 +143,10 @@ Vos détails de compte et informations personnelles
                     <label className="text-sm font-medium text-[var(--albaraka-muted)]">Statut du compte</label>
                     <div className="flex items-center gap-2">
                       <Badge 
-                        variant={user.isActive ? "default" : "secondary"}
-                        className={user.isActive ? "bg-green-50 text-green-800 border-green-200" : "bg-gray-50 text-gray-800 border-gray-200"}
+                        variant={displayUser.isActive ? "default" : "secondary"}
+                        className={displayUser.isActive ? "bg-green-50 text-green-800 border-green-200" : "bg-gray-50 text-gray-800 border-gray-200"}
                       >
-                        {user.isActive ? 'Actif' : 'Inactif'}
+                        {displayUser.isActive ? 'Actif' : 'Inactif'}
                       </Badge>
                     </div>
                   </div>
@@ -137,7 +154,7 @@ Vos détails de compte et informations personnelles
                   <div>
                     <label className="text-sm font-medium text-[var(--albaraka-muted)]">Membre depuis</label>
                     <p className="text-lg text-[var(--albaraka-primary)]">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                      {displayUser.createdAt ? new Date(displayUser.createdAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -150,7 +167,7 @@ Vos détails de compte et informations personnelles
             <Card className="card-albaraka">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-[var(--albaraka-primary)]">
-                  {getRoleIcon(user.role)}
+                  {getRoleIcon(displayUser.role)}
 Rôle et permissions
                 </CardTitle>
                 <CardDescription className="text-[var(--albaraka-muted)]">
@@ -163,9 +180,9 @@ Votre rôle actuel et permissions système
                   <div className="mt-2">
                     <Badge 
                       variant="secondary" 
-                      className={`text-sm ${getRoleColor(user.role)}`}
+                      className={`text-sm ${getRoleColor(displayUser.role)}`}
                     >
-                      {(user.role || 'USER').replace('_', ' ')}
+                      {(displayUser.role || 'USER').replace('_', ' ')}
                     </Badge>
                   </div>
                 </div>
@@ -183,7 +200,7 @@ Votre rôle actuel et permissions système
                       <Calendar className="h-4 w-4 text-green-600" />
                       <span>Créer des réservations</span>
                     </div>
-                    {user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? (
+                    {displayUser.role === 'ADMIN' || displayUser.role === 'SUPER_ADMIN' ? (
                       <>
                         <div className="flex items-center gap-2 text-sm">
                           <Shield className="h-4 w-4 text-blue-600" />
@@ -195,7 +212,7 @@ Votre rôle actuel et permissions système
                         </div>
                       </>
                     ) : null}
-                    {user.role === 'SUPER_ADMIN' ? (
+                    {displayUser.role === 'SUPER_ADMIN' ? (
                       <div className="flex items-center gap-2 text-sm">
                         <Shield className="h-4 w-4 text-red-600" />
                         <span>Gérer les utilisateurs</span>
