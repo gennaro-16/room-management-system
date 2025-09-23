@@ -64,7 +64,7 @@ async function main() {
         username: 'jdoe',
         email: 'jdoe@bank.com',
         password: hashedPassword,
-        role: UserRole.DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'John',
         lastName: 'Doe',
         title: 'Chief Executive Officer',
@@ -78,7 +78,7 @@ async function main() {
         username: 'sjohnson',
         email: 'sjohnson@bank.com',
         password: hashedPassword,
-        role: UserRole.SUB_DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Sarah',
         lastName: 'Johnson',
         title: 'Chief Financial Officer',
@@ -92,7 +92,7 @@ async function main() {
         username: 'rwilliams',
         email: 'rwilliams@bank.com',
         password: hashedPassword,
-        role: UserRole.SUB_DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Robert',
         lastName: 'Williams',
         title: 'Chief Operations Officer',
@@ -108,7 +108,7 @@ async function main() {
         username: 'mbrown',
         email: 'mbrown@bank.com',
         password: hashedPassword,
-        role: UserRole.DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Michael',
         lastName: 'Brown',
         title: 'Director of Commercial Banking',
@@ -122,7 +122,7 @@ async function main() {
         username: 'ldavis',
         email: 'ldavis@bank.com',
         password: hashedPassword,
-        role: UserRole.SUB_DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Lisa',
         lastName: 'Davis',
         title: 'Senior Commercial Manager',
@@ -152,7 +152,7 @@ async function main() {
         username: 'pwilson',
         email: 'pwilson@bank.com',
         password: hashedPassword,
-        role: UserRole.DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Patricia',
         lastName: 'Wilson',
         title: 'Director of Retail Banking',
@@ -166,7 +166,7 @@ async function main() {
         username: 'dmoore',
         email: 'dmoore@bank.com',
         password: hashedPassword,
-        role: UserRole.SUB_DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'David',
         lastName: 'Moore',
         title: 'Branch Network Manager',
@@ -196,7 +196,7 @@ async function main() {
         username: 'aanderson',
         email: 'aanderson@bank.com',
         password: hashedPassword,
-        role: UserRole.DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Andrew',
         lastName: 'Anderson',
         title: 'Chief Risk Officer',
@@ -210,7 +210,7 @@ async function main() {
         username: 'sjackson',
         email: 'sjackson@bank.com',
         password: hashedPassword,
-        role: UserRole.SUB_DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Susan',
         lastName: 'Jackson',
         title: 'Compliance Manager',
@@ -226,7 +226,7 @@ async function main() {
         username: 'twhite',
         email: 'twhite@bank.com',
         password: hashedPassword,
-        role: UserRole.DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Thomas',
         lastName: 'White',
         title: 'Chief Information Officer',
@@ -240,7 +240,7 @@ async function main() {
         username: 'nharris',
         email: 'nharris@bank.com',
         password: hashedPassword,
-        role: UserRole.SUB_DIRECTOR,
+        role: UserRole.EMPLOYEE,
         firstName: 'Nancy',
         lastName: 'Harris',
         title: 'IT Infrastructure Manager',
@@ -437,11 +437,11 @@ async function main() {
   const mainAuditorium = await prisma.room.findFirst({ where: { name: 'Main Auditorium' } });
 
   // Create Bookings
-  const executiveDirector = executives.find(u => u.role === UserRole.DIRECTOR);
-  const commercialDirector = commercialUsers.find(u => u.role === UserRole.DIRECTOR);
-  const retailDirector = retailUsers.find(u => u.role === UserRole.DIRECTOR);
-  const riskDirector = riskUsers.find(u => u.role === UserRole.DIRECTOR);
-  const itDirector = itUsers.find(u => u.role === UserRole.DIRECTOR);
+  const executiveDirector = executives.find(u => u.role === UserRole.EMPLOYEE);
+  const commercialDirector = commercialUsers.find(u => u.role === UserRole.EMPLOYEE);
+  const retailDirector = retailUsers.find(u => u.role === UserRole.EMPLOYEE);
+  const riskDirector = riskUsers.find(u => u.role === UserRole.EMPLOYEE);
+  const itDirector = itUsers.find(u => u.role === UserRole.EMPLOYEE);
 
   // Create some bookings (only when all required references exist)
   const bookingsData: any[] = [];

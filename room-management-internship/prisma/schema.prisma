@@ -114,10 +114,7 @@ model Booking {
 }
 
 enum UserRole {
-  SUPER_ADMIN
   ADMIN
-  DIRECTOR
-  SUB_DIRECTOR
   EMPLOYEE
   GUEST
 }

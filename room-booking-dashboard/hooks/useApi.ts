@@ -171,7 +171,9 @@ export function useBookings(filters?: {
   endDate?: string;
   status?: 'approved' | 'upcoming' | 'pending';
 }) {
-  return useApiCall(() => bookingsApi.getAll(filters), [filters]);
+  // Stabilize dependency to avoid infinite loops caused by object identity changes
+  const stableKey = JSON.stringify(filters || {});
+  return useApiCall(() => bookingsApi.getAll(filters), [stableKey]);
 }
 
 export function usePendingBookings() {
@@ -422,7 +424,7 @@ export function useApproveUser() {
   return { approveUser, loading, error };
 }
 
-// Departments hooks (SUPER_ADMIN/ADMIN for mutating)
+// Departments hooks (ADMIN for mutating)
 export function useDepartments(enabled: boolean = true) {
   return useApiCall(() => departmentsApi.getAll(), [], enabled);
 }

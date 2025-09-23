@@ -17,10 +17,8 @@ export function DashboardProfile() {
 
   const getRoleIcon = (role?: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return <Shield className="h-5 w-5" />;
       case 'ADMIN':
-        return <User className="h-5 w-5" />;
+        return <Shield className="h-5 w-5" />;
       default:
         return <User className="h-5 w-5" />;
     }
@@ -28,8 +26,6 @@ export function DashboardProfile() {
 
   const getRoleColor = (role?: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'bg-red-50 text-red-800 border-red-200';
       case 'ADMIN':
         return 'bg-blue-50 text-blue-800 border-blue-200';
       default:
@@ -154,7 +150,7 @@ export function DashboardProfile() {
                     <Calendar className="h-4 w-4 text-green-600" />
                     <span>Create Bookings</span>
                   </div>
-                  {user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' ? (
+                  {user.role === 'ADMIN' ? (
                     <>
                       <div className="flex items-center gap-2 text-sm">
                         <Shield className="h-4 w-4 text-blue-600" />
@@ -166,12 +162,7 @@ export function DashboardProfile() {
                       </div>
                     </>
                   ) : null}
-                  {user.role === 'SUPER_ADMIN' ? (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Shield className="h-4 w-4 text-red-600" />
-                      <span>Manage Users</span>
-                    </div>
-                  ) : null}
+                  {/* Super admin privileges removed in simplified roles */}
                 </div>
               </div>
             </CardContent>

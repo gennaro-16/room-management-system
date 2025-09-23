@@ -19,7 +19,6 @@ interface AuthContextType extends AuthState {
   clearError: () => void;
   hasRole: (role: UserRole | UserRole[]) => boolean;
   isAdmin: () => boolean;
-  isSuperAdmin: () => boolean;
   isUser: () => boolean;
 }
 
@@ -143,11 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = (): boolean => {
-    return hasRole(['ADMIN', 'SUPER_ADMIN']);
-  };
-
-  const isSuperAdmin = (): boolean => {
-    return hasRole('SUPER_ADMIN');
+    return hasRole('ADMIN');
   };
 
   const isUser = (): boolean => {
@@ -162,7 +157,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearError,
     hasRole,
     isAdmin,
-    isSuperAdmin,
     isUser,
   };
 
@@ -198,10 +192,6 @@ export function useIsAdmin() {
   return isAdmin;
 }
 
-export function useIsSuperAdmin() {
-  const { isSuperAdmin } = useAuth();
-  return isSuperAdmin;
-}
 
 export function useIsUser() {
   const { isUser } = useAuth();

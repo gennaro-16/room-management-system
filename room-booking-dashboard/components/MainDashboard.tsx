@@ -6,6 +6,7 @@ import { Header } from './dashboard/Header';
 import { DashboardSection } from './dashboard/DashboardSection';
 import { RoomsSection } from './rooms/RoomsSection';
 import { BookingsSection } from './bookings/BookingsSection';
+import BookingGrid from '@/app/bookings/bookings-grid';
 import { CalendarSection } from './calendar/CalendarSection';
 import { UserManagement } from './admin/UserManagement';
 import { DashboardProfile } from './dashboard/DashboardProfile';
@@ -22,22 +23,22 @@ export function MainDashboard() {
 
   const renderContent = () => {
     // Check user role and show appropriate content
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
-    const isDirector = user?.role === 'DIRECTOR' || user?.role === 'SUB_DIRECTOR';
-    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+    const isAdmin = user?.role === 'ADMIN';
 
     switch (activeSection) {
       case 'dashboard':
         if (!isAdmin) {
-          return isDirector ? <CalendarSection /> : <RoomsSection />;
+          return <CalendarSection />;
         }
         return <DashboardSection />;
       case 'rooms':
         return <RoomsSection />;
       case 'bookings':
-        return <BookingsSection />;
+        return <BookingsSection onOpenFull={() => setActiveSection('bookings-full')} />;
       case 'calendar':
         return <CalendarSection />;
+      case 'bookings-full':
+        return <BookingGrid />;
       case 'conflicts':
         if (!isAdmin) {
           return (
@@ -54,7 +55,7 @@ export function MainDashboard() {
         }
         return <ConflictsSection />;
       case 'users':
-        if (!isSuperAdmin) {
+        if (!isAdmin) {
           return (
             <Card>
               <CardHeader>
@@ -62,7 +63,7 @@ export function MainDashboard() {
                 <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">Seuls les super administrateurs peuvent accéder à la gestion des utilisateurs.</p>
+                <p className="text-muted-foreground">Seuls les administrateurs peuvent accéder à la gestion des utilisateurs.</p>
               </CardContent>
             </Card>
           );
@@ -123,18 +124,16 @@ export function MainDashboard() {
           </Card>
         );
       default:
-        return isAdmin ? <DashboardSection /> : (isDirector ? <CalendarSection /> : <RoomsSection />);
+        return isAdmin ? <DashboardSection /> : <CalendarSection />;
     }
   };
 
   // Choose default landing section based on role
   useEffect(() => {
     if (!user?.role) return;
-    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
-    const isDirector = user.role === 'DIRECTOR' || user.role === 'SUB_DIRECTOR';
+    const isAdmin = user.role === 'ADMIN';
     if (isAdmin) setActiveSection('dashboard');
-    else if (isDirector) setActiveSection('calendar');
-    else setActiveSection('rooms');
+    else setActiveSection('calendar');
   }, [user?.role]);
 
   return (

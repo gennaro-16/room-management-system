@@ -70,15 +70,7 @@ export function ProtectedRoute({
 // Convenience components for common role checks
 export function AdminOnly({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   return (
-    <ProtectedRoute requiredRoles={['ADMIN', 'SUPER_ADMIN']} fallback={fallback}>
-      {children}
-    </ProtectedRoute>
-  );
-}
-
-export function SuperAdminOnly({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
-  return (
-    <ProtectedRoute requiredRoles="SUPER_ADMIN" fallback={fallback}>
+    <ProtectedRoute requiredRoles="ADMIN" fallback={fallback}>
       {children}
     </ProtectedRoute>
   );

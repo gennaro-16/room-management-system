@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function DepartmentsPage() {
   const { user } = useAuth();
-  const canManage = user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN';
+  const canManage = user?.role === 'ADMIN';
 
   return (
     <ProtectedRoute>

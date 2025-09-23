@@ -17,19 +17,15 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-const getSidebarItems = (isAdmin: boolean, isSuperAdmin: boolean) => [
+const getSidebarItems = (isAdmin: boolean) => [
   ...(isAdmin ? [{ icon: Home, label: 'Tableau de bord', id: 'dashboard' }] : []),
   { icon: Building2, label: 'Salles', id: 'rooms' },
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },
+  { icon: BookOpen, label: 'Vue complète des réservations', id: 'bookings-full' },
   ...(isAdmin ? [
-    { icon: AlertTriangle, label: 'Conflits', id: 'conflicts' },
     { icon: Building2, label: 'Départements', id: 'departments' },
-  ] : []),
-  ...(isSuperAdmin ? [
-    { icon: Users, label: 'Gestion des utilisateurs', id: 'users' }
-  ] : []),
-  ...(isAdmin ? [
+    { icon: Users, label: 'Gestion des utilisateurs', id: 'users' },
     { icon: BarChart3, label: 'Rapports', id: 'reports' },
   ] : []),
   { icon: UserCircle, label: 'Profil', id: 'profile' },
@@ -44,9 +40,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeSection, onSectionChange, sidebarOpen, onSidebarToggle }: SidebarProps) {
-  const { isAdmin, user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-  const sidebarItems = getSidebarItems(isAdmin(), isSuperAdmin);
+  const { isAdmin } = useAuth();
+  const sidebarItems = getSidebarItems(isAdmin());
 
   return (
     <>

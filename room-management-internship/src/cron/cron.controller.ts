@@ -11,7 +11,7 @@ export class CronController {
 
   @Post('trigger-booking-status-update')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DIRECTOR)
+  @Roles(UserRole.ADMIN)
   async triggerBookingStatusUpdate() {
     await this.bookingStatusCronService.triggerStatusUpdate();
     return { message: 'Booking status update triggered successfully' };

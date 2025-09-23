@@ -17,7 +17,7 @@ import { User as UserType, UserRole, UpdateUserDto, ApproveUserDto } from '@/lib
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { apiUtils } from '@/lib/api';
-import { useIsSuperAdmin } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/contexts/AuthContext';
 
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,7 +27,7 @@ export function UserManagement() {
   const [approvalDialog, setApprovalDialog] = useState<{ user: UserType; action: 'approve' | 'reject' } | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [viewUser, setViewUser] = useState<UserType | null>(null);
-  const isSuperAdmin = useIsSuperAdmin();
+  const isAdmin = useIsAdmin();
 
   // Edit form state
   const [formValues, setFormValues] = useState<UpdateUserDto>({});
@@ -143,10 +143,10 @@ export function UserManagement() {
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return <Crown className="h-4 w-4 text-red-600" />;
       case 'ADMIN':
         return <Shield className="h-4 w-4 text-blue-600" />;
+      case 'EMPLOYEE':
+        return <User className="h-4 w-4 text-green-600" />;
       default:
         return <User className="h-4 w-4 text-green-600" />;
     }
@@ -221,9 +221,9 @@ export function UserManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Tous les rôles</SelectItem>
-                      <SelectItem value="SUPER_ADMIN">Super administrateur</SelectItem>
                       <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="USER">Utilisateur</SelectItem>
+                      <SelectItem value="EMPLOYEE">Employé</SelectItem>
+                      <SelectItem value="GUEST">Invité</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -283,7 +283,7 @@ export function UserManagement() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
-                          {isSuperAdmin() && (
+                          {isAdmin() && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -364,7 +364,7 @@ export function UserManagement() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center gap-2 justify-end">
-                          {isSuperAdmin() && (
+                          {isAdmin() && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -471,7 +471,7 @@ export function UserManagement() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Modifier l'utilisateur</DialogTitle>
-            <DialogDescription>Mettre à jour les informations de l'utilisateur{isSuperAdmin() ? ', y compris le rôle' : ''}.</DialogDescription>
+            <DialogDescription>Mettre à jour les informations de l'utilisateur{isAdmin() ? ', y compris le rôle' : ''}.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -511,7 +511,7 @@ export function UserManagement() {
                 </SelectContent>
               </Select>
             </div>
-            {isSuperAdmin() && (
+            {isAdmin() && (
               <div>
                 <Label>Rôle</Label>
                 <Select value={formValues.role || ''} onValueChange={(v) => updateField('role', v as UserRole)}>
@@ -519,10 +519,7 @@ export function UserManagement() {
                     <SelectValue placeholder="Sélectionner un rôle" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="SUPER_ADMIN">Super administrateur</SelectItem>
                     <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="DIRECTOR">Directeur</SelectItem>
-                    <SelectItem value="SUB_DIRECTOR">Sous-directeur</SelectItem>
                     <SelectItem value="EMPLOYEE">Employé</SelectItem>
                     <SelectItem value="GUEST">Invité</SelectItem>
                   </SelectContent>
@@ -536,8 +533,8 @@ export function UserManagement() {
               onClick={() => {
                 if (!editingUser) return;
                 const data: UpdateUserDto = { ...formValues };
-                // If not super admin, do not send role changes
-                if (!isSuperAdmin()) {
+                // If not admin, do not send role changes
+                if (!isAdmin()) {
                   delete (data as any).role;
                 }
                 handleEditUser(editingUser.id, data);

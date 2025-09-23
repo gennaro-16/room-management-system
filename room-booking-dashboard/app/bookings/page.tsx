@@ -1,4 +1,4 @@
-import BookingGrid from "@/components/booking-grid"
+import BookingGrid from "./bookings-grid"
 
 export default function Home() {
   return (

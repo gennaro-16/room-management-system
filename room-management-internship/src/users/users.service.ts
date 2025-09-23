@@ -9,8 +9,8 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(currentUser: User) {
-    // Only admins and super admins can view all users
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    // Only admins can view all users
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -41,7 +41,7 @@ export class UsersService {
 
   async findOne(id: number, currentUser: User) {
     // Users can only view their own profile, admins can view any profile
-    if (currentUser.role === UserRole.EMPLOYEE && currentUser.id !== id) {
+    if (currentUser.role !== UserRole.ADMIN && currentUser.id !== id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -75,14 +75,14 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto, currentUser: User) {
-    // Only admins and super admins can update other users
-    if (currentUser.role === UserRole.EMPLOYEE && currentUser.id !== id) {
+    // Only admins can update other users
+    if (currentUser.role !== UserRole.ADMIN && currentUser.id !== id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
-    // Super admins can change roles, regular admins cannot
-    if (updateUserDto.role && currentUser.role !== UserRole.SUPER_ADMIN) {
-      throw new ForbiddenException('Only super admins can change user roles');
+    // Admins can change roles
+    if (updateUserDto.role && currentUser.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only admins can change user roles');
     }
 
     const user = await this.prisma.user.findUnique({
@@ -118,9 +118,9 @@ export class UsersService {
   }
 
   async remove(id: number, currentUser: User) {
-    // Only super admins can delete users
-    if (currentUser.role !== UserRole.SUPER_ADMIN) {
-      throw new ForbiddenException('Only super admins can delete users');
+    // Only admins can delete users
+    if (currentUser.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only admins can delete users');
     }
 
     // Prevent self-deletion
@@ -142,8 +142,8 @@ export class UsersService {
   }
 
   async deactivate(id: number, currentUser: User) {
-    // Only admins and super admins can deactivate users
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    // Only admins can deactivate users
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -185,8 +185,8 @@ export class UsersService {
   }
 
   async getPendingUsers(currentUser: User) {
-    // Only admins and super admins can view pending users
-    if (currentUser.role !== UserRole.SUPER_ADMIN && currentUser.role !== UserRole.ADMIN) {
+    // Only admins can view pending users
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -219,8 +219,8 @@ export class UsersService {
   }
 
   async approveUser(id: number, approveUserDto: ApproveUserDto, currentUser: User) {
-    // Only admins and super admins can approve/reject users
-    if (currentUser.role !== UserRole.SUPER_ADMIN && currentUser.role !== UserRole.ADMIN) {
+    // Only admins can approve/reject users
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -281,7 +281,7 @@ export class UsersService {
 
   async getUsersByDepartment(departmentId: number, currentUser: User) {
     // Only admins and department members can view department users
-    if (currentUser.role === UserRole.EMPLOYEE && currentUser.departmentId !== departmentId) {
+    if (currentUser.role !== UserRole.ADMIN && currentUser.departmentId !== departmentId) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -361,7 +361,7 @@ export class UsersService {
 
   async updateUserDepartment(userId: number, departmentId: number, currentUser: User) {
     // Only admins can change user departments
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 

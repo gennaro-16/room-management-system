@@ -23,7 +23,7 @@ export class ProcessConflictDto {
 
 @Controller('conflicts')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+@Roles(UserRole.ADMIN)
 export class ConflictsController {
   constructor(
     private readonly conflictsService: ConflictsService,

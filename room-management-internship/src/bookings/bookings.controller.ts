@@ -68,7 +68,7 @@ export class BookingsController {
   }
 
   @Get('pending')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   findPendingBookings(@CurrentUser() user: User) {
     return this.bookingsService.findPendingBookings(user);
   }
@@ -82,7 +82,7 @@ export class BookingsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DIRECTOR)
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number, 
     @Body(ValidationPipe) updateBookingDto: UpdateBookingDto,
@@ -92,7 +92,7 @@ export class BookingsController {
   }
 
   @Patch(':id/approve')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   approve(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: User
@@ -101,7 +101,7 @@ export class BookingsController {
   }
 
   @Patch(':id/reject')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   reject(
     @Param('id', ParseIntPipe) id: number,
     @Body('rejectionReason') rejectionReason: string,
@@ -119,7 +119,7 @@ export class BookingsController {
   }
 
   @Patch(':id/move')
-  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.DIRECTOR)
+  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
   move(
     @Param('id', ParseIntPipe) id: number,
     @Body(ValidationPipe) dto: MoveBookingDto,

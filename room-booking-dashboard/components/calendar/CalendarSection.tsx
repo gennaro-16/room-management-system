@@ -54,7 +54,7 @@ export function CalendarSection() {
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
   const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
 
-  const isAdminRole = hasRole(['ADMIN', 'SUPER_ADMIN']);
+  const isAdminRole = hasRole(['ADMIN']);
 
   // Load data
   useEffect(() => {

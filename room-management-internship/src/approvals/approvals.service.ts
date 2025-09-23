@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { PrismaService } from '@prisma/prisma.service';
 import { ApproveBookingDto } from '../dto/approve-booking.dto';
 import { ApproveUserDto } from '../dto/approve-user.dto';
-import { NotificationsService } from '../notifications/notifications.service';
 import { ConflictsService } from '../conflicts/conflicts.service';
 import { BookingStatus, UserRole } from '@prisma/client';
 
@@ -10,7 +9,6 @@ import { BookingStatus, UserRole } from '@prisma/client';
 export class ApprovalsService {
   constructor(
     private prisma: PrismaService,
-    private notificationsService: NotificationsService,
     private conflictsService: ConflictsService,
   ) {}
 
@@ -118,26 +116,7 @@ export class ApprovalsService {
       },
     });
 
-    // Send notification to booking organizer
-    const notificationType = approveBookingDto.status === 'APPROVED' 
-      ? 'BOOKING_APPROVED' 
-      : 'BOOKING_REJECTED';
-    
-    const title = approveBookingDto.status === 'APPROVED' 
-      ? 'Booking Approved' 
-      : 'Booking Rejected';
-    
-    const message = approveBookingDto.status === 'APPROVED'
-      ? `Your booking "${booking.title}" for room ${booking.room.name} has been approved.`
-      : `Your booking "${booking.title}" for room ${booking.room.name} has been rejected. ${approveBookingDto.rejectionReason || ''}`;
-
-    await this.notificationsService.createBookingNotification(
-      booking.organizerId,
-      notificationType as any,
-      title,
-      message,
-      bookingId,
-    );
+    // Notifications disabled
 
     return updatedBooking;
   }
@@ -195,7 +174,7 @@ export class ApprovalsService {
                   some: {
                     id: approverId,
                     role: {
-                      in: ['DIRECTOR', 'SUB_DIRECTOR'],
+                      in: ['EMPLOYEE'],
                     },
                   },
                 },
@@ -277,18 +256,7 @@ export class ApprovalsService {
       },
     });
 
-    // Send notification to user
-    const title = approveUserDto.isApproved ? 'Account Approved' : 'Account Rejected';
-    const message = approveUserDto.isApproved
-      ? `Your account has been approved. You can now access the room booking system.`
-      : `Your account has been rejected. ${approveUserDto.rejectionReason || ''}`;
-
-    await this.notificationsService.create({
-      userId,
-      title,
-      message,
-      type: approveUserDto.isApproved ? 'BOOKING_APPROVED' : 'BOOKING_REJECTED',
-    });
+    // Notifications disabled
 
     return updatedUser;
   }

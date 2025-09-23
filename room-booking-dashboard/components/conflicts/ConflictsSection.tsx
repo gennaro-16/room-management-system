@@ -125,11 +125,9 @@ export function ConflictsSection() {
 
   const getPriorityBadge = (role: string) => {
     switch (role) {
-      case 'DIRECTOR':
-      case 'SUB_DIRECTOR':
-        return <Badge className="bg-purple-100 text-purple-800 border-purple-200">Director</Badge>
+      case 'EMPLOYEE':
+        return <Badge className="bg-green-100 text-green-800 border-green-200">Employee</Badge>
       case 'ADMIN':
-      case 'SUPER_ADMIN':
         return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Admin</Badge>
       default:
         return (

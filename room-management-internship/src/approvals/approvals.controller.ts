@@ -26,7 +26,7 @@ export class ApprovalsController {
   // Booking Approvals
   @Post('bookings/:id')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SUB_DIRECTOR)
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
   approveBooking(
     @Param('id', ParseIntPipe) bookingId: number,
     @Body() approveBookingDto: ApproveBookingDto,
@@ -37,14 +37,14 @@ export class ApprovalsController {
 
   @Get('bookings/pending')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SUB_DIRECTOR)
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
   getPendingBookings(@CurrentUser() user: User) {
     return this.approvalsService.getPendingApprovals(user.id);
   }
 
   @Get('bookings/my-approvals')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SUB_DIRECTOR)
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
   getMyBookingApprovals(@CurrentUser() user: User) {
     return this.approvalsService.getUserApprovals(user.id);
   }
@@ -52,7 +52,7 @@ export class ApprovalsController {
   // User Approvals
   @Post('users/:id')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   approveUser(
     @Param('id', ParseIntPipe) userId: number,
     @Body() approveUserDto: ApproveUserDto,
@@ -63,7 +63,7 @@ export class ApprovalsController {
 
   @Get('users/pending')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   getPendingUsers() {
     return this.approvalsService.getPendingUserApprovals();
   }
@@ -71,7 +71,7 @@ export class ApprovalsController {
   // Stats
   @Get('stats')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SUB_DIRECTOR)
+  @Roles(UserRole.ADMIN, UserRole.EMPLOYEE)
   getApprovalStats(@CurrentUser() user: User) {
     return this.approvalsService.getApprovalStats(user.id);
   }

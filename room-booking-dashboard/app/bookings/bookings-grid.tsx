@@ -116,10 +116,7 @@ export default function BookingGrid() {
 
   // Fetch data from API
   const { data: rooms, loading: roomsLoading, error: roomsError, refetch: refetchRooms } = useRooms()
-  const { data: bookings, loading: bookingsLoading, error: bookingsError, refetch: refetchBookings } = useBookings({
-    startDate: selectedDate,
-    endDate: selectedDate
-  })
+  const { data: bookings, loading: bookingsLoading, error: bookingsError, refetch: refetchBookings } = useBookings()
 
   // Get unique departments from rooms
   const departments = useMemo(() => {
@@ -134,11 +131,17 @@ export default function BookingGrid() {
     return rooms.filter((room) => room.department?.name === selectedDepartment)
   }, [rooms, selectedDepartment])
 
-  // Filter bookings for selected date
+  // Filter bookings for selected date (show all if no date filter applied)
   const filteredBookings = useMemo(() => {
     if (!bookings) return []
     return bookings.filter(booking => {
       const bookingDate = new Date(booking.startTime).toISOString().split("T")[0]
+      // Show all bookings if selectedDate is today (default view)
+      // Otherwise filter by selected date
+      const today = new Date().toISOString().split("T")[0]
+      if (selectedDate === today) {
+        return true // Show all bookings when viewing today
+      }
       return bookingDate === selectedDate
     })
   }, [bookings, selectedDate])
@@ -291,7 +294,10 @@ export default function BookingGrid() {
       {/* Booking Grid/List */}
       <Card>
         <CardHeader>
-          <CardTitle>Room Availability {viewMode === "grid" ? "Grid" : "List"} - {selectedDate}</CardTitle>
+          <CardTitle>
+            Room Availability {viewMode === "grid" ? "Grid" : "List"} - 
+            {selectedDate === new Date().toISOString().split("T")[0] ? "All Bookings" : selectedDate}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {viewMode === "grid" ? (
@@ -440,7 +446,12 @@ export default function BookingGrid() {
                       </div>
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
-                        <p>No bookings for this room on {selectedDate}</p>
+                        <p>
+                          {selectedDate === new Date().toISOString().split("T")[0] 
+                            ? "No bookings for this room" 
+                            : `No bookings for this room on ${selectedDate}`
+                          }
+                        </p>
                       </div>
                     )}
                   </div>

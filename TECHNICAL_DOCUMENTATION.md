@@ -330,39 +330,39 @@ POST /bookings
 
 ### Role Hierarchy
 ```
-SUPER_ADMIN > ADMIN > DIRECTOR > SUB_DIRECTOR > EMPLOYEE > GUEST
+ADMIN > EMPLOYEE > GUEST
 ```
 
 ### Permission Matrix
 
-| Feature | SUPER_ADMIN | ADMIN | DIRECTOR | SUB_DIRECTOR | EMPLOYEE | GUEST |
-|---------|-------------|-------|----------|--------------|----------|-------|
+| Feature | ADMIN | EMPLOYEE | GUEST |
+|---------|-------|----------|-------|
 | **User Management** |
-| View all users | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Approve/reject users | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Delete users | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| View all users | ✅ | ❌ | ❌ |
+| Approve/reject users | ✅ | ❌ | ❌ |
+| Delete users | ✅ | ❌ | ❌ |
 | **Room Management** |
-| View rooms | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Create/edit rooms | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Delete rooms | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Toggle maintenance | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| View rooms | ✅ | ✅ | ✅ |
+| Create/edit rooms | ✅ | ❌ | ❌ |
+| Delete rooms | ✅ | ❌ | ❌ |
+| Toggle maintenance | ✅ | ❌ | ❌ |
 | **Booking Management** |
-| Create bookings | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| View own bookings | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| View all bookings | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Edit own bookings | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Edit any booking | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Delete bookings | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Create bookings | ✅ | ✅ | ❌ |
+| View own bookings | ✅ | ✅ | ❌ |
+| View all bookings | ✅ | ❌ | ❌ |
+| Edit own bookings | ✅ | ✅ | ❌ |
+| Edit any booking | ✅ | ❌ | ❌ |
+| Delete bookings | ✅ | ❌ | ❌ |
 | **Department Management** |
-| View departments | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Create/edit departments | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Delete departments | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| View departments | ✅ | ✅ | ✅ |
+| Create/edit departments | ✅ | ❌ | ❌ |
+| Delete departments | ✅ | ❌ | ❌ |
 | **Dashboard & Reports** |
-| View dashboard | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| View reports | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| View dashboard | ✅ | ✅ | ❌ |
+| View reports | ✅ | ❌ | ❌ |
 | **Conflict Resolution** |
-| View conflicts | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Resolve conflicts | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| View conflicts | ✅ | ❌ | ❌ |
+| Resolve conflicts | ✅ | ❌ | ❌ |
 
 ---
 

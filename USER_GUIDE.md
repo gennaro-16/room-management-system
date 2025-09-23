@@ -38,32 +38,13 @@
 - ❌ Cannot manage other users' bookings
 - ❌ Cannot access admin features
 
-### Sub-Director
-**Department sub-management**
-- ✅ All Employee permissions
-- ✅ View department bookings
-- ✅ Manage department resources
-- ❌ Cannot access system-wide admin features
-
-### Director
-**Department management**
-- ✅ All Sub-Director permissions
-- ✅ Full department oversight
-- ✅ View department analytics
-- ❌ Cannot manage other departments
-
 ### Admin
 **System administration**
-- ✅ All Director permissions
+- ✅ All Employee permissions
 - ✅ Manage all users
 - ✅ Manage all rooms
 - ✅ View system-wide analytics
 - ✅ Resolve conflicts
-- ❌ Cannot delete system data
-
-### Super Admin
-**Full system control**
-- ✅ All Admin permissions
 - ✅ Delete users and rooms
 - ✅ System configuration
 - ✅ Full audit access

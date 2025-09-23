@@ -4,13 +4,11 @@ import { CreateBookingDto } from '../dto/create-booking.dto';
 import { UpdateBookingDto } from '../dto/update-booking.dto';
 import { MoveBookingDto } from '../dto/move-booking.dto';
 import { User, UserRole, BookingStatus } from '@prisma/client';
-import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class BookingsService {
   constructor(
     private prisma: PrismaService,
-    private notificationsService: NotificationsService,
   ) {}
 
   async create(createBookingDto: CreateBookingDto, currentUser: User) {
@@ -42,7 +40,7 @@ export class BookingsService {
       throw new BadRequestException('Cannot book rooms in the past');
     }
 
-    // Check for conflicting approved bookings
+    // Check for conflicting approved bookings; if conflict, return user-facing error (no suggestions)
     const conflictingBooking = await this.prisma.booking.findFirst({
       where: {
         roomId,
@@ -99,40 +97,34 @@ export class BookingsService {
       }
     });
 
-    // Send notification to organizer about successful booking (no approval needed)
-    try {
-      await this.notificationsService.createBookingNotification(
-        booking.organizerId,
-        'BOOKING_CREATED',
-        'Booking Created Successfully',
-        `Your booking "${booking.title}" for room ${booking.room.name} has been created and approved automatically.`
-      );
-    } catch (error) {
-      console.error('Failed to send notification to organizer:', error);
-      // Don't fail the booking creation if notification fails
-    }
+    // Notifications disabled
 
     return booking;
   }
 
   async findAll(currentUser: User) {
-    // Visibility rules:
-    // - EMPLOYEE: only own bookings
-    // - DIRECTOR/SUB_DIRECTOR: own bookings + APPROVED bookings of others
-    // - ADMIN/SUPER_ADMIN: all bookings
-    let whereClause: any = {};
-    if (currentUser.role === UserRole.EMPLOYEE) {
-      whereClause = { organizerId: currentUser.id };
-    } else if (currentUser.role === UserRole.DIRECTOR || currentUser.role === UserRole.SUB_DIRECTOR) {
-      whereClause = {
-        OR: [
-          { organizerId: currentUser.id },
-          { status: BookingStatus.APPROVED },
-        ],
-      };
-    } else {
-      whereClause = {};
-    }
+    // Visibility rules: Everyone can see approved and ongoing bookings
+    // Only pending bookings are restricted to the organizer
+    const whereClause: any = {
+      OR: [
+        // Show approved and ongoing bookings to everyone
+        { status: { in: ['APPROVED', 'ONGOING', 'COMPLETED'] } },
+        // Show pending bookings only to the organizer
+        { 
+          AND: [
+            { status: 'PENDING' },
+            { organizerId: currentUser.id }
+          ]
+        },
+        // Show cancelled and rejected bookings only to the organizer
+        {
+          AND: [
+            { status: { in: ['CANCELLED', 'REJECTED'] } },
+            { organizerId: currentUser.id }
+          ]
+        }
+      ]
+    };
 
     return this.prisma.booking.findMany({
       where: whereClause,
@@ -155,7 +147,7 @@ export class BookingsService {
 
   async findPendingBookings(currentUser: User) {
     // Only admins can see pending bookings
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -180,7 +172,7 @@ export class BookingsService {
 
   async approveBooking(id: number, currentUser: User) {
     // Only admins can approve bookings
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -252,7 +244,7 @@ export class BookingsService {
 
   async rejectBooking(id: number, rejectionReason: string, currentUser: User) {
     // Only admins can reject bookings
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -336,7 +328,7 @@ export class BookingsService {
     }
 
     // Users can only view their own bookings, admins can view any booking
-    if (currentUser.role === UserRole.EMPLOYEE && booking.organizerId !== currentUser.id) {
+    if (currentUser.role !== UserRole.ADMIN && booking.organizerId !== currentUser.id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -347,9 +339,7 @@ export class BookingsService {
     const existingBooking = await this.findOne(id, currentUser);
 
     // Check permissions based on user role and booking status
-    const isAdminRole = currentUser.role === UserRole.ADMIN || 
-                       currentUser.role === UserRole.SUPER_ADMIN || 
-                       currentUser.role === UserRole.DIRECTOR;
+    const isAdminRole = currentUser.role === UserRole.ADMIN;
     const isOwner = existingBooking.organizerId === currentUser.id;
     
     if (currentUser.role === UserRole.EMPLOYEE) {
@@ -455,7 +445,7 @@ export class BookingsService {
     const booking = await this.findOne(id, currentUser);
 
     // Only users can cancel their own bookings, or admins can cancel any booking
-    if (currentUser.role === UserRole.EMPLOYEE && booking.organizerId !== currentUser.id) {
+    if (currentUser.role !== UserRole.ADMIN && booking.organizerId !== currentUser.id) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -513,32 +503,37 @@ export class BookingsService {
   }
 
   async getBookingsByDateRange(startDate: Date, endDate: Date, currentUser: User, organizerId?: number) {
-    // Visibility rules mirror findAll:
-    // - EMPLOYEE: own only
-    // - DIRECTOR/SUB_DIRECTOR: own + APPROVED
-    // - ADMIN/SUPER_ADMIN: all
-    let whereClause: any;
-    if (currentUser.role === UserRole.EMPLOYEE) {
-      whereClause = {
-        organizerId: currentUser.id,
-        startTime: { gte: startDate },
-        endTime: { lte: endDate },
-      };
-    } else if (currentUser.role === UserRole.DIRECTOR || currentUser.role === UserRole.SUB_DIRECTOR) {
-      whereClause = {
-        startTime: { gte: startDate },
-        endTime: { lte: endDate },
-        OR: [
-          { organizerId: currentUser.id },
-          { status: BookingStatus.APPROVED },
-        ],
-      };
-    } else {
-      whereClause = {
-        startTime: { gte: startDate },
-        endTime: { lte: endDate },
-        ...(organizerId && { organizerId }),
-      };
+    // Visibility rules mirror findAll: Everyone can see approved and ongoing bookings
+    const whereClause: any = {
+      AND: [
+        { startTime: { gte: startDate } },
+        { endTime: { lte: endDate } },
+        {
+          OR: [
+            // Show approved and ongoing bookings to everyone
+            { status: { in: ['APPROVED', 'ONGOING', 'COMPLETED'] } },
+            // Show pending bookings only to the organizer
+            { 
+              AND: [
+                { status: 'PENDING' },
+                { organizerId: currentUser.id }
+              ]
+            },
+            // Show cancelled and rejected bookings only to the organizer
+            {
+              AND: [
+                { status: { in: ['CANCELLED', 'REJECTED'] } },
+                { organizerId: currentUser.id }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    // Add organizer filter if specified
+    if (organizerId) {
+      whereClause.AND.push({ organizerId });
     }
 
     return this.prisma.booking.findMany({
@@ -640,9 +635,7 @@ export class BookingsService {
     const existing = await this.findOne(id, currentUser);
 
     // Permission checks: similar to update
-    const isAdminRole = currentUser.role === UserRole.ADMIN || 
-                        currentUser.role === UserRole.SUPER_ADMIN || 
-                        currentUser.role === UserRole.DIRECTOR;
+    const isAdminRole = currentUser.role === UserRole.ADMIN;
     const isOwner = existing.organizerId === currentUser.id;
 
     if (currentUser.role === UserRole.EMPLOYEE && !isOwner) {
@@ -718,9 +711,7 @@ export class BookingsService {
       return moved;
     });
 
-    try {
-      await this.notificationsService.notifyApprovers(result.id, result.title);
-    } catch (_) {}
+    // Notifications disabled
 
     return result;
   }

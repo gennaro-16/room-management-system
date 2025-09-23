@@ -28,7 +28,7 @@ export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   create(
     @Body(ValidationPipe) createRoomDto: CreateRoomDto,
     @CurrentUser() user: User
@@ -77,7 +77,7 @@ export class RoomsController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number, 
     @Body(ValidationPipe) updateRoomDto: UpdateRoomDto,
@@ -87,7 +87,7 @@ export class RoomsController {
   }
 
   @Patch(':id/maintenance')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   toggleMaintenance(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: User
@@ -96,7 +96,7 @@ export class RoomsController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   remove(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: User

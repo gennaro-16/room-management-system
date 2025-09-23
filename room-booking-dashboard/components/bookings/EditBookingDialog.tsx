@@ -58,7 +58,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
   const [amenitiesInput, setAmenitiesInput] = useState('');
   // No longer using IDs for internal attendees; handled as names (string[])
 
-  const isAdminRole = hasRole(['ADMIN', 'SUPER_ADMIN', 'DIRECTOR']);
+  const isAdminRole = hasRole(['ADMIN']);
 
   useEffect(() => {
     if (booking) {

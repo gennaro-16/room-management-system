@@ -52,10 +52,8 @@ export default function ProfilePage() {
 
   const getRoleIcon = (role?: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return <Shield className="h-5 w-5" />;
       case 'ADMIN':
-        return <User className="h-5 w-5" />;
+        return <Shield className="h-5 w-5" />;
       default:
         return <User className="h-5 w-5" />;
     }
@@ -63,8 +61,6 @@ export default function ProfilePage() {
 
   const getRoleColor = (role?: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'bg-red-50 text-red-800 border-red-200';
       case 'ADMIN':
         return 'bg-blue-50 text-blue-800 border-blue-200';
       default:
@@ -200,7 +196,7 @@ Votre rôle actuel et permissions système
                       <Calendar className="h-4 w-4 text-green-600" />
                       <span>Créer des réservations</span>
                     </div>
-                    {displayUser.role === 'ADMIN' || displayUser.role === 'SUPER_ADMIN' ? (
+                    {displayUser.role === 'ADMIN' ? (
                       <>
                         <div className="flex items-center gap-2 text-sm">
                           <Shield className="h-4 w-4 text-blue-600" />
@@ -212,12 +208,7 @@ Votre rôle actuel et permissions système
                         </div>
                       </>
                     ) : null}
-                    {displayUser.role === 'SUPER_ADMIN' ? (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Shield className="h-4 w-4 text-red-600" />
-                        <span>Gérer les utilisateurs</span>
-                      </div>
-                    ) : null}
+                    {/* Super admin privileges removed */}
                   </div>
                 </div>
               </CardContent>

@@ -10,7 +10,7 @@ export class RoomsService {
 
   async create(createRoomDto: CreateRoomDto, currentUser: User) {
     // Only admins can create rooms
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -133,7 +133,7 @@ export class RoomsService {
 
   async update(id: number, updateRoomDto: UpdateRoomDto, currentUser: User) {
     // Only admins can update rooms
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -158,7 +158,7 @@ export class RoomsService {
 
   async remove(id: number, currentUser: User) {
     // Only admins can delete rooms
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 
@@ -186,7 +186,7 @@ export class RoomsService {
 
   async toggleMaintenance(id: number, currentUser: User) {
     // Only admins can toggle maintenance status
-    if (currentUser.role === UserRole.EMPLOYEE) {
+    if (currentUser.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Insufficient permissions');
     }
 

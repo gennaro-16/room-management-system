@@ -25,7 +25,7 @@ export interface User {
   updatedAt?: string;
 }
 
-export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'DIRECTOR' | 'SUB_DIRECTOR' | 'EMPLOYEE' | 'GUEST';
+export type UserRole = 'ADMIN' | 'EMPLOYEE' | 'GUEST';
 export type RoomStatus = 'FREE' | 'BUSY' | 'MAINTENANCE' | 'RESERVED';
 
 export interface LoginDto {
@@ -791,14 +791,10 @@ export const apiUtils = {
   // Get role color class using Al Baraka colors
   getRoleColor: (role: UserRole): string => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'bg-purple-50 text-purple-800 border-purple-200';
       case 'ADMIN':
         return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'DIRECTOR':
-        return 'bg-amber-50 text-amber-800 border-amber-200';
-      case 'SUB_DIRECTOR':
-        return 'bg-orange-50 text-orange-800 border-orange-200';
+      case 'EMPLOYEE':
+        return 'bg-green-50 text-green-800 border-green-200';
       case 'EMPLOYEE':
         return 'bg-green-50 text-green-800 border-green-200';
       case 'GUEST':

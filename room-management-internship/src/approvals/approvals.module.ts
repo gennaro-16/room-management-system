@@ -3,12 +3,11 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ApprovalsService } from './approvals.service';
 import { ApprovalsController } from './approvals.controller';
 import { PrismaModule } from '@prisma/prisma.module';
-import { NotificationsModule } from '../notifications/notifications.module';
 import { ConflictsModule } from '../conflicts/conflicts.module';
 import { BookingStatusInterceptor } from '../interceptors/booking-status.interceptor';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, ConflictsModule],
+  imports: [PrismaModule, ConflictsModule],
   controllers: [ApprovalsController],
   providers: [
     ApprovalsService,

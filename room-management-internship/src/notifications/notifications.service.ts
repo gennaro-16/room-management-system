@@ -247,12 +247,10 @@ export class NotificationsService {
 
   // Helper method to notify approvers about new booking requests
   async notifyApprovers(bookingId: number, bookingTitle: string) {
-    // Get all users who can approve bookings (ADMIN, DIRECTOR, SUB_DIRECTOR)
+    // Get all users who can approve bookings (ADMIN)
     const approvers = await this.prisma.user.findMany({
       where: {
-        role: {
-          in: ['ADMIN', 'DIRECTOR', 'SUB_DIRECTOR'],
-        },
+        role: 'ADMIN',
         isActive: true,
       },
       select: { id: true },

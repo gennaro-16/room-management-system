@@ -15,13 +15,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   findAll(@CurrentUser() user: User) {
     return this.usersService.findAll(user);
   }
 
   @Get('pending')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   getPendingUsers(@CurrentUser() user: User) {
     return this.usersService.getPendingUsers(user);
   }
@@ -41,19 +41,19 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
     return this.usersService.remove(id, user);
   }
 
   @Patch(':id/deactivate')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   deactivate(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: User) {
     return this.usersService.deactivate(id, user);
   }
 
   @Patch(':id/approve')
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   approveUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() approveUserDto: ApproveUserDto,
@@ -71,19 +71,19 @@ export class UsersController {
   }
 
   @Get('pending-approvals')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   getPendingApprovals() {
     return this.usersService.getPendingApprovals();
   }
 
   @Get('stats')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   getUserStats() {
     return this.usersService.getUserStats();
   }
 
   @Patch(':id/department')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   updateUserDepartment(
     @Param('id', ParseIntPipe) userId: number,
     @Body('departmentId') departmentId: number,

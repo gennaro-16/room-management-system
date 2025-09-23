@@ -26,7 +26,7 @@ export class DepartmentsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   create(@Body() createDepartmentDto: CreateDepartmentDto) {
     return this.departmentsService.create(createDepartmentDto);
   }
@@ -58,7 +58,7 @@ export class DepartmentsController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDepartmentDto: UpdateDepartmentDto,
@@ -69,7 +69,7 @@ export class DepartmentsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @UseGuards(RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN)
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.departmentsService.remove(id);

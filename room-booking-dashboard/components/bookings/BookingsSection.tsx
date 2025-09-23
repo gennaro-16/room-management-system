@@ -14,7 +14,7 @@ import { ErrorAlert } from '@/components/ErrorAlert';
 import { NewBookingDialog } from './NewBookingDialog';
 import { EditBookingDialog } from './EditBookingDialog';
 
-export function BookingsSection() {
+export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
   const [isEditBookingOpen, setIsEditBookingOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -165,10 +165,16 @@ export function BookingsSection() {
           <h2 className="text-2xl font-bold text-balance">Booking Management</h2>
           <p className="text-muted-foreground">View and manage all room reservations</p>
         </div>
-        <Button onClick={() => setIsNewBookingOpen(true)}>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => onOpenFull && onOpenFull()}>
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Open full bookings view
+          </Button>
+          <Button onClick={() => setIsNewBookingOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Nouvelle réservation
-        </Button>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

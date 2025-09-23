@@ -40,10 +40,8 @@ export function UserProfile() {
 
   const getRoleIcon = (role?: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return <Shield className="h-4 w-4" />;
       case 'ADMIN':
-        return <Settings className="h-4 w-4" />;
+        return <Shield className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
     }
