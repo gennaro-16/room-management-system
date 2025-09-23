@@ -7,7 +7,6 @@ import { UpdateVisitorDto } from './dto/update-visitor.dto';
 import { CreateVisitDto } from '../visits/dto/create-visit.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('visitors')
 export class VisitorController {
   constructor(

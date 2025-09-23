@@ -4,7 +4,6 @@ import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitDto } from './dto/update-visit.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('visits')
 export class VisitController {
   constructor(private readonly visitService: VisitService) {}
