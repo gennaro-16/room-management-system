@@ -40,10 +40,15 @@ COPY --from=builder /app/prisma ./prisma
 # Generate Prisma client for production
 RUN npx prisma generate
 
+# Create startup script
+COPY --chown=nestjs:nodejs scripts/start.sh ./start.sh
+RUN chmod +x ./start.sh
+
 USER nestjs
 
 EXPOSE 3000
 
 ENV PORT 3000
 
-CMD ["node", "dist/main.js"]
+# Use startup script to handle migrations and start server
+CMD ["./start.sh"]

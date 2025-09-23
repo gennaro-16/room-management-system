@@ -91,7 +91,11 @@ export function CalendarSection() {
         bookingsApi.getAll(),
         roomsApi.getAll()
       ]);
-      setBookings(bookingsData);
+      // Filter to only show approved and ongoing bookings
+      const filteredBookings = bookingsData.filter(booking => 
+        booking.status === 'APPROVED' || booking.status === 'ONGOING'
+      );
+      setBookings(filteredBookings);
       setRooms(roomsData);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -113,6 +117,7 @@ export function CalendarSection() {
       const filters: any = {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
+        status: 'approved' // Only show approved and ongoing bookings
       };
       
       if (groupBy === 'room' && selectedRoom !== 'all') {
@@ -120,15 +125,23 @@ export function CalendarSection() {
       } else if (groupBy === 'user' && selectedUser !== 'all') {
         filters.organizerId = parseInt(selectedUser);
       }
-      const cacheKey = JSON.stringify({ start: filters.startDate, end: filters.endDate, roomId: filters.roomId || null, organizerId: filters.organizerId || null });
+      const cacheKey = JSON.stringify({ start: filters.startDate, end: filters.endDate, roomId: filters.roomId || null, organizerId: filters.organizerId || null, status: filters.status });
       const cached = bookingCacheRef.current.get(cacheKey);
       if (cached) {
-        setBookings(cached);
+        // Filter cached data to only show approved and ongoing bookings
+        const filteredCached = cached.filter(booking => 
+          booking.status === 'APPROVED' || booking.status === 'ONGOING'
+        );
+        setBookings(filteredCached);
         return;
       }
       const bookingsData = await bookingsApi.getAll(filters);
-      bookingCacheRef.current.set(cacheKey, bookingsData);
-      setBookings(bookingsData);
+      // Filter to only show approved and ongoing bookings
+      const filteredBookings = bookingsData.filter(booking => 
+        booking.status === 'APPROVED' || booking.status === 'ONGOING'
+      );
+      bookingCacheRef.current.set(cacheKey, filteredBookings);
+      setBookings(filteredBookings);
     } catch (error) {
       console.error('Error loading bookings:', error);
     }

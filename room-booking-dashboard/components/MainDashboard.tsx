@@ -14,6 +14,7 @@ import DepartmentsManagement from './admin/DepartmentsManagement';
 import { ConflictsSection } from './conflicts/ConflictsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import DocumentationPage from '@/app/documentation/page';
 
 export function MainDashboard() {
   const [activeSection, setActiveSection] = useState('rooms');
@@ -111,6 +112,8 @@ export function MainDashboard() {
         );
       case 'profile':
         return <DashboardProfile />;
+      case 'documentation':
+        return <DocumentationPage />;
       case 'settings':
         return (
           <Card>

@@ -131,16 +131,20 @@ export default function BookingGrid() {
     return rooms.filter((room) => room.department?.name === selectedDepartment)
   }, [rooms, selectedDepartment])
 
-  // Filter bookings for selected date (show all if no date filter applied)
+  // Filter bookings for selected date - only show approved and ongoing bookings
   const filteredBookings = useMemo(() => {
     if (!bookings) return []
     return bookings.filter(booking => {
+      // Only show approved and ongoing bookings
+      const isApprovedOrOngoing = booking.status === 'APPROVED' || booking.status === 'ONGOING';
+      if (!isApprovedOrOngoing) return false;
+      
       const bookingDate = new Date(booking.startTime).toISOString().split("T")[0]
-      // Show all bookings if selectedDate is today (default view)
+      // Show all approved/ongoing bookings if selectedDate is today (default view)
       // Otherwise filter by selected date
       const today = new Date().toISOString().split("T")[0]
       if (selectedDate === today) {
-        return true // Show all bookings when viewing today
+        return true // Show all approved/ongoing bookings when viewing today
       }
       return bookingDate === selectedDate
     })
@@ -296,7 +300,7 @@ export default function BookingGrid() {
         <CardHeader>
           <CardTitle>
             Room Availability {viewMode === "grid" ? "Grid" : "List"} - 
-            {selectedDate === new Date().toISOString().split("T")[0] ? "All Bookings" : selectedDate}
+            {selectedDate === new Date().toISOString().split("T")[0] ? "Approved & Ongoing Bookings" : selectedDate}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -448,8 +452,8 @@ export default function BookingGrid() {
                       <div className="text-center py-8 text-muted-foreground">
                         <p>
                           {selectedDate === new Date().toISOString().split("T")[0] 
-                            ? "No bookings for this room" 
-                            : `No bookings for this room on ${selectedDate}`
+                            ? "No approved or ongoing bookings for this room" 
+                            : `No approved or ongoing bookings for this room on ${selectedDate}`
                           }
                         </p>
                       </div>

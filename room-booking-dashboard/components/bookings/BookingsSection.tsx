@@ -27,7 +27,7 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
   const { cancelBooking, loading: deleteLoading, error: deleteError } = useCancelBooking();
 
-  // Filter bookings based on search and filters
+  // Filter bookings based on search and filters - show all booking states
   const filteredBookings = useMemo(() => {
     if (!bookings) return [];
     

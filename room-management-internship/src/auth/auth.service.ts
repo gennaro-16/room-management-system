@@ -100,6 +100,7 @@ export class AuthService {
         phone: registerDto.phone,
         departmentId: registerDto.departmentId,
         role: UserRole.EMPLOYEE,
+        isApproved: true, // Auto-approve new users
       },
     });
 

@@ -15,6 +15,7 @@ import {
   X,
   UserCircle,
   AlertTriangle,
+  FileText,
 } from 'lucide-react';
 
 const getSidebarItems = (isAdmin: boolean) => [
@@ -29,6 +30,7 @@ const getSidebarItems = (isAdmin: boolean) => [
     { icon: BarChart3, label: 'Rapports', id: 'reports' },
   ] : []),
   { icon: UserCircle, label: 'Profil', id: 'profile' },
+  { icon: FileText, label: 'Documentation', id: 'documentation' },
   { icon: Settings, label: 'Paramètres', id: 'settings' },
 ];
 

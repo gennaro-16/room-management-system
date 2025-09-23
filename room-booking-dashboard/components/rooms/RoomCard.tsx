@@ -124,9 +124,10 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
             size="sm" 
             className="flex-1 h-8 text-xs"
             onClick={() => onBook(room)}
+            disabled={room.isUnderMaintenance}
           >
             <BookOpen className="h-3 w-3 mr-2" />
-            Réserver
+            {room.isUnderMaintenance ? 'En maintenance' : 'Réserver'}
           </Button>
           {isAdmin() && (
             <Button
