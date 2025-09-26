@@ -26,6 +26,8 @@ The **Room Management System** is a comprehensive full-stack application designe
 - **Responsive Web Interface**: Works seamlessly on desktop, tablet, and mobile devices
 - **Real-time Notifications**: Users receive instant notifications for booking updates
 - **Advanced Filtering**: Multiple views show different booking states based on context
+- **Visitor Management System**: Comprehensive tracking of external visitors and their visits
+- **Advanced Analytics**: Detailed statistics and reporting for visitor patterns and room utilization
 
 ---
 
@@ -42,14 +44,18 @@ The **Room Management System** is a comprehensive full-stack application designe
 │  ├── UsersController         ├── RoomsController           │
 │  ├── DepartmentsController   ├── DashboardController       │
 │  ├── ApprovalsController     ├── ConflictsController       │
-│  └── NotificationsController └── CronController           │
+│  ├── VisitorsController      ├── VisitsController          │
+│  ├── StatisticsController    ├── NotificationsController   │
+│  └── CronController          └── [Other Controllers]       │
 ├─────────────────────────────────────────────────────────────┤
 │  Services Layer                                             │
 │  ├── AuthService             ├── BookingsService           │
 │  ├── UsersService            ├── RoomsService              │
 │  ├── DepartmentsService      ├── DashboardService          │
 │  ├── ApprovalsService        ├── ConflictsService          │
-│  └── NotificationsService    └── CronService              │
+│  ├── VisitorsService         ├── VisitsService             │
+│  ├── StatisticsService       ├── NotificationsService      │
+│  └── CronService             └── [Other Services]          │
 ├─────────────────────────────────────────────────────────────┤
 │  Data Access Layer (Prisma ORM)                            │
 │  ├── Database Models         ├── Migrations                │
@@ -75,7 +81,8 @@ The **Room Management System** is a comprehensive full-stack application designe
 │  Components Layer                                           │
 │  ├── Auth Components        ├── Booking Components         │
 │  ├── Dashboard Components   ├── Room Management            │
-│  ├── Calendar Components    └── Admin Components           │
+│  ├── Calendar Components    ├── Visitor Components         │
+│  ├── Statistics Components  └── Admin Components           │
 ├─────────────────────────────────────────────────────────────┤
 │  State Management                                           │
 │  ├── AuthContext            ├── AppContext                 │
@@ -189,6 +196,134 @@ The **Room Management System** is a comprehensive full-stack application designe
                        │ isRead          │
                        │ createdAt       │
                        └─────────────────┘
+```
+
+### Enhanced Entity Relationship Diagram with Visitor System
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Department    │    │      User       │    │      Room       │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ id (PK)         │◄───┤ departmentId    │    │ id (PK)         │
+│ name            │    │ id (PK)         │    │ name            │
+│ description     │    │ employeeId      │    │ capacity        │
+│ floor           │    │ username        │    │ description     │
+│ createdAt       │    │ email           │    │ amenities[]     │
+│ updatedAt       │    │ password        │    │ floor           │
+└─────────────────┘    │ role            │    │ building        │
+                       │ firstName       │    │ x, y, width,    │
+                       │ lastName        │    │ height          │
+                       │ title           │    │ departmentId    │
+                       │ phone           │    │ isUnderMainte-  │
+                       │ isActive        │    │ nance           │
+                       │ isApproved      │    │ createdAt       │
+                       │ approvedById    │    │ updatedAt       │
+                       │ approvedAt      │    └─────────────────┘
+                       │ rejectedById    │             │
+                       │ rejectedAt      │             │
+                       │ createdAt       │             │
+                       │ updatedAt       │             │
+                       └─────────────────┘             │
+                                │                      │
+                                │                      │
+                       ┌─────────────────┐             │
+                       │    Booking      │◄────────────┘
+                       ├─────────────────┤             │
+                       │ id (PK)         │             │
+                       │ title           │             │
+                       │ roomId          │             │
+                       │ organizerId     │             │
+                       │ expectedAtten-  │             │
+                       │ dees            │             │
+                       │ internalAtten-  │             │
+                       │ dees[]          │             │
+                       │ externalAtten-  │             │
+                       │ dees[]          │             │
+                       │ purpose         │             │
+                       │ agenda          │             │
+                       │ startTime       │             │
+                       │ endTime         │             │
+                       │ status          │             │
+                       │ isRecurring     │             │
+                       │ recurrenceRule  │             │
+                       │ requiredAmeni-  │             │
+                       │ ties[]          │             │
+                       │ approvedById    │             │
+                       │ approvedAt      │             │
+                       │ rejectedById    │             │
+                       │ rejectedAt      │             │
+                       │ rejectionReason │             │
+                       │ parentBookingId │             │
+                       │ createdAt       │             │
+                       │ updatedAt       │             │
+                       └─────────────────┘             │
+                                │                      │
+                                │                      │
+                       ┌─────────────────┐             │
+                       │  Notification   │             │
+                       ├─────────────────┤             │
+                       │ id (PK)         │             │
+                       │ userId          │             │
+                       │ title           │             │
+                       │ message         │             │
+                       │ type            │             │
+                       │ relatedBookingId│             │
+                       │ isRead          │             │
+                       │ createdAt       │             │
+                       └─────────────────┘             │
+                                │                      │
+                                │                      │
+                       ┌─────────────────┐             │
+                       │    Visitor      │             │
+                       ├─────────────────┤             │
+                       │ id (PK)         │             │
+                       │ firstName       │             │
+                       │ lastName        │             │
+                       │ email           │             │
+                       │ phone           │             │
+                       │ createdAt       │             │
+                       │ updatedAt       │             │
+                       └─────────────────┘             │
+                                │                      │
+                                │                      │
+                       ┌─────────────────┐             │
+                       │     Visit       │◄────────────┘
+                       ├─────────────────┤
+                       │ id (PK)         │
+                       │ checkedIn       │
+                       │ checkedOut      │
+                       │ purpose         │
+                       │ bookingId (FK)  │◄────────────┐
+                       │ visitorId (FK)  │             │
+                       │ createdAt       │             │
+                       │ updatedAt       │             │
+                       └─────────────────┘             │
+                                │                      │
+                                │                      │
+                                └──────────────────────┘
+```
+
+### Relationship Summary
+
+#### Core Relationships
+- **Department** ↔ **User**: One-to-Many (Department has many Users)
+- **Department** ↔ **Room**: One-to-Many (Department has many Rooms)
+- **User** ↔ **Booking**: One-to-Many (User organizes many Bookings)
+- **Room** ↔ **Booking**: One-to-Many (Room has many Bookings)
+- **User** ↔ **Notification**: One-to-Many (User receives many Notifications)
+- **Booking** ↔ **Notification**: One-to-Many (Booking generates many Notifications)
+
+#### Visitor System Relationships
+- **Visitor** ↔ **Visit**: One-to-Many (Visitor has many Visits)
+- **Visit** ↔ **Booking**: Many-to-One (Visit optionally linked to one Booking)
+- **Visit** → **Room**: Through Booking relationship (Visit → Booking → Room)
+- **Visit** → **Department**: Through Booking → Room → Department chain
+
+#### Data Flow for Visitor Analytics
+```
+Visitor → Visit → Booking → Room → Department
+    ↓        ↓        ↓        ↓         ↓
+Statistics ← Analytics ← Room Usage ← Department Stats
 ```
 
 ### Database Models
@@ -348,6 +483,36 @@ model Notification {
   relatedBooking Booking? @relation(fields: [relatedBookingId], references: [id])
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+```
+
+#### 6. Visitor Model
+```typescript
+model Visitor {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  visits    Visit[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+#### 7. Visit Model
+```typescript
+model Visit {
+  id         Int      @id @default(autoincrement())
+  checkedIn  DateTime
+  checkedOut DateTime?
+  purpose    String?
+  bookingId  Int?
+  booking    Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  visitorId  Int
+  visitor    Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 ```
 
@@ -651,6 +816,63 @@ Create new department (Admin only).
 #### GET /departments/:id/stats
 Get department statistics.
 
+### Visitor Management Endpoints
+
+#### GET /visitors
+Get all visitors with pagination and filtering.
+
+**Query Parameters:**
+- `page`, `limit`: Pagination
+- `startDate`, `endDate`: Date range filtering
+- `visitorName`: Search by visitor name
+- `room`, `department`: Filter by room or department
+- `status`: Filter by visit status
+
+#### POST /visitors/visit
+Create new visitor with first visit or add visit for existing visitor.
+
+#### GET /visitors/:id
+Get specific visitor with all visits.
+
+#### PATCH /visitors/:id
+Update visitor information.
+
+### Visit Management Endpoints
+
+#### GET /visits
+Get all visits with filtering and pagination.
+
+#### GET /visits/filters
+Get available filter options (rooms, departments).
+
+#### POST /visits
+Create new visit record.
+
+#### GET /visits/:id
+Get specific visit details.
+
+#### PATCH /visits/:id
+Update visit information.
+
+#### PATCH /visits/:id/checkout
+Process visitor checkout.
+
+### Statistics Endpoints
+
+#### GET /statistics/visitors
+Get comprehensive visitor statistics.
+
+**Query Parameters:**
+- `timeRange`: 'day', 'month', 'year'
+- `startDate`, `endDate`: Custom date range
+
+**Response includes:**
+- Daily, monthly, yearly statistics
+- Peak hours analysis
+- Department and room distribution
+- Purpose analysis
+- Summary metrics
+
 ### Conflict Resolution Endpoints
 
 #### GET /conflicts/bookings
@@ -885,6 +1107,7 @@ const apiRequest = async <T>(
 - ✅ View room availability
 - ❌ Cannot access admin functions
 - ❌ Cannot approve other users
+- ❌ Cannot access visitor management
 
 ### 3. GUEST Role
 
@@ -906,6 +1129,9 @@ const apiRequest = async <T>(
 | Dashboard Access | ✅ Full | ✅ Limited | ✅ Limited |
 | Calendar Views | ✅ All | ✅ All | ✅ All |
 | Conflict Resolution | ✅ Full | ❌ None | ❌ None |
+| Visitor Management | ✅ Full | ❌ None | ❌ None |
+| Visit Tracking | ✅ Full | ❌ None | ❌ None |
+| Statistics & Analytics | ✅ Full | ❌ None | ❌ None |
 
 ---
 
@@ -1740,5 +1966,8 @@ This comprehensive documentation covers all aspects of the Room Management Syste
 - Integration with external calendar systems
 - Automated room maintenance scheduling
 - Resource booking (projectors, laptops, etc.)
+- Visitor badge printing integration
+- Advanced visitor analytics and machine learning insights
+- Integration with building access control systems
 
 The system is production-ready and can be deployed to various hosting platforms with the provided deployment guides and Docker configurations.

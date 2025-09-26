@@ -50,6 +50,8 @@
 - ✅ Delete users and rooms
 - ✅ System configuration
 - ✅ Full audit access
+- ✅ Manage visitors and visits
+- ✅ Access visitor statistics and analytics
 
 ---
 
@@ -257,6 +259,7 @@ The Visitor Management system allows administrators to track external visitors, 
 - **Admin Role Required**: Only users with ADMIN role can access visitor management features
 - **Authentication**: Must be logged in with valid credentials
 - **Permissions**: Full access to visitor data and visit records
+- **Security**: All visitor data is protected and requires proper authorization
 
 ### Managing Visitors
 
@@ -311,6 +314,8 @@ Each visit shows:
 - **Room**: Associated meeting room
 - **Department**: Associated department
 - **Departure**: Checkout time or departure button
+- **Duration**: Calculated visit duration (for completed visits)
+- **Status**: Active (checked in) or Completed (checked out)
 
 ### Visitor Details and History
 
@@ -325,6 +330,8 @@ Each visit shows:
 - **Visit History**: All past and current visits
 - **Visit Statistics**: Total visits, average duration
 - **Recent Activity**: Latest visits and purposes
+- **Associated Bookings**: Meeting bookings linked to visits
+- **Department Access**: Which departments the visitor has accessed
 
 ---
 
@@ -337,6 +344,7 @@ The Statistics & Analytics system provides comprehensive insights into visitor p
 - **Admin Role Required**: Only users with ADMIN role can access statistics
 - **Authentication**: Must be logged in with valid credentials
 - **Real-time Data**: Statistics reflect current system state
+- **Data Privacy**: All visitor data is anonymized in aggregate statistics
 
 ### Statistics Dashboard
 
@@ -587,6 +595,23 @@ A: You can only book rooms for yourself. Contact admin for group bookings.
 **Q: Why can't I edit someone else's booking?**
 A: You can only edit your own bookings. Contact the organizer or admin for changes.
 
+### Visitor Management Questions
+
+**Q: Who can access visitor management features?**
+A: Only users with ADMIN role can access visitor management, visit tracking, and statistics.
+
+**Q: Can I see visitor information as a regular employee?**
+A: No, visitor information is restricted to administrators only for security and privacy reasons.
+
+**Q: How do I record a visitor's departure?**
+A: Use the "Départ" (Departure) button next to active visits to record checkout time.
+
+**Q: Can visitors be linked to meeting bookings?**
+A: Yes, visits can be optionally linked to existing meeting bookings for better tracking.
+
+**Q: What statistics are available for visitors?**
+A: The system provides comprehensive analytics including daily/monthly/yearly trends, peak hours, department distribution, and room utilization.
+
 ---
 
 ## Getting Help
@@ -615,6 +640,8 @@ A: You can only edit your own bookings. Contact the organizer or admin for chang
 - **Responsive Design**: Improved mobile and tablet experience
 - **Real-time Updates**: Live booking status updates
 - **Enhanced Filtering**: Better room and booking filtering options
+- **Visitor Management**: Comprehensive visitor tracking and visit management
+- **Advanced Analytics**: Detailed visitor statistics and reporting
 
 ### Upcoming Features
 - **Mobile App**: Native mobile application

@@ -74,6 +74,124 @@ The Room Management System is a comprehensive solution for managing meeting room
 
 ## Database Schema
 
+### Entity Relationship Diagram
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Department    │    │      User       │    │      Room       │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ id (PK)         │◄───┤ departmentId    │    │ id (PK)         │
+│ name            │    │ id (PK)         │    │ name            │
+│ description     │    │ employeeId      │    │ capacity        │
+│ floor           │    │ username        │    │ description     │
+│ createdAt       │    │ email           │    │ amenities[]     │
+│ updatedAt       │    │ password        │    │ floor           │
+└─────────────────┘    │ role            │    │ building        │
+                       │ firstName       │    │ x, y, width,    │
+                       │ lastName        │    │ height          │
+                       │ title           │    │ departmentId    │
+                       │ phone           │    │ isUnderMainte-  │
+                       │ isActive        │    │ nance           │
+                       │ isApproved      │    │ createdAt       │
+                       │ approvedById    │    │ updatedAt       │
+                       │ approvedAt      │    └─────────────────┘
+                       │ rejectedById    │             │
+                       │ rejectedAt      │             │
+                       │ createdAt       │             │
+                       │ updatedAt       │             │
+                       └─────────────────┘             │
+                                │                      │
+                                │                      │
+                       ┌─────────────────┐             │
+                       │    Booking      │◄────────────┘
+                       ├─────────────────┤
+                       │ id (PK)         │
+                       │ title           │
+                       │ roomId          │
+                       │ organizerId     │
+                       │ expectedAtten-  │
+                       │ dees            │
+                       │ internalAtten-  │
+                       │ dees[]          │
+                       │ externalAtten-  │
+                       │ dees[]          │
+                       │ purpose         │
+                       │ agenda          │
+                       │ startTime       │
+                       │ endTime         │
+                       │ status          │
+                       │ isRecurring     │
+                       │ recurrenceRule  │
+                       │ requiredAmeni-  │
+                       │ ties[]          │
+                       │ approvedById    │
+                       │ approvedAt      │
+                       │ rejectedById    │
+                       │ rejectedAt      │
+                       │ rejectionReason │
+                       │ parentBookingId │
+                       │ createdAt       │
+                       │ updatedAt       │
+                       └─────────────────┘
+                                │
+                                │
+                       ┌─────────────────┐
+                       │  Notification   │
+                       ├─────────────────┤
+                       │ id (PK)         │
+                       │ userId          │
+                       │ title           │
+                       │ message         │
+                       │ type            │
+                       │ relatedBookingId│
+                       │ isRead          │
+                       │ createdAt       │
+                       └─────────────────┘
+                                │
+                                │
+                       ┌─────────────────┐
+                       │    Visitor      │
+                       ├─────────────────┤
+                       │ id (PK)         │
+                       │ firstName       │
+                       │ lastName        │
+                       │ email           │
+                       │ phone           │
+                       │ createdAt       │
+                       │ updatedAt       │
+                       └─────────────────┘
+                                │
+                                │
+                       ┌─────────────────┐
+                       │     Visit       │◄────────────┐
+                       ├─────────────────┤             │
+                       │ id (PK)         │             │
+                       │ checkedIn       │             │
+                       │ checkedOut      │             │
+                       │ purpose         │             │
+                       │ bookingId (FK)  │◄────────────┘
+                       │ visitorId (FK)  │
+                       │ createdAt       │
+                       │ updatedAt       │
+                       └─────────────────┘
+```
+
+### Relationship Types
+
+#### Primary Relationships
+- **Department** → **User**: One-to-Many (1:N)
+- **Department** → **Room**: One-to-Many (1:N)
+- **User** → **Booking**: One-to-Many (1:N)
+- **Room** → **Booking**: One-to-Many (1:N)
+- **User** → **Notification**: One-to-Many (1:N)
+- **Booking** → **Notification**: One-to-Many (1:N)
+
+#### Visitor System Relationships
+- **Visitor** → **Visit**: One-to-Many (1:N)
+- **Visit** → **Booking**: Many-to-One (N:1, Optional)
+- **Visit** → **Room**: Through Booking (N:1, Indirect)
+- **Visit** → **Department**: Through Booking → Room (N:1, Indirect)
+
 ### Core Tables
 
 #### 1. Department
@@ -199,6 +317,42 @@ CREATE TABLE "Notification" (
 );
 ```
 
+#### 6. Visitor
+```sql
+CREATE TABLE "Visitor" (
+  "id" SERIAL PRIMARY KEY,
+  "firstName" TEXT NOT NULL,
+  "lastName" TEXT NOT NULL,
+  "email" TEXT,
+  "phone" TEXT,
+  "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
+);
+```
+
+**Relationships:**
+- One-to-Many with `Visit`
+
+#### 7. Visit
+```sql
+CREATE TABLE "Visit" (
+  "id" SERIAL PRIMARY KEY,
+  "checkedIn" TIMESTAMP(3) NOT NULL,
+  "checkedOut" TIMESTAMP(3),
+  "purpose" TEXT,
+  "bookingId" INTEGER,
+  "visitorId" INTEGER NOT NULL,
+  "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE
+);
+```
+
+**Relationships:**
+- Many-to-One with `Visitor`
+- Many-to-One with `Booking` (optional)
+
 ### Database Indexes
 ```sql
 -- Performance indexes
@@ -206,6 +360,9 @@ CREATE INDEX "Booking_startTime_endTime_idx" ON "Booking"("startTime", "endTime"
 CREATE INDEX "Booking_status_idx" ON "Booking"("status");
 CREATE INDEX "User_departmentId_idx" ON "User"("departmentId");
 CREATE INDEX "Room_departmentId_idx" ON "Room"("departmentId");
+CREATE INDEX "Visit_checkedIn_idx" ON "Visit"("checkedIn");
+CREATE INDEX "Visit_visitorId_idx" ON "Visit"("visitorId");
+CREATE INDEX "Visit_bookingId_idx" ON "Visit"("bookingId");
 ```
 
 ---
@@ -285,6 +442,29 @@ All API endpoints (except auth) require JWT authentication via Bearer token.
 | GET | `/conflicts/bookings` | Get conflicting bookings | Yes | ADMIN, SUPER_ADMIN |
 | GET | `/conflicts/check/:id` | Check booking conflicts | Yes | ADMIN, SUPER_ADMIN |
 | POST | `/conflicts/resolve/:id` | Resolve conflict | Yes | ADMIN, SUPER_ADMIN |
+
+#### Visitors
+| Method | Endpoint | Description | Auth Required | Roles |
+|--------|----------|-------------|---------------|-------|
+| GET | `/visitors` | Get all visitors with filtering | Yes | ADMIN |
+| POST | `/visitors/visit` | Create visitor with visit | Yes | ADMIN |
+| GET | `/visitors/:id` | Get specific visitor | Yes | ADMIN |
+| PATCH | `/visitors/:id` | Update visitor information | Yes | ADMIN |
+
+#### Visits
+| Method | Endpoint | Description | Auth Required | Roles |
+|--------|----------|-------------|---------------|-------|
+| GET | `/visits` | Get all visits with filtering | Yes | ADMIN |
+| GET | `/visits/filters` | Get available filter options | Yes | ADMIN |
+| POST | `/visits` | Create new visit record | Yes | ADMIN |
+| GET | `/visits/:id` | Get specific visit | Yes | ADMIN |
+| PATCH | `/visits/:id` | Update visit record | Yes | ADMIN |
+| PATCH | `/visits/:id/checkout` | Process visitor checkout | Yes | ADMIN |
+
+#### Statistics
+| Method | Endpoint | Description | Auth Required | Roles |
+|--------|----------|-------------|---------------|-------|
+| GET | `/statistics/visitors` | Get visitor statistics | Yes | ADMIN |
 
 ### Request/Response Examples
 
@@ -367,6 +547,11 @@ ADMIN > EMPLOYEE > GUEST
 | **Conflict Resolution** |
 | View conflicts | ✅ | ❌ | ❌ |
 | Resolve conflicts | ✅ | ❌ | ❌ |
+| **Visitor Management** |
+| View visitors | ✅ | ❌ | ❌ |
+| Create visitors | ✅ | ❌ | ❌ |
+| Manage visits | ✅ | ❌ | ❌ |
+| View statistics | ✅ | ❌ | ❌ |
 
 ---
 
@@ -468,6 +653,8 @@ room-booking-dashboard/
 - **Usage Statistics**: Room utilization reports
 - **Booking Analytics**: Booking patterns and trends
 - **Department Reports**: Department-specific usage data
+- **Visitor Analytics**: Comprehensive visitor statistics and trends
+- **Visit Tracking**: Detailed visit duration and purpose analysis
 
 ---
 

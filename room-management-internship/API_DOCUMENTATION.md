@@ -639,6 +639,8 @@ Gets a summary of today's bookings and upcoming bookings.
 
 ## Visitor Management API
 
+The visitor management system provides comprehensive tracking and management of external visitors, their visits, and associated meeting room access. This system is integrated with the booking system to provide complete visitor lifecycle management.
+
 ### Data Models
 
 #### Visitor Model
@@ -671,16 +673,26 @@ Gets a summary of today's bookings and upcoming bookings.
 }
 ```
 
+### Authentication & Authorization
+- **JWT Authentication**: All endpoints require valid JWT token
+- **Admin Role Required**: All visitor management operations restricted to ADMIN role
+- **Role Guards**: Automatic permission checking on all operations
+
 ### Endpoints
 
 #### GET /visitors
 Get all visitors with pagination and filtering.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Query Parameters:**
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 8)
-- `startDate` (optional): Filter visits from date
-- `endDate` (optional): Filter visits to date
+- `startDate` (optional): Filter visits from date (YYYY-MM-DD)
+- `endDate` (optional): Filter visits to date (YYYY-MM-DD)
 - `visitorName` (optional): Search by visitor name
 - `room` (optional): Filter by room name
 - `department` (optional): Filter by department
@@ -722,7 +734,12 @@ Get all visitors with pagination and filtering.
 ```
 
 #### POST /visitors/visit
-Create a new visitor with their first visit.
+Create a new visitor with their first visit or add a visit for an existing visitor.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Request Body:**
 ```json
@@ -737,6 +754,15 @@ Create a new visitor with their first visit.
 }
 ```
 
+**Request Body Fields:**
+- `visitorId` (optional): ID of existing visitor. If not provided, creates new visitor
+- `firstName` (required if new visitor): Visitor's first name
+- `lastName` (required if new visitor): Visitor's last name
+- `email` (optional): Visitor's email address
+- `phone` (optional): Visitor's phone number (10 digits)
+- `purpose` (optional): Purpose of the visit
+- `bookingId` (optional): Link to existing meeting booking
+
 **Response:**
 ```json
 {
@@ -745,7 +771,9 @@ Create a new visitor with their first visit.
     "firstName": "Jane",
     "lastName": "Doe",
     "email": "jane@example.com",
-    "phone": "+1234567890"
+    "phone": "+1234567890",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z"
   },
   "visit": {
     "id": 2,
@@ -753,13 +781,20 @@ Create a new visitor with their first visit.
     "checkedOut": null,
     "purpose": "Consultation",
     "bookingId": 1,
-    "visitorId": 2
+    "visitorId": 2,
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z"
   }
 }
 ```
 
 #### GET /visitors/:id
 Get a specific visitor with all their visits.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Response:**
 ```json
@@ -769,12 +804,16 @@ Get a specific visitor with all their visits.
   "lastName": "Smith",
   "email": "john@example.com",
   "phone": "+1234567890",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T10:00:00Z",
   "visits": [
     {
       "id": 1,
       "checkedIn": "2024-01-15T10:00:00Z",
       "checkedOut": "2024-01-15T12:00:00Z",
       "purpose": "Business Meeting",
+      "bookingId": 1,
+      "visitorId": 1,
       "booking": {
         "room": {
           "name": "Conference Room A",
@@ -789,6 +828,11 @@ Get a specific visitor with all their visits.
 #### PATCH /visitors/:id
 Update visitor information.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Request Body:**
 ```json
 {
@@ -799,24 +843,49 @@ Update visitor information.
 }
 ```
 
+**Response:**
+```json
+{
+  "id": 1,
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.newemail@example.com",
+  "phone": "+1234567890",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T11:00:00Z"
+}
+```
+
 ---
 
 ## Visit Management API
+
+The visit management system provides comprehensive tracking of individual visitor visits, including check-in/check-out times, purposes, and associated meeting bookings.
+
+### Authentication & Authorization
+- **JWT Authentication**: All endpoints require valid JWT token
+- **Admin Role Required**: All visit management operations restricted to ADMIN role
+- **Role Guards**: Automatic permission checking on all operations
 
 ### Endpoints
 
 #### GET /visits
 Get all visits with filtering and pagination.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Query Parameters:**
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 8)
-- `startDate` (optional): Filter visits from date
-- `endDate` (optional): Filter visits to date
+- `startDate` (optional): Filter visits from date (YYYY-MM-DD)
+- `endDate` (optional): Filter visits to date (YYYY-MM-DD)
 - `visitorName` (optional): Search by visitor name
 - `room` (optional): Filter by room name
 - `department` (optional): Filter by department
-- `status` (optional): Filter by visit status
+- `status` (optional): Filter by visit status (`isActive` or `isCheckedOut`)
 
 **Response:**
 ```json
@@ -827,16 +896,27 @@ Get all visits with filtering and pagination.
       "checkedIn": "2024-01-15T10:00:00Z",
       "checkedOut": "2024-01-15T12:00:00Z",
       "purpose": "Business Meeting",
+      "visitorId": 1,
+      "bookingId": 1,
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T12:00:00Z",
       "visitor": {
         "id": 1,
         "firstName": "John",
         "lastName": "Smith",
-        "email": "john@example.com"
+        "email": "john@example.com",
+        "phone": "+1234567890"
       },
       "booking": {
+        "id": 1,
+        "title": "Client Meeting",
         "room": {
+          "id": 1,
           "name": "Conference Room A",
-          "department": { "name": "Engineering" }
+          "department": { 
+            "id": 1,
+            "name": "Engineering" 
+          }
         }
       }
     }
@@ -852,6 +932,11 @@ Get all visits with filtering and pagination.
 
 #### GET /visits/filters
 Get available filter options for visits.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Response:**
 ```json
@@ -870,6 +955,11 @@ Get available filter options for visits.
 #### POST /visits
 Create a new visit record.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Request Body:**
 ```json
 {
@@ -881,8 +971,34 @@ Create a new visit record.
 }
 ```
 
+**Request Body Fields:**
+- `visitorId` (required): ID of the visitor
+- `bookingId` (optional): ID of associated booking
+- `checkedIn` (required): Check-in timestamp (ISO 8601)
+- `checkedOut` (optional): Check-out timestamp (ISO 8601)
+- `purpose` (optional): Purpose of the visit
+
+**Response:**
+```json
+{
+  "id": 1,
+  "visitorId": 1,
+  "bookingId": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Business Meeting",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T12:00:00Z"
+}
+```
+
 #### GET /visits/:id
 Get a specific visit record.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Response:**
 ```json
@@ -891,16 +1007,27 @@ Get a specific visit record.
   "checkedIn": "2024-01-15T10:00:00Z",
   "checkedOut": "2024-01-15T12:00:00Z",
   "purpose": "Business Meeting",
+  "visitorId": 1,
+  "bookingId": 1,
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T12:00:00Z",
   "visitor": {
     "id": 1,
     "firstName": "John",
     "lastName": "Smith",
-    "email": "john@example.com"
+    "email": "john@example.com",
+    "phone": "+1234567890"
   },
   "booking": {
+    "id": 1,
+    "title": "Client Meeting",
     "room": {
+      "id": 1,
       "name": "Conference Room A",
-      "department": { "name": "Engineering" }
+      "department": { 
+        "id": 1,
+        "name": "Engineering" 
+      }
     }
   }
 }
@@ -908,6 +1035,11 @@ Get a specific visit record.
 
 #### PATCH /visits/:id
 Update a visit record.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Request Body:**
 ```json
@@ -917,8 +1049,27 @@ Update a visit record.
 }
 ```
 
+**Response:**
+```json
+{
+  "id": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Updated Meeting Purpose",
+  "visitorId": 1,
+  "bookingId": 2,
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T11:00:00Z"
+}
+```
+
 #### PATCH /visits/:id/checkout
-Process visitor checkout.
+Process visitor checkout (sets checkout time to current timestamp).
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Response:**
 ```json
@@ -928,7 +1079,9 @@ Process visitor checkout.
   "checkedOut": "2024-01-15T14:00:00Z",
   "purpose": "Business Meeting",
   "visitorId": 1,
-  "bookingId": 1
+  "bookingId": 1,
+  "createdAt": "2024-01-15T10:00:00Z",
+  "updatedAt": "2024-01-15T14:00:00Z"
 }
 ```
 
@@ -936,15 +1089,27 @@ Process visitor checkout.
 
 ## Statistics API
 
+The statistics API provides comprehensive analytics and reporting capabilities for visitor management, offering insights into visitor patterns, room utilization, and organizational access trends.
+
+### Authentication & Authorization
+- **JWT Authentication**: All endpoints require valid JWT token
+- **Admin Role Required**: All statistics operations restricted to ADMIN role
+- **Role Guards**: Automatic permission checking on all operations
+
 ### Endpoints
 
 #### GET /statistics/visitors
-Get comprehensive visitor statistics.
+Get comprehensive visitor statistics with time-based analytics, department distribution, and usage patterns.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Query Parameters:**
 - `timeRange` (optional): Time range ('day', 'month', 'year') (default: 'month')
-- `startDate` (optional): Custom start date
-- `endDate` (optional): Custom end date
+- `startDate` (optional): Custom start date (YYYY-MM-DD)
+- `endDate` (optional): Custom end date (YYYY-MM-DD)
 
 **Response:**
 ```json
@@ -1027,6 +1192,29 @@ Get comprehensive visitor statistics.
 }
 ```
 
+### Statistics Data Structure
+
+#### Time-based Analytics
+- **Daily Stats**: Visitor count and average duration per day
+- **Monthly Stats**: Aggregated monthly visitor data
+- **Yearly Stats**: Annual visitor trends and patterns
+
+#### Distribution Analytics
+- **Department Stats**: Visitor distribution across departments
+- **Room Stats**: Room utilization and visitor counts
+- **Purpose Stats**: Visit purpose analysis and categorization
+
+#### Peak Analysis
+- **Peak Hours**: Hourly visitor distribution (0-23)
+- **Peak Identification**: Busiest hours and periods
+
+#### Summary Metrics
+- **Total Visitors**: Cumulative visitor count
+- **Average Duration**: Mean visit duration in minutes
+- **Daily Average**: Average visitors per day
+- **Peak Hour**: Hour with highest visitor count
+- **Most Visited**: Top department and room by visitor count
+
 ---
 
 ## Error Handling
@@ -1058,6 +1246,11 @@ The API uses standard HTTP status codes and returns error responses in the follo
 - `"Room is under maintenance and cannot be booked"` - When trying to book maintenance room
 - `"Cannot book rooms in the past"` - When trying to create booking in the past
 - `"End time must be after start time"` - When booking time range is invalid
+- `"Visitor not found"` - When visitor ID doesn't exist
+- `"First name and last name required"` - When creating visitor without required fields
+- `"Phone must be 10 digits"` - When phone number format is invalid
+- `"Visit with ID {id} not found"` - When visit record doesn't exist
+- `"Access denied"` - When user lacks required permissions for visitor/visit operations
 
 ---
 
@@ -1082,6 +1275,19 @@ The API uses standard HTTP status codes and returns error responses in the follo
 ### Status Validation
 - Room status must be one of: `FREE`, `BUSY`, `MAINTENANCE`, `RESERVED`
 - Booking status must be one of: `ACTIVE`, `CANCELLED`, `COMPLETED`
+
+### Visitor Validation
+- `firstName`: Required, string, non-empty
+- `lastName`: Required, string, non-empty
+- `email`: Optional, valid email format
+- `phone`: Optional, exactly 10 digits
+
+### Visit Validation
+- `visitorId`: Required, integer, must reference existing visitor
+- `bookingId`: Optional, integer, must reference existing booking
+- `checkedIn`: Required, valid ISO 8601 date string
+- `checkedOut`: Optional, valid ISO 8601 date string, must be after checkedIn
+- `purpose`: Optional, string
 
 ---
 
