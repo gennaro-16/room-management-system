@@ -16,6 +16,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import DocumentationPage from '@/app/documentation/page';
 
+import VisitorsPage from './visitors/visitors';
+import StatisticsPage from './visitors/statistics';
 export function MainDashboard() {
   const [activeSection, setActiveSection] = useState('rooms');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,6 +34,10 @@ export function MainDashboard() {
           return <CalendarSection />;
         }
         return <DashboardSection />;
+      case 'Visiteurs':
+        return <VisitorsPage />; 
+      case 'statistiques':
+        return <StatisticsPage/>  
       case 'rooms':
         return <RoomsSection />;
       case 'bookings':

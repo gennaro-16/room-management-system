@@ -11,6 +11,8 @@ import { apiUtils } from '@/lib/api';
 
 const sidebarItems = [
   { label: 'Tableau de bord', id: 'dashboard' },
+  {label:"statistiques",id:"statistiques"},
+  {label:"Visiteurs",id:"Visiteurs"},
   { label: 'Salles', id: 'rooms' },
   { label: 'Réservations', id: 'bookings' },
   { label: 'Calendrier', id: 'calendar' },

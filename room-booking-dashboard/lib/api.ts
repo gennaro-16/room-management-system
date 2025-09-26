@@ -279,6 +279,81 @@ export const setAuthToken = (token: string | null) => {
   }
 };
 
+// Visitors API
+export interface VisitBooking {
+  id: number;
+  title: string;
+  room: { id?: number; name: string };
+  organizer: { id?: number; firstName: string; lastName: string };
+}
+
+export interface VisitItem {
+  id: number;
+  checkedIn: string; // ISO string from backend
+  checkedOut?: string | null;
+  purpose?: string | null;
+  bookingId: number;
+  booking: VisitBooking;
+  visitorId: number;
+}
+
+export interface VisitorItem {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+  phone?: string | null;
+  visits: VisitItem[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateVisitorDto {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface UpdateVisitorDtoFront {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface CreateVisitDto {
+  bookingId: number;
+  checkedIn?: string; // ISO
+  purpose?: string;
+}
+
+export const visitorsApi = {
+  getAll: (
+    params?: { search?: string; status?: 'active' | 'checkedout' | 'all'; date?: string }
+  ): Promise<VisitorItem[]> => {
+    const qs = new URLSearchParams();
+    if (params?.search) qs.set('search', params.search);
+    if (params?.status) qs.set('status', params.status);
+    if (params?.date) qs.set('date', params.date);
+    const query = qs.toString();
+    return apiRequest<VisitorItem[]>(`/visitors${query ? `?${query}` : ''}`);
+  },
+
+  getById: (id: number): Promise<VisitorItem> => apiRequest<VisitorItem>(`/visitors/${id}`),
+
+  create: (data: CreateVisitorDto): Promise<VisitorItem> =>
+    apiRequest<VisitorItem>('/visitors', { method: 'POST', body: JSON.stringify(data) }),
+
+  update: (id: number, data: UpdateVisitorDtoFront): Promise<VisitorItem> =>
+    apiRequest<VisitorItem>(`/visitors/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  createVisit: (visitorId: number, data: CreateVisitDto): Promise<VisitItem> =>
+    apiRequest<VisitItem>(`/visitors/${visitorId}/visits`, { method: 'POST', body: JSON.stringify(data) }),
+
+  checkout: (visitId: number): Promise<VisitItem> =>
+    apiRequest<VisitItem>(`/visitors/visits/${visitId}/checkout`, { method: 'PATCH' }),
+};
 export const getAuthToken = (): string | null => {
   if (authToken) return authToken;
   if (typeof window !== 'undefined') {

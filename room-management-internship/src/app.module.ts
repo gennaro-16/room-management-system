@@ -12,6 +12,9 @@ import { UsersModule } from './users/users.module';
 import { CronModule } from './cron/cron.module';
 // Conflicts module disabled
 
+import { VisitorsModule } from './visitors/visitors.module';
+import { VisitModule } from './visits/visits.module';
+import { StatisticsModule } from './statistics/statistics.module';
 @Module({
   imports: [
     PrismaModule,
@@ -23,6 +26,9 @@ import { CronModule } from './cron/cron.module';
     AuthModule,
     UsersModule,
     CronModule,
+    VisitModule,
+    VisitorsModule,
+    StatisticsModule
   ],
   controllers: [AppController],
   providers: [AppService],

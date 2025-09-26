@@ -23,6 +23,7 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   const [expandedBookings, setExpandedBookings] = useState<Set<number>>(new Set());
 
   const { data: bookings, loading, error, refetch } = useBookings();
+  console.log('Bookings data:', bookings);
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
   const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
   const { cancelBooking, loading: deleteLoading, error: deleteError } = useCancelBooking();
