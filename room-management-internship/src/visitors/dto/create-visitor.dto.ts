@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEmail, IsPhoneNumber } from 'class-validator';
+import { IsString, IsOptional, IsEmail, IsPhoneNumber ,Matches} from 'class-validator';
 
 export class CreateVisitorDto {
   @IsString()
@@ -12,6 +12,6 @@ export class CreateVisitorDto {
   email?: string;
 
   @IsOptional()
-  @IsPhoneNumber()
+@Matches(/^[0-9]{10}$/, { message: 'Phone must be 10 digits' })
   phone?: string;
 }

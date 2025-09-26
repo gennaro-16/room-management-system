@@ -48,14 +48,41 @@ export function VisitorDetailsModal({
     setEditMode(true)
   }
 
-  const handleSaveEdit = async () => {
-    await onEdit(localVisitor, editForm)
-
-    const updatedVisitor = { ...localVisitor, ...editForm }
-    setLocalVisitor(updatedVisitor)
-
-    setEditMode(false)
+// Save edit with validation
+const handleSaveEdit = async () => {
+  // --- Email validation ---
+  if (editForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) {
+    alert("Veuillez entrer un email valide.")
+    return
   }
+
+  // --- Phone validation (example: at least 8 digits) ---
+  if (editForm.phone && !/^\+?[0-9]{8,15}$/.test(editForm.phone)) {
+    alert("Veuillez entrer un numéro de téléphone valide.")
+    return
+  }
+
+  const changed: UpdateVisitorDtoFront = {}
+
+  ;(Object.keys(editForm) as (keyof UpdateVisitorDtoFront)[]).forEach((key) => {
+    if (editForm[key] !== localVisitor[key]) {
+      if (editForm[key] === "") return
+      changed[key] = editForm[key]
+    }
+  })
+
+  if (Object.keys(changed).length === 0) {
+    setEditMode(false)
+    return
+  }
+
+  await onEdit(localVisitor, changed)
+
+  const updatedVisitor = { ...localVisitor, ...changed }
+  setLocalVisitor(updatedVisitor)
+
+  setEditMode(false)
+}
 
   const handleCancelEdit = () => {
     setEditMode(false)

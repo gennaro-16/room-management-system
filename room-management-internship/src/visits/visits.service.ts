@@ -50,14 +50,19 @@ async getVisits({
   }
 
   // ✅ Visitor filter
-  if (visitorName) {
-    where.visitor = {
+if (visitorName) {
+  const terms = visitorName.split(" ").filter(Boolean);
+
+  where.visitor = {
+    AND: terms.map((term) => ({
       OR: [
-        { firstName: { contains: visitorName, mode: 'insensitive' } },
-        { lastName: { contains: visitorName, mode: 'insensitive' } },
+        { firstName: { contains: term, mode: "insensitive" } },
+        { lastName: { contains: term, mode: "insensitive" } },
       ],
-    };
-  }
+    })),
+  };
+}
+
 
   // ✅ Booking filters
   if (room || department) {

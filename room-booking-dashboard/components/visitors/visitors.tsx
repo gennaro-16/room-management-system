@@ -164,8 +164,9 @@ export default function VisitorsPage() {
   }
 }
 
-  // Save visitor edit
+  
   const handleEditVisitor = async (visitor: VisitorItem, editForm: UpdateVisitorDtoFront) => {
+  console.log("visitor data",visitor,editForm);
     setEditLoading(true)
     setShowVisitorDetails(null)
     setEditError(null)
@@ -181,6 +182,7 @@ export default function VisitorsPage() {
       setEditLoading(false)
     }
   }
+
 
     const { data: bookings, error, refetch } = useBookings();
     console.log('Bookings data:', bookings);
