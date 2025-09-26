@@ -279,81 +279,81 @@ export const setAuthToken = (token: string | null) => {
   }
 };
 
-// Visitors API
-export interface VisitBooking {
-  id: number;
-  title: string;
-  room: { id?: number; name: string };
-  organizer: { id?: number; firstName: string; lastName: string };
-}
+// // Visitors API
+// export interface VisitBooking {
+//   id: number;
+//   title: string;
+//   room: { id?: number; name: string };
+//   organizer: { id?: number; firstName: string; lastName: string };
+// }
 
-export interface VisitItem {
-  id: number;
-  checkedIn: string; // ISO string from backend
-  checkedOut?: string | null;
-  purpose?: string | null;
-  bookingId: number;
-  booking: VisitBooking;
-  visitorId: number;
-}
+// export interface VisitItem {
+//   id: number;
+//   checkedIn: string; // ISO string from backend
+//   checkedOut?: string | null;
+//   purpose?: string | null;
+//   bookingId: number;
+//   booking: VisitBooking;
+//   visitorId: number;
+// }
 
-export interface VisitorItem {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email?: string | null;
-  phone?: string | null;
-  visits: VisitItem[];
-  createdAt?: string;
-  updatedAt?: string;
-}
+// export interface VisitorItem {
+//   id: number;
+//   firstName: string;
+//   lastName: string;
+//   email?: string | null;
+//   phone?: string | null;
+//   visits: VisitItem[];
+//   createdAt?: string;
+//   updatedAt?: string;
+// }
 
-export interface CreateVisitorDto {
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phone?: string;
-}
+// export interface CreateVisitorDto {
+//   firstName: string;
+//   lastName: string;
+//   email?: string;
+//   phone?: string;
+// }
 
-export interface UpdateVisitorDtoFront {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-}
+// export interface UpdateVisitorDtoFront {
+//   firstName?: string;
+//   lastName?: string;
+//   email?: string;
+//   phone?: string;
+// }
 
-export interface CreateVisitDto {
-  bookingId: number;
-  checkedIn?: string; // ISO
-  purpose?: string;
-}
+// export interface CreateVisitDto {
+//   bookingId: number;
+//   checkedIn?: string; // ISO
+//   purpose?: string;
+// }
 
-export const visitorsApi = {
-  getAll: (
-    params?: { search?: string; status?: 'active' | 'checkedout' | 'all'; date?: string }
-  ): Promise<VisitorItem[]> => {
-    const qs = new URLSearchParams();
-    if (params?.search) qs.set('search', params.search);
-    if (params?.status) qs.set('status', params.status);
-    if (params?.date) qs.set('date', params.date);
-    const query = qs.toString();
-    return apiRequest<VisitorItem[]>(`/visitors${query ? `?${query}` : ''}`);
-  },
+// export const visitorsApi = {
+//   getAll: (
+//     params?: { search?: string; status?: 'active' | 'checkedout' | 'all'; date?: string }
+//   ): Promise<VisitorItem[]> => {
+//     const qs = new URLSearchParams();
+//     if (params?.search) qs.set('search', params.search);
+//     if (params?.status) qs.set('status', params.status);
+//     if (params?.date) qs.set('date', params.date);
+//     const query = qs.toString();
+//     return apiRequest<VisitorItem[]>(`/visitors${query ? `?${query}` : ''}`);
+//   },
 
-  getById: (id: number): Promise<VisitorItem> => apiRequest<VisitorItem>(`/visitors/${id}`),
+//   getById: (id: number): Promise<VisitorItem> => apiRequest<VisitorItem>(`/visitors/${id}`),
 
-  create: (data: CreateVisitorDto): Promise<VisitorItem> =>
-    apiRequest<VisitorItem>('/visitors', { method: 'POST', body: JSON.stringify(data) }),
+//   create: (data: CreateVisitorDto): Promise<VisitorItem> =>
+//     apiRequest<VisitorItem>('/visitors', { method: 'POST', body: JSON.stringify(data) }),
 
-  update: (id: number, data: UpdateVisitorDtoFront): Promise<VisitorItem> =>
-    apiRequest<VisitorItem>(`/visitors/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+//   update: (id: number, data: UpdateVisitorDtoFront): Promise<VisitorItem> =>
+//     apiRequest<VisitorItem>(`/visitors/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
 
-  createVisit: (visitorId: number, data: CreateVisitDto): Promise<VisitItem> =>
-    apiRequest<VisitItem>(`/visitors/${visitorId}/visits`, { method: 'POST', body: JSON.stringify(data) }),
+//   createVisit: (visitorId: number, data: CreateVisitDto): Promise<VisitItem> =>
+//     apiRequest<VisitItem>(`/visitors/${visitorId}/visits`, { method: 'POST', body: JSON.stringify(data) }),
 
-  checkout: (visitId: number): Promise<VisitItem> =>
-    apiRequest<VisitItem>(`/visitors/visits/${visitId}/checkout`, { method: 'PATCH' }),
-};
+//   checkout: (visitId: number): Promise<VisitItem> =>
+//     apiRequest<VisitItem>(`/visitors/visits/${visitId}/checkout`, { method: 'PATCH' }),
+// };
 export const getAuthToken = (): string | null => {
   if (authToken) return authToken;
   if (typeof window !== 'undefined') {
@@ -879,3 +879,212 @@ export const apiUtils = {
     }
   },
 };
+
+
+export type CreateVisitorDto = {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+};
+
+export type UpdateVisitorDtoFront = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+};
+
+export type Visit = {
+  id: number;
+  checkedIn: string;
+  checkedOut?: string;
+  purpose?: string;
+  booking?: any;
+  visitor?: any;
+};
+
+export type VisitorItem = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  visits: Visit[];
+};
+
+export type PaginatedVisitsResponse = {
+  data: Visit[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+export type CreateVisitorWithVisitDto = {
+  visitorId?: number; // visiteur existant
+  firstName?: string; // requis si pas de visitorId
+  lastName?: string;  // requis si pas de visitorId
+  email?: string;
+  phone?: string;
+  purpose: string;
+  bookingId?: number;
+};
+
+export const visitorsApi = {
+  // Récupérer toutes les visites d’un visiteur
+  async getAllVisitsOfVisitor(visitorId: number): Promise<VisitorItem> {
+    return apiRequest<VisitorItem>(`/visitors/${visitorId}/visits`);
+  },
+
+  // Créer un visiteur avec une visite
+  async createVisitorWithVisit(payload: CreateVisitorWithVisitDto) {
+    return apiRequest(`/visitors/visit`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // Récupérer tous les visiteurs (avec pagination + filtres)
+  async getAll({
+    startDate,
+    endDate,
+    status,
+    search,
+    room,
+    department,
+    page = 1,
+    limit = 8,
+  }: {
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    search?: string;
+    room?: string;
+    department?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ visitors: VisitorItem[]; pagination: Omit<PaginatedVisitsResponse, "data"> }> {
+    const params = new URLSearchParams();
+    params.append("page", String(page));
+    params.append("limit", String(limit));
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
+    if (status === "isActive" || status === "isCheckedOut") {
+      params.append("status", status);
+    }
+
+    if (search) params.append("visitorName", search);
+    if (room) params.append("room", room);
+    if (department) params.append("department", department);
+
+    console.log("Fetching visits with params:", params.toString());
+
+    const json = await apiRequest<PaginatedVisitsResponse>(`/visits?${params.toString()}`);
+    const visits = json.data;
+
+    const visitorMap: Record<number, VisitorItem> = {};
+    for (const visit of visits) {
+      const v = visit.visitor;
+      if (!v) continue;
+      if (!visitorMap[v.id]) {
+        visitorMap[v.id] = { ...v, visits: [] };
+      }
+      visitorMap[v.id].visits.push(visit);
+    }
+
+    return {
+      visitors: Object.values(visitorMap),
+      pagination: {
+        total: json.total,
+        page: json.page,
+        limit: json.limit,
+        totalPages: json.totalPages,
+      },
+    };
+  },
+
+  // Créer un visiteur
+  async create(data: CreateVisitorDto): Promise<VisitorItem> {
+    return apiRequest<VisitorItem>(`/visitors`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Mettre à jour un visiteur
+  async update(id: number, data: UpdateVisitorDtoFront): Promise<VisitorItem> {
+    return apiRequest<VisitorItem>(`/visitors/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Créer une visite pour un visiteur
+  async createVisit(
+    visitorId: number,
+    data: { bookingId?: number; checkedIn: string; purpose?: string }
+  ): Promise<Visit> {
+    return apiRequest<Visit>(`/visits`, {
+      method: "POST",
+      body: JSON.stringify({
+        visitorId,
+        bookingId: data.bookingId,
+        checkedIn: data.checkedIn,
+        purpose: data.purpose,
+      }),
+    });
+  },
+
+  // Checkout d’un visiteur
+  async checkout(visitId: number): Promise<Visit> {
+    return apiRequest<Visit>(`/visits/${visitId}/checkout`, {
+      method: "PATCH",
+    });
+  },
+    // 🔹 Récupérer les filtres (rooms + departments)
+  async getFilters(): Promise<{ rooms: string[]; departments: string[] }> {
+    return apiRequest<{ rooms: string[]; departments: string[] }>(`/visits/filters`)
+  },
+};
+
+export interface StatsData {
+  dailyStats: Array<{ date: string; visitors: number; avgDuration: number }>
+  monthlyStats: Array<{ month: string; visitors: number; avgDuration: number }>
+  yearlyStats: Array<{ year: string; visitors: number; avgDuration: number }>
+  peakHours: Array<{ hour: string; visitors: number }>
+  departmentStats: Array<{ department: string; visitors: number; percentage: number }>
+  roomStats: Array<{ room: string; visitors: number; percentage: number }>
+  purposeStats: Array<{ purpose: string; visitors: number; percentage: number }>
+  summary: {
+    totalVisitors: number
+    avgVisitDuration: number
+    avgDailyVisitors: number
+    peakHour: string
+    mostVisitedDepartment: string
+    mostVisitedRoom: string
+  }
+}
+
+export const statisticsApi = {
+  async getVisitorStats({
+    timeRange,
+    startDate,
+    endDate,
+  }: {
+    timeRange: "day" | "month" | "year" | "custom"
+    startDate?: string
+    endDate?: string
+  }): Promise<StatsData> {
+    const params = new URLSearchParams()
+    params.append("timeRange", timeRange)
+
+    if (timeRange === "custom") {
+      if (startDate) params.append("startDate", startDate)
+      if (endDate) params.append("endDate", endDate)
+    }
+
+    return apiRequest<StatsData>(`/statistics/visitors?${params.toString()}`)
+  },
+}

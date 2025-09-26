@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Patch, Param, Body,ParseIntPipe, NotFoundException,UseGuards } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Patch, 
+  Param, 
+  Body,
+  ParseIntPipe, 
+  NotFoundException, 
+  UseGuards 
+} from '@nestjs/common';
 import type { CreateVisitorWithVisitDto } from './visitors.service';
 import { VisitorService } from './visitors.service';
 import { VisitService } from '../visits/visits.service';
@@ -7,14 +17,19 @@ import { UpdateVisitorDto } from './dto/update-visitor.dto';
 import { CreateVisitDto } from '../visits/dto/create-visit.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
+
 @Controller('visitors')
+@UseGuards(JwtAuthGuard, RolesGuard) // ✅ Require authentication + roles
+@Roles(UserRole.ADMIN)               // ✅ Restrict everything to ADMIN only
 export class VisitorController {
   constructor(
     private readonly visitorService: VisitorService,
     private readonly visitService: VisitService,
   ) {}
 
-  // Create visitor with first visit (or only visit for existing visitor)
+  // Create visitor with first visit
   @Post('visit')
   async createVisitorWithVisit(@Body() dto: CreateVisitorWithVisitDto) {
     const result = await this.visitorService.createVisitorWithVisit(dto);
@@ -57,7 +72,8 @@ export class VisitorController {
   checkout(@Param('id') visitId: string) {
     return this.visitService.checkout(Number(visitId));
   }
-    @Get(':id/visits')
+
+  @Get(':id/visits')
   async getVisitsOfVisitor(@Param('id', ParseIntPipe) id: number) {
     const visitor = await this.visitorService.getVisitorWithVisits(id);
     if (!visitor) {

@@ -1,42 +1,54 @@
-import { Controller, Get, Post, Patch, Param, Body, Query ,UseGuards} from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Patch, 
+  Param, 
+  Body, 
+  Query,
+  UseGuards
+} from '@nestjs/common';
 import { VisitService } from './visits.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitDto } from './dto/update-visit.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
+
 @Controller('visits')
+@UseGuards(JwtAuthGuard, RolesGuard) // ✅ require JWT + Role guard
+@Roles(UserRole.ADMIN)               // ✅ restrict everything to ADMIN only
 export class VisitController {
   constructor(private readonly visitService: VisitService) {}
- @Get('filters')
+
+  @Get('filters')
   async getFilters() {
-    const filters = await this.visitService.getFilters();
-    return filters; // { rooms: [...], departments: [...] }
+    return this.visitService.getFilters();
   }
- @Get()
-async getVisits(
-  @Query('page') page = '1',
-  @Query('limit') limit = '8',
-  @Query('startDate') startDate?: string,
-  @Query('endDate') endDate?: string,
-  @Query('visitorName') visitorName?: string,
-  @Query('room') room?: string,
-  @Query('department') department?: string,
-  @Query('status') status?: string,
-) {
-  return this.visitService.getVisits({
-    page: parseInt(page, 10),
-    limit: parseInt(limit, 10),
-    startDate,
-    endDate,
-    visitorName,
-    room,
-    department,
-    status,
-  });
-}
 
-
-
+  @Get()
+  async getVisits(
+    @Query('page') page = '1',
+    @Query('limit') limit = '8',
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('visitorName') visitorName?: string,
+    @Query('room') room?: string,
+    @Query('department') department?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.visitService.getVisits({
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      startDate,
+      endDate,
+      visitorName,
+      room,
+      department,
+      status,
+    });
+  }
 
   @Post()
   create(@Body() dto: CreateVisitDto) {

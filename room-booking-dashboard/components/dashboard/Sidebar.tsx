@@ -15,7 +15,7 @@ import {
   X,
   UserCircle,
   AlertTriangle,
-  FileText,
+  FileText,UsersRound
 } from 'lucide-react';
 
 const getSidebarItems = (isAdmin: boolean) => [
@@ -24,9 +24,10 @@ const getSidebarItems = (isAdmin: boolean) => [
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },
   { icon: BookOpen, label: 'Vue complète des réservations', id: 'bookings-full' },
-    { icon: Calendar, label: 'Visiteurs', id: 'Visiteurs' },
-     { icon: BarChart3, label: 'statistiques', id: 'statistiques' },
+   
   ...(isAdmin ? [
+     { icon: UsersRound, label: 'Visiteurs', id: 'Visiteurs' },
+     { icon: BarChart3, label: 'statistiques', id: 'statistiques' },
     { icon: Building2, label: 'Départements', id: 'departments' },
     { icon: Users, label: 'Gestion des utilisateurs', id: 'users' },
     { icon: BarChart3, label: 'Rapports', id: 'reports' },

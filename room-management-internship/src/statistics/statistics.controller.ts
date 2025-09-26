@@ -1,8 +1,13 @@
-import { Controller, Get, Query,UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { VisitorStatisticsService } from './statistics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
+
 @Controller('statistics')
+@UseGuards(JwtAuthGuard, RolesGuard) // ✅ Require authentication + roles
+@Roles(UserRole.ADMIN)               // ✅ Only ADMIN can access stats
 export class VisitorStatisticsController {
   constructor(private readonly statsService: VisitorStatisticsService) {}
 

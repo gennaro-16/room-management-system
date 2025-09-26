@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import type { VisitorItem, UpdateVisitorDtoFront } from "@/lib/api2"
+import type { VisitorItem, UpdateVisitorDtoFront } from "@/lib/api"
 
 interface VisitorDetailsModalProps {
   visitor: VisitorItem | null

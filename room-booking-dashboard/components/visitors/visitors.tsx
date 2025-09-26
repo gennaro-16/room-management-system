@@ -1,16 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { visitorsApi, type VisitorItem, type CreateVisitorDto, type UpdateVisitorDtoFront } from "@/lib/api2"
-import { NewBookingDialog } from "../bookings/NewBookingDialog"
-import type { CreateBookingDto } from "@/lib/api"
-import { VisitorStats } from "@/components/visitors/visitors-stats"
+import { visitorsApi, type VisitorItem, type CreateVisitorDto, type UpdateVisitorDtoFront } from "@/lib/api"
 import { VisitorFilters } from "@/components/visitors/visitor-filters"
 import { VisitorsTable } from "@/components/visitors/visitors-table"
 import { AddVisitorModal } from "@/components/visitors/add-visitor"
 import { VisitorDetailsModal } from "@/components/visitors/visitor-details"
-import  {bookingsApi}from"@/lib/api"
-import { useBookings,useCreateBooking } from "@/hooks/useApi";
+import { useBookings} from "@/hooks/useApi";
 
 type FilterState = {
   date?: string
@@ -68,9 +64,7 @@ export default function VisitorsPage() {
   const [addVisitorLoading, setAddVisitorLoading] = useState(false)
   const [addVisitorError, setAddVisitorError] = useState<string | null>(null)
 
-  // Booking Popup State
-  const [showBookingDialog, setShowBookingDialog] = useState(false)
-  const [bookingLoading, setBookingLoading] = useState(false)
+  // Booking Popup State  const [bookingLoading, setBookingLoading] = useState(false)
   const [bookingError, setBookingError] = useState<string | null>(null)
 
   // Statistics
@@ -186,11 +180,7 @@ export default function VisitorsPage() {
 
     const { data: bookings, error, refetch } = useBookings();
     console.log('Bookings data:', bookings);
-    const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
-const handleCreateBooking = async (data: CreateBookingDto) => {
-    await createBooking(data);
-    refetch();
-  };
+  
   // Open Add Visit modal for existing visitor
   const handleShowAddVisitForExisting = (visitor: VisitorItem) => {
     setActiveVisitorForVisit(visitor)
@@ -283,19 +273,11 @@ const handleCreateBooking = async (data: CreateBookingDto) => {
         onClose={handleCloseVisitModal}
         onFormChange={setAddForm}
         onSubmit={handleAddVisit}
-        onCreateBooking={() => setShowBookingDialog(true)}
+       
       />
 
       {/* Booking Dialog Popup */}
-      {showBookingDialog && (
-        <NewBookingDialog
-          open={showBookingDialog}
-          onOpenChange={(open) => setShowBookingDialog(open)}
-          onSubmit={handleCreateBooking}
-          loading={bookingLoading}
-          error={bookingError}
-        />
-      )}
+     
 
       {/* Visitor Details Popup */}
       <VisitorDetailsModal
