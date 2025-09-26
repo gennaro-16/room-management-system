@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { visitorsApi } from "@/lib/api"
 
 interface FilterState {
   startDate?: string
@@ -25,8 +26,7 @@ export function VisitorFilters({ filters, onFiltersChange, onAddVisitor }: Visit
   useEffect(() => {
     async function fetchFilters() {
       try {
-        const res = await fetch("http://localhost:3000/visits/filters")
-        const data = await res.json()
+        const data = await visitorsApi.getFilters()
         setRooms(data.rooms || [])
         setDepartments(data.departments || [])
       } catch (err) {
@@ -63,7 +63,6 @@ export function VisitorFilters({ filters, onFiltersChange, onAddVisitor }: Visit
                 showFilters ? 'rotate-180' : ''
               }`} 
             />
-            
           </button>
 
           {/* Add Visitor Button */}
@@ -184,18 +183,8 @@ export function VisitorFilters({ filters, onFiltersChange, onAddVisitor }: Visit
 
 function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
       <path d="M5 12h14" />
       <path d="M12 5v14" />
     </svg>
@@ -204,18 +193,8 @@ function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
 
 function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
       <path d="m6 9 6 6 6-6" />
     </svg>
   )

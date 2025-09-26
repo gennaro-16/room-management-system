@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { calendarApi } from "@/lib/api" // ajuster le chemin
+import { calendarApi } from "@/lib/api"
 import type { Booking } from "@/lib/api"
 
 interface AddVisitForm {
@@ -22,7 +22,7 @@ interface AddVisitorModalProps {
   onClose: () => void
   onFormChange: (form: AddVisitForm) => void
   onSubmit: () => void
-  onCreateBooking: () => void
+
 }
 
 export function AddVisitorModal({
@@ -33,8 +33,7 @@ export function AddVisitorModal({
   error,
   onClose,
   onFormChange,
-  onSubmit,
-  onCreateBooking,
+  onSubmit
 }: AddVisitorModalProps) {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [localErrors, setLocalErrors] = useState<{ [key: string]: string }>({})

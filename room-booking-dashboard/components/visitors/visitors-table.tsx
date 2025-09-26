@@ -2,7 +2,7 @@
 
 import { format } from "date-fns"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import type { VisitorItem } from "@/lib/api2"
+import type { VisitorItem } from "@/lib/api"
 
 interface VisitorsTableProps {
   visits: Array<{

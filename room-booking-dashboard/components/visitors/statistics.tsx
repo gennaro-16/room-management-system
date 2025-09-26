@@ -1,25 +1,11 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from "react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
-
-interface StatsData {
-  dailyStats: Array<{ date: string; visitors: number; avgDuration: number }>
-  monthlyStats: Array<{ month: string; visitors: number; avgDuration: number }>
-  yearlyStats: Array<{ year: string; visitors: number; avgDuration: number }>
-  peakHours: Array<{ hour: string; visitors: number }>
-  departmentStats: Array<{ department: string; visitors: number; percentage: number }>
-  roomStats: Array<{ room: string; visitors: number; percentage: number }>
-  purposeStats: Array<{ purpose: string; visitors: number; percentage: number }>
-  summary: {
-    totalVisitors: number
-    avgVisitDuration: number
-    avgDailyVisitors: number
-    peakHour: string
-    mostVisitedDepartment: string
-    mostVisitedRoom: string
-  }
-}
+import { statisticsApi, StatsData } from "@/lib/api"
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line
+} from 'recharts'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D']
 
@@ -37,14 +23,7 @@ export default function StatisticsPage() {
   const fetchStats = async () => {
     setLoading(true)
     try {
-      const query = new URLSearchParams({
-        timeRange,
-        ...(timeRange === 'custom' ? { startDate, endDate } : {})
-      }).toString()
-
-      const res = await fetch(`http://localhost:3000/statistics/visitors?${query}`)
-      if (!res.ok) throw new Error('Échec de la récupération des statistiques')
-      const data: StatsData = await res.json()
+      const data = await statisticsApi.getVisitorStats({ timeRange, startDate, endDate })
       setStatsData(data)
     } catch (error) {
       console.error(error)
@@ -54,68 +33,68 @@ export default function StatisticsPage() {
     }
   }
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-    </div>
-  )
+  const exportStatistics = () => {
+    if (!statsData) return
+    const rows: string[] = []
 
-  if (!statsData) return <div className="min-h-screen flex items-center justify-center">Aucune statistique disponible</div>
-// Add this function inside your component
-const exportStatistics = () => {
-  if (!statsData) return;
+    rows.push(`Résumé`)
+    rows.push(`Total visiteurs,${statsData.summary.totalVisitors}`)
+    rows.push(`Durée moyenne,${statsData.summary.avgVisitDuration.toFixed(2)} min`)
+    rows.push(`Visiteurs moyens par jour,${statsData.summary.avgDailyVisitors.toFixed(2)}`)
+    rows.push(`Heure de pointe,${statsData.summary.peakHour}`)
+    rows.push(`Département le plus visité,${statsData.summary.mostVisitedDepartment}`)
+    rows.push(`Salle la plus visitée,${statsData.summary.mostVisitedRoom}`)
+    rows.push('')
 
-  const rows: string[] = [];
+    rows.push(`Salles,Visiteurs,Pourcentage`)
+    statsData.roomStats.forEach((room) => {
+      const name = room.room.toLowerCase() === 'unknown' ? 'Visiteur à la réception' : room.room
+      rows.push(`${name},${room.visitors},${room.percentage}%`)
+    })
 
-  // Add summary
-  rows.push(`Résumé`);
-  rows.push(`Total visiteurs,${statsData.summary.totalVisitors}`);
-  rows.push(`Durée moyenne,${statsData.summary.avgVisitDuration.toFixed(2)} min`);
-  rows.push(`Visiteurs moyens par jour,${statsData.summary.avgDailyVisitors.toFixed(2)}`);
-  rows.push(`Heure de pointe,${statsData.summary.peakHour}`);
-  rows.push(`Département le plus visité,${statsData.summary.mostVisitedDepartment}`);
-  rows.push(`Salle la plus visitée,${statsData.summary.mostVisitedRoom}`);
-  rows.push(''); // empty row
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `statistiques_visiteurs_${new Date().toISOString()}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
-  // Add detailed stats (example: room stats)
-  rows.push(`Salles,Visiteurs,Pourcentage`);
-  statsData.roomStats.forEach((room) => {
-    const name = room.room.toLowerCase() === 'unknown' ? 'Visiteur à la réception' : room.room;
-    rows.push(`${name},${room.visitors},${room.percentage}%`);
-  });
+  // ⬇️ handle loading & no data states
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
-  // Convert to CSV string
-  const csvContent = 'data:text/csv;charset=utf-8,' + rows.join('\n');
-
-  // Create a link and trigger download
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `statistiques_visiteurs_${new Date().toISOString()}.csv`);
-  document.body.appendChild(link); // Required for Firefox
-  link.click();
-  document.body.removeChild(link);
-};
+  if (!statsData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Aucune statistique disponible
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen  p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* ✅ now it's safe: statsData is guaranteed not null */}
         <div className="mb-8">
-
           <h1 className="text-3xl font-bold text-gray-900">Statistiques et Rapports des Visiteurs</h1>
           <p className="text-gray-600">Analyse complète pour la gestion des visiteurs</p>
           <div className="flex justify-end mb-4">
-  <button
-    onClick={exportStatistics}
-    className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-  >
-    Exporter les statistiques
-  </button>
-</div>
-
+            <button
+              onClick={exportStatistics}
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Exporter les statistiques
+            </button>
+          </div>
         </div>
-
         {/* Time Range Selector */}
         <div className="bg-card rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-wrap gap-4 items-center">
