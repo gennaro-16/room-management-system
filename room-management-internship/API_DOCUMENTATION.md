@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a comprehensive NestJS-based API for managing room bookings and availability. The system provides endpoints for managing rooms, bookings, room statuses, and dashboard analytics.
+This is a comprehensive NestJS-based API for managing room bookings and availability. The system provides endpoints for managing rooms, bookings, room statuses, dashboard analytics, visitor management, and comprehensive statistics.
 
 **Base URL:** `http://localhost:3000` (default)
 
@@ -632,6 +632,398 @@ Gets a summary of today's bookings and upcoming bookings.
       "purpose": "Client presentation"
     }
   ]
+}
+```
+
+---
+
+## Visitor Management API
+
+### Data Models
+
+#### Visitor Model
+```typescript
+{
+  id: number;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  visits: Visit[];
+}
+```
+
+#### Visit Model
+```typescript
+{
+  id: number;
+  checkedIn: Date;
+  checkedOut?: Date;
+  purpose?: string;
+  bookingId?: number;
+  visitorId: number;
+  visitor: Visitor;
+  booking?: Booking;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Endpoints
+
+#### GET /visitors
+Get all visitors with pagination and filtering.
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 8)
+- `startDate` (optional): Filter visits from date
+- `endDate` (optional): Filter visits to date
+- `visitorName` (optional): Search by visitor name
+- `room` (optional): Filter by room name
+- `department` (optional): Filter by department
+- `status` (optional): Filter by visit status
+
+**Response:**
+```json
+{
+  "visitors": [
+    {
+      "id": 1,
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john@example.com",
+      "phone": "+1234567890",
+      "visits": [
+        {
+          "id": 1,
+          "checkedIn": "2024-01-15T10:00:00Z",
+          "checkedOut": "2024-01-15T12:00:00Z",
+          "purpose": "Business Meeting",
+          "booking": {
+            "room": {
+              "name": "Conference Room A",
+              "department": { "name": "Engineering" }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 8,
+    "totalPages": 1
+  }
+}
+```
+
+#### POST /visitors/visit
+Create a new visitor with their first visit.
+
+**Request Body:**
+```json
+{
+  "visitorId": 1,
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane@example.com",
+  "phone": "+1234567890",
+  "purpose": "Consultation",
+  "bookingId": 1
+}
+```
+
+**Response:**
+```json
+{
+  "visitor": {
+    "id": 2,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane@example.com",
+    "phone": "+1234567890"
+  },
+  "visit": {
+    "id": 2,
+    "checkedIn": "2024-01-15T10:00:00Z",
+    "checkedOut": null,
+    "purpose": "Consultation",
+    "bookingId": 1,
+    "visitorId": 2
+  }
+}
+```
+
+#### GET /visitors/:id
+Get a specific visitor with all their visits.
+
+**Response:**
+```json
+{
+  "id": 1,
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john@example.com",
+  "phone": "+1234567890",
+  "visits": [
+    {
+      "id": 1,
+      "checkedIn": "2024-01-15T10:00:00Z",
+      "checkedOut": "2024-01-15T12:00:00Z",
+      "purpose": "Business Meeting",
+      "booking": {
+        "room": {
+          "name": "Conference Room A",
+          "department": { "name": "Engineering" }
+        }
+      }
+    }
+  ]
+}
+```
+
+#### PATCH /visitors/:id
+Update visitor information.
+
+**Request Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.newemail@example.com",
+  "phone": "+1234567890"
+}
+```
+
+---
+
+## Visit Management API
+
+### Endpoints
+
+#### GET /visits
+Get all visits with filtering and pagination.
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 8)
+- `startDate` (optional): Filter visits from date
+- `endDate` (optional): Filter visits to date
+- `visitorName` (optional): Search by visitor name
+- `room` (optional): Filter by room name
+- `department` (optional): Filter by department
+- `status` (optional): Filter by visit status
+
+**Response:**
+```json
+{
+  "visits": [
+    {
+      "id": 1,
+      "checkedIn": "2024-01-15T10:00:00Z",
+      "checkedOut": "2024-01-15T12:00:00Z",
+      "purpose": "Business Meeting",
+      "visitor": {
+        "id": 1,
+        "firstName": "John",
+        "lastName": "Smith",
+        "email": "john@example.com"
+      },
+      "booking": {
+        "room": {
+          "name": "Conference Room A",
+          "department": { "name": "Engineering" }
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 8,
+    "totalPages": 1
+  }
+}
+```
+
+#### GET /visits/filters
+Get available filter options for visits.
+
+**Response:**
+```json
+{
+  "rooms": [
+    { "id": 1, "name": "Conference Room A" },
+    { "id": 2, "name": "Meeting Room B" }
+  ],
+  "departments": [
+    { "id": 1, "name": "Engineering" },
+    { "id": 2, "name": "Marketing" }
+  ]
+}
+```
+
+#### POST /visits
+Create a new visit record.
+
+**Request Body:**
+```json
+{
+  "visitorId": 1,
+  "bookingId": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Business Meeting"
+}
+```
+
+#### GET /visits/:id
+Get a specific visit record.
+
+**Response:**
+```json
+{
+  "id": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Business Meeting",
+  "visitor": {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Smith",
+    "email": "john@example.com"
+  },
+  "booking": {
+    "room": {
+      "name": "Conference Room A",
+      "department": { "name": "Engineering" }
+    }
+  }
+}
+```
+
+#### PATCH /visits/:id
+Update a visit record.
+
+**Request Body:**
+```json
+{
+  "purpose": "Updated Meeting Purpose",
+  "bookingId": 2
+}
+```
+
+#### PATCH /visits/:id/checkout
+Process visitor checkout.
+
+**Response:**
+```json
+{
+  "id": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T14:00:00Z",
+  "purpose": "Business Meeting",
+  "visitorId": 1,
+  "bookingId": 1
+}
+```
+
+---
+
+## Statistics API
+
+### Endpoints
+
+#### GET /statistics/visitors
+Get comprehensive visitor statistics.
+
+**Query Parameters:**
+- `timeRange` (optional): Time range ('day', 'month', 'year') (default: 'month')
+- `startDate` (optional): Custom start date
+- `endDate` (optional): Custom end date
+
+**Response:**
+```json
+{
+  "dailyStats": [
+    {
+      "date": "2024-01-15",
+      "visitors": 5,
+      "avgDuration": 45.5
+    }
+  ],
+  "monthlyStats": [
+    {
+      "month": "2024-01",
+      "visitors": 150,
+      "avgDuration": 42.3
+    }
+  ],
+  "yearlyStats": [
+    {
+      "year": "2024",
+      "visitors": 1800,
+      "avgDuration": 40.8
+    }
+  ],
+  "peakHours": [
+    {
+      "hour": 9,
+      "visitors": 12
+    },
+    {
+      "hour": 14,
+      "visitors": 18
+    }
+  ],
+  "departmentStats": [
+    {
+      "department": "Engineering",
+      "visitors": 45,
+      "percentage": 30.0
+    },
+    {
+      "department": "Marketing",
+      "visitors": 30,
+      "percentage": 20.0
+    }
+  ],
+  "roomStats": [
+    {
+      "room": "Conference Room A",
+      "visitors": 25,
+      "percentage": 16.7
+    },
+    {
+      "room": "Meeting Room B",
+      "visitors": 20,
+      "percentage": 13.3
+    }
+  ],
+  "purposeStats": [
+    {
+      "purpose": "Business Meeting",
+      "visitors": 60,
+      "percentage": 40.0
+    },
+    {
+      "purpose": "Consultation",
+      "visitors": 30,
+      "percentage": 20.0
+    }
+  ],
+  "summary": {
+    "totalVisitors": 150,
+    "avgVisitDuration": 45.5,
+    "avgDailyVisitors": 12.3,
+    "peakHour": 14,
+    "mostVisitedDepartment": "Engineering",
+    "mostVisitedRoom": "Conference Room A"
+  }
 }
 ```
 

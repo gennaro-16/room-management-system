@@ -8,8 +8,10 @@
 5. [Dashboard Overview](#dashboard-overview)
 6. [Room Management](#room-management)
 7. [User Management](#user-management)
-8. [Troubleshooting](#troubleshooting)
-9. [Frequently Asked Questions](#frequently-asked-questions)
+8. [Visitor Management](#visitor-management)
+9. [Statistics & Analytics](#statistics--analytics)
+10. [Troubleshooting](#troubleshooting)
+11. [Frequently Asked Questions](#frequently-asked-questions)
 
 ---
 
@@ -243,6 +245,242 @@ Simplified view showing:
 2. Click **"Edit User"**
 3. Change role as needed
 4. Save changes
+
+---
+
+## Visitor Management
+
+### Overview
+The Visitor Management system allows administrators to track external visitors, record their visits, and manage their access to meeting rooms and facilities. This feature is essential for security, compliance, and resource planning.
+
+### Access Requirements
+- **Admin Role Required**: Only users with ADMIN role can access visitor management features
+- **Authentication**: Must be logged in with valid credentials
+- **Permissions**: Full access to visitor data and visit records
+
+### Managing Visitors
+
+#### Recording a New Visitor Visit
+1. **Navigate to Visitors**: Click on "Visitors" in the admin sidebar
+2. **Add New Visit**: Click the "Add Visitor" button
+3. **Fill Visitor Information**:
+   - **First Name**: Visitor's first name (required)
+   - **Last Name**: Visitor's last name (required)
+   - **Email**: Contact email (optional)
+   - **Phone**: Contact phone number (optional)
+   - **Purpose**: Reason for visit (optional)
+   - **Booking**: Link to existing meeting booking (optional)
+4. **Submit**: Click "Create Visit" to record the visitor and their visit
+
+#### Adding Visit for Existing Visitor
+1. **Find Visitor**: Use the search or filter options to locate the visitor
+2. **View Details**: Click on the visitor's name to open their details
+3. **Add New Visit**: Click "Add Visit" button in the visitor details modal
+4. **Fill Visit Information**:
+   - **Purpose**: Reason for this visit
+   - **Booking**: Link to meeting booking if applicable
+5. **Submit**: Click "Create Visit" to record the new visit
+
+#### Processing Visitor Checkout
+1. **Find Active Visit**: Look for visits without a checkout time
+2. **Checkout Visitor**: Click the "Départ" (Departure) button
+3. **Automatic Recording**: System automatically records the checkout time
+4. **Visit Complete**: Visit is now marked as completed with full duration
+
+### Viewing and Filtering Visits
+
+#### Visit List Features
+- **Pagination**: Navigate through large lists of visits
+- **Real-time Updates**: Data refreshes automatically
+- **Responsive Design**: Works on all device sizes
+
+#### Filtering Options
+- **Date Range**: Filter visits by specific date ranges
+- **Visitor Name**: Search by visitor's name
+- **Room**: Filter by meeting room
+- **Department**: Filter by department
+- **Status**: Show active or completed visits
+- **Purpose**: Filter by visit purpose
+
+#### Visit Information Display
+Each visit shows:
+- **Visitor Name**: Full name of the visitor
+- **Date**: Visit date
+- **Arrival Time**: Check-in time
+- **Purpose**: Reason for visit
+- **Room**: Associated meeting room
+- **Department**: Associated department
+- **Departure**: Checkout time or departure button
+
+### Visitor Details and History
+
+#### Viewing Visitor Profile
+1. **Click Visitor Name**: Click on any visitor's name in the visits list
+2. **View Details**: See complete visitor information and visit history
+3. **Edit Information**: Update visitor contact details if needed
+4. **Add New Visit**: Record additional visits for the same visitor
+
+#### Visitor Information Includes
+- **Personal Details**: Name, email, phone
+- **Visit History**: All past and current visits
+- **Visit Statistics**: Total visits, average duration
+- **Recent Activity**: Latest visits and purposes
+
+---
+
+## Statistics & Analytics
+
+### Overview
+The Statistics & Analytics system provides comprehensive insights into visitor patterns, room utilization, and organizational access trends. This feature helps administrators make data-driven decisions about resource allocation and security planning.
+
+### Access Requirements
+- **Admin Role Required**: Only users with ADMIN role can access statistics
+- **Authentication**: Must be logged in with valid credentials
+- **Real-time Data**: Statistics reflect current system state
+
+### Statistics Dashboard
+
+#### Key Performance Indicators (KPIs)
+The dashboard displays four main summary cards:
+
+**Total Visitors:**
+- Cumulative count of all visitors
+- Shows growth over time
+- Helps track organizational access trends
+
+**Average Visit Duration:**
+- Mean time spent per visit
+- Calculated from check-in to check-out times
+- Excludes active visits (no checkout time)
+
+**Average Daily Visitors:**
+- Mean visitors per day for selected period
+- Helps with capacity planning
+- Useful for staffing decisions
+
+**Peak Hour:**
+- Hour with highest visitor count
+- Identified from hourly distribution data
+- Guides resource allocation
+
+#### Time Range Selection
+Choose from multiple time range options:
+
+**Predefined Ranges:**
+- **Day**: Last 7 days of data
+- **Month**: Last 6 months of data  
+- **Year**: Last 5 years of data
+
+**Custom Range:**
+- **Start Date**: Select any start date
+- **End Date**: Select any end date
+- **Flexible Periods**: Any date range within system limits
+
+### Visual Analytics
+
+#### Visitors Over Time
+- **Line Chart**: Shows visitor trends over selected time period
+- **Daily View**: Day-by-day visitor counts
+- **Monthly View**: Month-by-month aggregation
+- **Yearly View**: Year-by-year trends
+- **Interactive**: Hover for detailed information
+
+#### Peak Hours Analysis
+- **Bar Chart**: 24-hour breakdown of visitor arrivals
+- **Hourly Data**: Number of visitors per hour
+- **Peak Identification**: Clearly shows busiest times
+- **Resource Planning**: Helps optimize staff scheduling
+
+#### Department Distribution
+- **Pie Chart**: Visitor distribution across departments
+- **Percentage Breakdown**: Relative department popularity
+- **Color-coded**: Easy visual identification
+- **Top Departments**: Ranked by visitor count
+
+#### Purpose Analysis
+- **Bar Chart**: Visit purposes and frequencies
+- **Purpose Categories**: Grouped by visit reason
+- **Trend Analysis**: Most common visit types
+- **Business Insights**: Understanding visitor needs
+
+#### Room Utilization
+- **Room Statistics**: Visitor counts per room
+- **Usage Percentages**: Room popularity ranking
+- **Capacity Planning**: Room efficiency metrics
+- **Resource Optimization**: Identify underutilized spaces
+
+### Data Export
+
+#### CSV Export Features
+Export comprehensive statistics data:
+
+**Export Contents:**
+- **Summary Statistics**: All KPI data
+- **Room Statistics**: Room-wise visitor counts
+- **Department Statistics**: Department distribution
+- **Purpose Statistics**: Visit purpose analysis
+- **Time-based Data**: Trends over time
+
+**Export Process:**
+1. **Click Export Button**: Located in the top-right of statistics page
+2. **Automatic Download**: File downloads immediately
+3. **Timestamped Filename**: Includes date and time
+4. **UTF-8 Encoding**: Proper character encoding for international data
+
+**Export Format:**
+```csv
+Résumé
+Total visiteurs,150
+Durée moyenne,45.5 min
+Visiteurs moyens par jour,12.3
+Heure de pointe,14:00
+Département le plus visité,Engineering
+Salle la plus visitée,Conference Room A
+
+Salles,Visiteurs,Pourcentage
+Conference Room A,45,30%
+Meeting Room B,30,20%
+Reception Area,25,17%
+```
+
+### Using Statistics for Decision Making
+
+#### Resource Planning
+- **Staff Scheduling**: Use peak hours data for optimal staffing
+- **Room Allocation**: Identify most/least used rooms
+- **Capacity Management**: Plan for busy periods
+
+#### Security Insights
+- **Access Patterns**: Understand visitor flow
+- **Department Security**: Monitor department access
+- **Time-based Security**: Identify high-traffic periods
+
+#### Business Intelligence
+- **Visitor Trends**: Track growth over time
+- **Purpose Analysis**: Understand visitor needs
+- **Department Popularity**: Identify key business areas
+
+#### Performance Monitoring
+- **Visit Duration**: Monitor average visit length
+- **Efficiency Metrics**: Room utilization rates
+- **Growth Tracking**: Visitor count trends
+
+### Best Practices
+
+#### Regular Monitoring
+- **Daily Checks**: Review daily statistics for anomalies
+- **Weekly Analysis**: Analyze weekly trends and patterns
+- **Monthly Reports**: Generate monthly summary reports
+
+#### Data Interpretation
+- **Context Matters**: Consider business events and seasons
+- **Trend Analysis**: Look for patterns over time
+- **Comparative Analysis**: Compare different time periods
+
+#### Action Items
+- **Resource Adjustment**: Modify staffing based on peak hours
+- **Room Optimization**: Reallocate resources based on usage
+- **Process Improvement**: Identify areas for efficiency gains
 
 ---
 

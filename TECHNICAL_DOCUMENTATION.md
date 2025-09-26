@@ -8,9 +8,11 @@
 5. [User Roles & Permissions](#user-roles--permissions)
 6. [Frontend Architecture](#frontend-architecture)
 7. [Features & Capabilities](#features--capabilities)
-8. [Security](#security)
-9. [Deployment](#deployment)
-10. [Development Setup](#development-setup)
+8. [Visitors & Visits Management](#visitors--visits-management)
+9. [Statistics & Analytics](#statistics--analytics)
+10. [Security](#security)
+11. [Deployment](#deployment)
+12. [Development Setup](#development-setup)
 
 ---
 
@@ -25,6 +27,8 @@ The Room Management System is a comprehensive solution for managing meeting room
 - **Department-based Organization**: Rooms and users organized by departments
 - **Responsive Web Interface**: Works on desktop, tablet, and mobile devices
 - **Real-time Notifications**: Users receive notifications for booking updates
+- **Visitor Management System**: Comprehensive tracking of external visitors and their visits
+- **Advanced Analytics**: Detailed statistics and reporting for visitor patterns and room utilization
 
 ---
 
@@ -464,6 +468,240 @@ room-booking-dashboard/
 - **Usage Statistics**: Room utilization reports
 - **Booking Analytics**: Booking patterns and trends
 - **Department Reports**: Department-specific usage data
+
+---
+
+## Visitors & Visits Management
+
+### System Architecture
+
+The visitor management system is built as a separate module within the NestJS backend, providing comprehensive tracking and management of external visitors.
+
+#### Backend Components
+
+**Visitors Module (`src/visitors/`):**
+- `visitors.controller.ts`: REST API endpoints for visitor management
+- `visitors.service.ts`: Business logic for visitor operations
+- `dto/`: Data Transfer Objects for validation
+- `visitors.module.ts`: Module configuration and dependencies
+
+**Visits Module (`src/visits/`):**
+- `visits.controller.ts`: REST API endpoints for visit management
+- `visits.service.ts`: Business logic for visit operations
+- `dto/`: Data Transfer Objects for visit validation
+- `visits.module.ts`: Module configuration and dependencies
+
+#### Database Schema
+
+**Visitor Model:**
+```sql
+CREATE TABLE "Visitor" (
+  "id" SERIAL PRIMARY KEY,
+  "firstName" TEXT NOT NULL,
+  "lastName" TEXT NOT NULL,
+  "email" TEXT,
+  "phone" TEXT,
+  "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
+);
+```
+
+**Visit Model:**
+```sql
+CREATE TABLE "Visit" (
+  "id" SERIAL PRIMARY KEY,
+  "checkedIn" TIMESTAMP(3) NOT NULL,
+  "checkedOut" TIMESTAMP(3),
+  "purpose" TEXT,
+  "bookingId" INTEGER,
+  "visitorId" INTEGER NOT NULL,
+  "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+  FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("visitorId") REFERENCES "Visitor"("id") ON DELETE CASCADE
+);
+```
+
+#### API Endpoints
+
+**Visitor Management:**
+- `GET /visitors`: Retrieve all visitors with pagination and filtering
+- `POST /visitors/visit`: Create new visitor with first visit
+- `GET /visitors/:id`: Get specific visitor with visit history
+- `PATCH /visitors/:id`: Update visitor information
+
+**Visit Management:**
+- `GET /visits`: Retrieve all visits with filtering
+- `GET /visits/filters`: Get available filter options
+- `POST /visits`: Create new visit record
+- `GET /visits/:id`: Get specific visit details
+- `PATCH /visits/:id`: Update visit information
+- `PATCH /visits/:id/checkout`: Process visitor checkout
+
+#### Security Implementation
+
+**Access Control:**
+- All endpoints require JWT authentication
+- Admin role required for all operations
+- Role-based guards automatically applied
+- Input validation using class-validator DTOs
+
+**Data Validation:**
+```typescript
+export class CreateVisitorDto {
+  @IsString()
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+}
+```
+
+#### Frontend Integration
+
+**React Components:**
+- `visitors.tsx`: Main visitor management page
+- `visitors-table.tsx`: Data table with pagination
+- `visitor-filters.tsx`: Filtering and search controls
+- `add-visitor.tsx`: Modal for creating new visitors
+- `visitor-details.tsx`: Modal for viewing visitor details
+- `statistics.tsx`: Statistics dashboard component
+
+**State Management:**
+- React hooks for API data fetching
+- Local state for form management
+- Real-time updates for visit status changes
+
+---
+
+## Statistics & Analytics
+
+### System Architecture
+
+The statistics system provides comprehensive analytics and reporting capabilities for visitor management and room utilization.
+
+#### Backend Components
+
+**Statistics Module (`src/statistics/`):**
+- `statistics.controller.ts`: REST API endpoints for statistics
+- `statistics.service.ts`: Business logic for data aggregation
+- `dto/`: Data Transfer Objects for statistics responses
+- `entities/`: Entity definitions for statistics data
+- `statistics.module.ts`: Module configuration
+
+#### Data Aggregation
+
+**Time-based Analytics:**
+```typescript
+// Daily statistics aggregation
+const dailyStats = visits.reduce((acc, visit) => {
+  const date = visit.checkedIn.toISOString().split('T')[0];
+  const duration = visit.checkedOut ? 
+    (visit.checkedOut.getTime() - visit.checkedIn.getTime()) / 60000 : 0;
+  
+  const entry = acc.find(e => e.date === date);
+  if (entry) {
+    entry.visitors += 1;
+    entry.avgDuration = (entry.avgDuration + duration) / 2;
+  } else {
+    acc.push({ date, visitors: 1, avgDuration: duration });
+  }
+  return acc;
+}, []);
+```
+
+**Department Analytics:**
+```typescript
+// Department visitor distribution
+const departmentStats = visits.reduce((acc, visit) => {
+  const dept = visit.booking?.room?.department?.name || 'Unknown';
+  const existing = acc.find(d => d.department === dept);
+  
+  if (existing) {
+    existing.visitors += 1;
+  } else {
+    acc.push({ department: dept, visitors: 1 });
+  }
+  return acc;
+}, []);
+```
+
+#### API Endpoints
+
+**Statistics Endpoint:**
+- `GET /statistics/visitors`: Comprehensive visitor statistics
+  - Query parameters: `timeRange`, `startDate`, `endDate`
+  - Returns: Daily, monthly, yearly stats, peak hours, department/room/purpose analytics
+
+#### Response Structure
+
+```typescript
+interface StatsDataDto {
+  dailyStats: DailyStat[];
+  monthlyStats: MonthlyStat[];
+  yearlyStats: YearlyStat[];
+  peakHours: PeakHourStat[];
+  departmentStats: DepartmentStat[];
+  roomStats: RoomStat[];
+  purposeStats: PurposeStat[];
+  summary: SummaryStat;
+}
+```
+
+#### Frontend Visualization
+
+**Chart Components:**
+- **Line Charts**: Time-based trends using Recharts
+- **Bar Charts**: Peak hours and purpose analysis
+- **Pie Charts**: Department and room distribution
+- **Responsive Design**: Adapts to all screen sizes
+
+**Data Export:**
+```typescript
+const exportStatistics = () => {
+  const rows: string[] = [];
+  rows.push(`Résumé`);
+  rows.push(`Total visiteurs,${statsData.summary.totalVisitors}`);
+  rows.push(`Durée moyenne,${statsData.summary.avgVisitDuration.toFixed(2)} min`);
+  
+  const csvContent = 'data:text/csv;charset=utf-8,' + rows.join('\n');
+  const encodedUri = encodeURI(csvContent);
+  // Trigger download
+};
+```
+
+#### Performance Optimization
+
+**Database Queries:**
+- Optimized Prisma queries with proper includes
+- Efficient date range filtering
+- Pagination for large datasets
+- Indexed queries on frequently accessed fields
+
+**Caching Strategy:**
+- Potential for Redis caching in future versions
+- Client-side data caching with React hooks
+- Real-time updates without full data refresh
+
+#### Security & Access Control
+
+**Authentication:**
+- JWT token required for all statistics endpoints
+- Admin role verification on all requests
+- Secure data transmission over HTTPS
+
+**Data Privacy:**
+- Visitor data anonymization options
+- Configurable data retention policies
+- Audit logging for statistics access
 
 ---
 

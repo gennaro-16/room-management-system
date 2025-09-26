@@ -1008,6 +1008,359 @@ const apiRequest = async <T>(
 
 ---
 
+## Visitors & Visits Management
+
+The Room Management System includes a comprehensive visitor management system that allows administrators to track external visitors, record their visits, and manage their access to meeting rooms and facilities.
+
+### Visitor Management Overview
+
+#### What is a Visitor?
+A **Visitor** in the system represents an external person who visits the organization for meetings, consultations, or other business purposes. Visitors are distinct from internal employees and have different access patterns and tracking requirements.
+
+#### Visitor Attributes
+Each visitor record contains the following information:
+
+**Core Information:**
+- **ID**: Unique identifier (auto-generated)
+- **First Name**: Visitor's first name (required)
+- **Last Name**: Visitor's last name (required)
+- **Email**: Contact email address (optional)
+- **Phone**: Contact phone number (optional)
+- **Created At**: Timestamp when visitor was first registered
+- **Updated At**: Last modification timestamp
+
+**Relationships:**
+- **Visits**: One-to-many relationship with visit records
+- **Bookings**: Optional link to specific meeting bookings
+
+#### Visitor Lifecycle
+1. **Registration**: Visitor is created when first visit is recorded
+2. **Visit Recording**: Each visit creates a new visit record linked to the visitor
+3. **History Tracking**: All visits are maintained for historical analysis
+4. **Data Retention**: Visitor data is preserved for reporting and compliance
+
+### Visit Management System
+
+#### What is a Visit?
+A **Visit** represents a single instance of a visitor being present at the organization. Each visit tracks the visitor's arrival, departure, purpose, and associated meeting room or department.
+
+#### Visit Attributes
+Each visit record contains:
+
+**Timing Information:**
+- **Checked In**: Timestamp when visitor arrived (required)
+- **Checked Out**: Timestamp when visitor departed (optional, null if still present)
+- **Duration**: Calculated automatically based on check-in/check-out times
+
+**Visit Details:**
+- **Purpose**: Reason for the visit (optional)
+- **Booking ID**: Link to associated meeting booking (optional)
+- **Visitor ID**: Reference to the visitor record (required)
+
+**System Information:**
+- **ID**: Unique visit identifier
+- **Created At**: Record creation timestamp
+- **Updated At**: Last modification timestamp
+
+#### Visit Lifecycle
+1. **Check-in**: Visitor arrives and is recorded in the system
+2. **Active Visit**: Visitor is present (checkedOut is null)
+3. **Check-out**: Visitor departs and checkout time is recorded
+4. **Completed Visit**: Visit is finalized with full duration data
+
+#### Visit Recording Process
+The system supports two methods for recording visits:
+
+**Method 1: New Visitor with Visit**
+- Create new visitor record
+- Immediately create associated visit record
+- All information collected in single form
+
+**Method 2: Existing Visitor Visit**
+- Select existing visitor from database
+- Create new visit record linked to existing visitor
+- Faster process for repeat visitors
+
+### Administrative Access & Controls
+
+#### Access Permissions
+- **Admin Only**: All visitor and visit management features require ADMIN role
+- **JWT Authentication**: All endpoints require valid authentication token
+- **Role-based Guards**: Automatic permission checking on all operations
+
+#### Management Capabilities
+Administrators can:
+
+**Visitor Management:**
+- View all visitors with pagination and filtering
+- Create new visitors
+- Update visitor information
+- View visitor visit history
+- Search visitors by name, email, or phone
+
+**Visit Management:**
+- View all visits with advanced filtering
+- Record new visits (check-in)
+- Process visitor checkouts
+- Filter visits by date range, visitor, room, department, or status
+- Export visit data for reporting
+
+**Filtering Options:**
+- **Date Range**: Custom start and end dates
+- **Visitor Name**: Search by visitor name
+- **Room**: Filter by specific meeting room
+- **Department**: Filter by department
+- **Status**: Active visits vs. completed visits
+- **Purpose**: Filter by visit purpose
+
+### Integration with Booking System
+
+#### Booking Association
+Visits can be optionally linked to meeting bookings:
+
+**Linked Visits:**
+- Visitor is attending a scheduled meeting
+- Visit automatically inherits room and department from booking
+- Purpose can be derived from meeting agenda
+- Better tracking and reporting capabilities
+
+**Standalone Visits:**
+- Visitor not associated with specific booking
+- Manual entry of room and department information
+- Common for walk-in visitors or reception area visits
+
+#### Data Relationships
+```
+Visitor (1) ──→ (Many) Visits
+Visit (0..1) ──→ (1) Booking
+Booking (1) ──→ (1) Room
+Room (1) ──→ (1) Department
+```
+
+---
+
+## Statistics & Analytics
+
+The system provides comprehensive analytics and reporting capabilities for visitor management, offering insights into visitor patterns, room utilization, and organizational access trends.
+
+### Statistics Collection & Calculation
+
+#### Data Sources
+Statistics are generated from the following data sources:
+- **Visit Records**: All visitor check-ins and check-outs
+- **Visitor Records**: Visitor demographic and contact information
+- **Booking Records**: Associated meeting bookings and room assignments
+- **Room Records**: Room capacity and department information
+- **Department Records**: Organizational structure data
+
+#### Time-based Analytics
+
+**Daily Statistics:**
+- **Time Range**: Last 7 days by default
+- **Metrics**: Daily visitor count, average visit duration
+- **Visualization**: Line chart showing visitor trends over time
+- **Custom Range**: Administrators can specify custom date ranges
+
+**Monthly Statistics:**
+- **Time Range**: Last 6 months by default
+- **Metrics**: Monthly visitor totals, average daily visitors
+- **Visualization**: Line chart with monthly aggregation
+- **Trend Analysis**: Month-over-month growth patterns
+
+**Yearly Statistics:**
+- **Time Range**: Last 5 years by default
+- **Metrics**: Annual visitor totals, seasonal patterns
+- **Visualization**: Line chart with yearly aggregation
+- **Long-term Trends**: Year-over-year analysis
+
+#### Department Analytics
+
+**Department Distribution:**
+- **Visitor Count**: Total visitors per department
+- **Percentage**: Relative distribution across departments
+- **Visualization**: Pie chart with color-coded segments
+- **Top Departments**: Ranked list of most visited departments
+
+**Department Insights:**
+- Most visited department identification
+- Department utilization patterns
+- Cross-department visitor analysis
+
+#### Room Analytics
+
+**Room Utilization:**
+- **Visitor Count**: Total visitors per room
+- **Percentage**: Room usage distribution
+- **Visualization**: Horizontal bar chart
+- **Top Rooms**: Ranked list of most visited rooms
+
+**Room Insights:**
+- Most visited room identification
+- Room capacity vs. actual usage
+- Room efficiency metrics
+
+#### Purpose Analytics
+
+**Visit Purpose Analysis:**
+- **Purpose Categories**: Grouped by visit purpose
+- **Visitor Count**: Number of visitors per purpose
+- **Visualization**: Bar chart with purpose labels
+- **Trend Analysis**: Most common visit purposes
+
+**Purpose Insights:**
+- Business meeting patterns
+- Consultation frequency
+- Training session attendance
+- Other visit categories
+
+#### Peak Hours Analysis
+
+**Hourly Distribution:**
+- **Time Slots**: 24-hour breakdown of visitor arrivals
+- **Visitor Count**: Number of visitors per hour
+- **Visualization**: Bar chart showing hourly patterns
+- **Peak Identification**: Busiest hours of the day
+
+**Peak Hours Insights:**
+- Busiest arrival times
+- Quiet periods identification
+- Resource planning optimization
+- Staff scheduling recommendations
+
+### Summary Statistics
+
+#### Key Performance Indicators (KPIs)
+
+**Total Visitors:**
+- Cumulative count of all visitors
+- Growth tracking over time
+- Historical comparison capabilities
+
+**Average Visit Duration:**
+- Mean time spent per visit
+- Calculated from check-in to check-out times
+- Excludes active visits (no checkout time)
+
+**Average Daily Visitors:**
+- Mean visitors per day for selected period
+- Helps with capacity planning
+- Trend analysis for busy periods
+
+**Peak Hour:**
+- Hour with highest visitor count
+- Identified from hourly distribution data
+- Resource allocation guidance
+
+**Most Visited Department:**
+- Department with highest visitor count
+- Percentage of total visitors
+- Department popularity ranking
+
+**Most Visited Room:**
+- Room with highest visitor count
+- Room utilization efficiency
+- Capacity planning insights
+
+### Data Export Functionality
+
+#### CSV Export Features
+The system provides comprehensive data export capabilities:
+
+**Export Contents:**
+- **Summary Statistics**: All KPI data in structured format
+- **Room Statistics**: Room-wise visitor counts and percentages
+- **Department Statistics**: Department-wise visitor distribution
+- **Purpose Statistics**: Visit purpose analysis
+- **Time-based Data**: Daily, monthly, yearly trends
+
+**Export Format:**
+```csv
+Résumé
+Total visiteurs,150
+Durée moyenne,45.5 min
+Visiteurs moyens par jour,12.3
+Heure de pointe,14:00
+Département le plus visité,Engineering
+Salle la plus visitée,Conference Room A
+
+Salles,Visiteurs,Pourcentage
+Conference Room A,45,30%
+Meeting Room B,30,20%
+Reception Area,25,17%
+...
+```
+
+**Export Features:**
+- **Automatic Naming**: Files named with timestamp
+- **UTF-8 Encoding**: Proper character encoding for international data
+- **Download Trigger**: Direct browser download
+- **Data Completeness**: All visible statistics included
+
+### Administrator Access & Filtering
+
+#### Time Range Selection
+Administrators can filter statistics using multiple time range options:
+
+**Predefined Ranges:**
+- **Day**: Last 7 days of data
+- **Month**: Last 6 months of data
+- **Year**: Last 5 years of data
+
+**Custom Range:**
+- **Start Date**: User-selected start date
+- **End Date**: User-selected end date
+- **Flexible Periods**: Any date range within system limits
+
+#### Filtering Interface
+The statistics interface provides:
+
+**Time Range Selector:**
+- Toggle buttons for predefined ranges
+- Date picker inputs for custom ranges
+- Real-time data refresh on range change
+
+**Data Refresh:**
+- Manual refresh button
+- Automatic updates when filters change
+- Loading states during data fetching
+
+#### Access Control
+- **Admin Only**: Statistics access restricted to ADMIN role
+- **JWT Authentication**: All requests require valid authentication
+- **Role Guards**: Automatic permission verification
+- **Secure Endpoints**: All statistics endpoints protected
+
+#### Performance Considerations
+- **Efficient Queries**: Optimized database queries for large datasets
+- **Caching**: Potential for data caching in future versions
+- **Pagination**: Large datasets handled efficiently
+- **Real-time Updates**: Statistics reflect current data state
+
+### Integration with Frontend
+
+#### Statistics Dashboard
+The frontend provides a comprehensive statistics dashboard:
+
+**Visual Components:**
+- **Summary Cards**: KPI display with hover effects
+- **Interactive Charts**: Line, bar, and pie charts
+- **Responsive Design**: Works on all device sizes
+- **Real-time Updates**: Automatic data refresh
+
+**User Experience:**
+- **Intuitive Navigation**: Easy time range selection
+- **Export Functionality**: One-click CSV download
+- **Loading States**: Clear feedback during data loading
+- **Error Handling**: Graceful error display
+
+**Chart Types:**
+- **Line Charts**: Time-based trends (daily/monthly/yearly)
+- **Bar Charts**: Peak hours and purpose analysis
+- **Pie Charts**: Department and room distribution
+- **Responsive Containers**: Charts adapt to screen size
+
+---
+
 ## Security Implementation
 
 ### 1. Authentication

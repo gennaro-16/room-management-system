@@ -883,4 +883,485 @@ Future webhook support for real-time updates:
 
 ---
 
+## Visitor Management Endpoints
+
+### GET /visitors
+Get all visitors with pagination and filtering (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of visitors per page (default: 8)
+- `startDate` (optional): Filter visits from this date
+- `endDate` (optional): Filter visits to this date
+- `visitorName` (optional): Search by visitor name
+- `room` (optional): Filter by room name
+- `department` (optional): Filter by department name
+- `status` (optional): Filter by visit status (active/completed)
+
+**Response:**
+```json
+{
+  "visitors": [
+    {
+      "id": 1,
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john.smith@example.com",
+      "phone": "+1234567890",
+      "visits": [
+        {
+          "id": 1,
+          "checkedIn": "2024-01-15T10:00:00Z",
+          "checkedOut": "2024-01-15T12:00:00Z",
+          "purpose": "Business Meeting",
+          "booking": {
+            "id": 1,
+            "room": {
+              "name": "Conference Room A",
+              "department": {
+                "name": "Engineering"
+              }
+            }
+          }
+        }
+      ],
+      "createdAt": "2024-01-15T09:00:00Z",
+      "updatedAt": "2024-01-15T12:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 8,
+    "totalPages": 1
+  }
+}
+```
+
+### POST /visitors/visit
+Create a new visitor with their first visit (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "visitorId": 1,
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane.doe@example.com",
+  "phone": "+1234567890",
+  "purpose": "Consultation",
+  "bookingId": 1
+}
+```
+
+**Response:**
+```json
+{
+  "visitor": {
+    "id": 2,
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@example.com",
+    "phone": "+1234567890",
+    "createdAt": "2024-01-15T10:00:00Z"
+  },
+  "visit": {
+    "id": 2,
+    "checkedIn": "2024-01-15T10:00:00Z",
+    "checkedOut": null,
+    "purpose": "Consultation",
+    "bookingId": 1,
+    "visitorId": 2
+  }
+}
+```
+
+### GET /visitors/:id
+Get a specific visitor with all their visits (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@example.com",
+  "phone": "+1234567890",
+  "visits": [
+    {
+      "id": 1,
+      "checkedIn": "2024-01-15T10:00:00Z",
+      "checkedOut": "2024-01-15T12:00:00Z",
+      "purpose": "Business Meeting",
+      "booking": {
+        "id": 1,
+        "room": {
+          "name": "Conference Room A",
+          "department": {
+            "name": "Engineering"
+          }
+        }
+      }
+    }
+  ],
+  "createdAt": "2024-01-15T09:00:00Z",
+  "updatedAt": "2024-01-15T12:00:00Z"
+}
+```
+
+### PATCH /visitors/:id
+Update visitor information (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@newemail.com",
+  "phone": "+1234567890"
+}
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@newemail.com",
+  "phone": "+1234567890",
+  "updatedAt": "2024-01-15T14:00:00Z"
+}
+```
+
+---
+
+## Visit Management Endpoints
+
+### GET /visits
+Get all visits with filtering and pagination (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `page` (optional): Page number for pagination (default: 1)
+- `limit` (optional): Number of visits per page (default: 8)
+- `startDate` (optional): Filter visits from this date
+- `endDate` (optional): Filter visits to this date
+- `visitorName` (optional): Search by visitor name
+- `room` (optional): Filter by room name
+- `department` (optional): Filter by department name
+- `status` (optional): Filter by visit status (active/completed)
+
+**Response:**
+```json
+{
+  "visits": [
+    {
+      "id": 1,
+      "checkedIn": "2024-01-15T10:00:00Z",
+      "checkedOut": "2024-01-15T12:00:00Z",
+      "purpose": "Business Meeting",
+      "visitor": {
+        "id": 1,
+        "firstName": "John",
+        "lastName": "Smith",
+        "email": "john.smith@example.com"
+      },
+      "booking": {
+        "id": 1,
+        "room": {
+          "name": "Conference Room A",
+          "department": {
+            "name": "Engineering"
+          }
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "total": 1,
+    "page": 1,
+    "limit": 8,
+    "totalPages": 1
+  }
+}
+```
+
+### GET /visits/filters
+Get available filter options for visits (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "rooms": [
+    {
+      "id": 1,
+      "name": "Conference Room A"
+    }
+  ],
+  "departments": [
+    {
+      "id": 1,
+      "name": "Engineering"
+    }
+  ]
+}
+```
+
+### POST /visits
+Create a new visit record (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "visitorId": 1,
+  "bookingId": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Business Meeting"
+}
+```
+
+**Response:**
+```json
+{
+  "id": 2,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Business Meeting",
+  "visitorId": 1,
+  "bookingId": 1,
+  "visitor": {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Smith"
+  },
+  "booking": {
+    "id": 1,
+    "room": {
+      "name": "Conference Room A",
+      "department": {
+        "name": "Engineering"
+      }
+    }
+  }
+}
+```
+
+### GET /visits/:id
+Get a specific visit record (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Business Meeting",
+  "visitor": {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Smith",
+    "email": "john.smith@example.com"
+  },
+  "booking": {
+    "id": 1,
+    "room": {
+      "name": "Conference Room A",
+      "department": {
+        "name": "Engineering"
+      }
+    }
+  }
+}
+```
+
+### PATCH /visits/:id
+Update a visit record (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "purpose": "Updated Meeting Purpose",
+  "bookingId": 2
+}
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T12:00:00Z",
+  "purpose": "Updated Meeting Purpose",
+  "bookingId": 2,
+  "updatedAt": "2024-01-15T14:00:00Z"
+}
+```
+
+### PATCH /visits/:id/checkout
+Process visitor checkout (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "checkedIn": "2024-01-15T10:00:00Z",
+  "checkedOut": "2024-01-15T14:00:00Z",
+  "purpose": "Business Meeting",
+  "visitorId": 1,
+  "bookingId": 1,
+  "updatedAt": "2024-01-15T14:00:00Z"
+}
+```
+
+---
+
+## Statistics Endpoints
+
+### GET /statistics/visitors
+Get comprehensive visitor statistics (Admin only).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `timeRange` (optional): Time range for statistics ('day', 'month', 'year') (default: 'month')
+- `startDate` (optional): Custom start date for statistics
+- `endDate` (optional): Custom end date for statistics
+
+**Response:**
+```json
+{
+  "dailyStats": [
+    {
+      "date": "2024-01-15",
+      "visitors": 5,
+      "avgDuration": 45.5
+    }
+  ],
+  "monthlyStats": [
+    {
+      "month": "2024-01",
+      "visitors": 150,
+      "avgDuration": 42.3
+    }
+  ],
+  "yearlyStats": [
+    {
+      "year": "2024",
+      "visitors": 1800,
+      "avgDuration": 40.8
+    }
+  ],
+  "peakHours": [
+    {
+      "hour": 9,
+      "visitors": 12
+    },
+    {
+      "hour": 14,
+      "visitors": 18
+    }
+  ],
+  "departmentStats": [
+    {
+      "department": "Engineering",
+      "visitors": 45,
+      "percentage": 30.0
+    },
+    {
+      "department": "Marketing",
+      "visitors": 30,
+      "percentage": 20.0
+    }
+  ],
+  "roomStats": [
+    {
+      "room": "Conference Room A",
+      "visitors": 25,
+      "percentage": 16.7
+    },
+    {
+      "room": "Meeting Room B",
+      "visitors": 20,
+      "percentage": 13.3
+    }
+  ],
+  "purposeStats": [
+    {
+      "purpose": "Business Meeting",
+      "visitors": 60,
+      "percentage": 40.0
+    },
+    {
+      "purpose": "Consultation",
+      "visitors": 30,
+      "percentage": 20.0
+    }
+  ],
+  "summary": {
+    "totalVisitors": 150,
+    "avgVisitDuration": 45.5,
+    "avgDailyVisitors": 12.3,
+    "peakHour": 14,
+    "mostVisitedDepartment": "Engineering",
+    "mostVisitedRoom": "Conference Room A"
+  }
+}
+```
+
+---
+
 *This API documentation is automatically generated and maintained. For the latest version, please refer to the project repository.*
