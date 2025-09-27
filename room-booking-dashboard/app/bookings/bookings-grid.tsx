@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -307,77 +307,81 @@ export default function BookingGrid() {
           {viewMode === "grid" ? (
             <div className="overflow-x-auto">
               <div className="w-full min-w-0">
-                {/* Header with time slots */}
-                <div className="grid grid-cols-[200px_1fr] gap-1 mb-2 p-4">
-                  <div className="font-semibold text-sm p-2">Room / Department / Time</div>
+                {/* Fixed grid structure with proper alignment - Time on X-axis, Rooms on Y-axis */}
+                <div className="grid grid-cols-[200px_1fr] gap-1 p-4">
+                  {/* Header row - Time slots on X-axis */}
+                  <div className="font-semibold text-sm p-2 bg-muted rounded-md flex items-center">
+                    Room / Department
+                  </div>
                   <div className="grid grid-cols-21 gap-1">
                     {timeSlots.map((time) => (
-                      <div key={time} className="text-xs font-medium text-center p-1 text-muted-foreground">
+                      <div key={time} className="text-xs font-medium text-center p-1 text-muted-foreground bg-muted rounded-md">
                         {time}
                       </div>
                     ))}
                   </div>
-                </div>
 
-              {/* Room rows */}
-              <div className="space-y-1 p-4 pt-0">
-                {filteredRooms.map((room) => {
-                  const bookingBars = getBookingBars(room.id, timeSlots, filteredBookings)
+                  {/* Room rows - Each room gets its own row */}
+                  {filteredRooms.map((room) => {
+                    const bookingBars = getBookingBars(room.id, timeSlots, filteredBookings)
 
-                  return (
-                    <div key={room.id} className="grid grid-cols-[200px_1fr] gap-1">
-                      <div className="p-3 bg-muted rounded-md">
-                        <div className="font-medium text-sm truncate">{room.name}</div>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs mt-1 mb-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                        >
-                          {room.department?.name || 'General'}
-                        </Badge>
-                        <div className="text-xs text-muted-foreground">{room.capacity} seats</div>
-                      </div>
-
-                      <div className="relative">
-                        {/* Background grid */}
-                        <div className="grid grid-cols-21 gap-1 h-16">
-                          {timeSlots.map((time) => (
-                            <div
-                              key={`${room.id}-${time}-bg`}
-                              className="bg-white border border-border rounded-md hover:bg-gray-50 transition-colors"
-                              title={`${room.name} - ${time} (Available)`}
-                            />
-                          ))}
+                    return (
+                      <React.Fragment key={room.id}>
+                        {/* Room info column - Y-axis */}
+                        <div className="p-3 bg-muted rounded-md flex flex-col justify-center">
+                          <div className="font-medium text-sm truncate">{room.name}</div>
+                          <Badge
+                            variant="secondary"
+                            className="text-xs mt-1 mb-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 w-fit"
+                          >
+                            {room.department?.name || 'General'}
+                          </Badge>
+                          <div className="text-xs text-muted-foreground">{room.capacity} seats</div>
                         </div>
 
-                        {bookingBars.map((bar, index) => {
-                          const startTime = new Date(bar.booking.startTime).toTimeString().slice(0, 5)
-                          const endTime = new Date(bar.booking.endTime).toTimeString().slice(0, 5)
-                          
-                          return (
-                            <div
-                              key={`${room.id}-bar-${index}`}
-                              className={`absolute top-0 h-16 rounded-md cursor-pointer transition-all duration-200 flex items-center px-2 text-white font-medium text-xs shadow-sm ${getStatusColor(bar.booking.status)}`}
-                              style={{
-                                left: `calc(${bar.startIndex} * (100% / 21) + ${bar.leftOffset} * (100% / 21) / 100)`,
-                                width: `calc(${bar.width} * (100% / 21) / 100)`,
-                                zIndex: 10,
-                              }}
-                              title={`${bar.booking.title} (${startTime} - ${endTime}) - ${getStatusText(bar.booking.status)}`}
-                            >
-                              <div className="truncate">
-                                <div className="font-semibold">{bar.booking.title}</div>
-                                <div className="text-xs opacity-90">
-                                  {startTime} - {endTime}
+                        {/* Time slots row - X-axis */}
+                        <div className="relative">
+                          {/* Background grid for time slots */}
+                          <div className="grid grid-cols-21 gap-1 h-16">
+                            {timeSlots.map((time) => (
+                              <div
+                                key={`${room.id}-${time}-bg`}
+                                className="bg-white border border-border rounded-md hover:bg-gray-50 transition-colors"
+                                title={`${room.name} - ${time} (Available)`}
+                              />
+                            ))}
+                          </div>
+
+                          {/* Booking bars overlay - positioned horizontally across time */}
+                          {bookingBars.map((bar, index) => {
+                            const startTime = new Date(bar.booking.startTime).toTimeString().slice(0, 5)
+                            const endTime = new Date(bar.booking.endTime).toTimeString().slice(0, 5)
+                            
+                            return (
+                              <div
+                                key={`${room.id}-bar-${index}`}
+                                className={`absolute top-0 h-16 rounded-md cursor-pointer transition-all duration-200 flex items-center px-2 text-white font-medium text-xs shadow-sm ${getStatusColor(bar.booking.status)}`}
+                                style={{
+                                  left: `calc(${bar.startIndex} * (100% / 21) + ${bar.leftOffset} * (100% / 21) / 100)`,
+                                  width: `calc(${bar.width} * (100% / 21) / 100)`,
+                                  zIndex: 10,
+                                }}
+                                title={`${bar.booking.title} (${startTime} - ${endTime}) - ${getStatusText(bar.booking.status)}`}
+                              >
+                                <div className="truncate">
+                                  <div className="font-semibold">{bar.booking.title}</div>
+                                  <div className="text-xs opacity-90">
+                                    {startTime} - {endTime}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                            )
+                          })}
+                        </div>
+                      </React.Fragment>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           ) : (

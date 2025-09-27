@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import React, { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -215,72 +215,70 @@ export default function BookingGrid() {
         <CardContent>
           <div className="overflow-x-auto">
             <div className="min-w-max">
-              {/* Header with time slots */}
-              <div className="grid grid-cols-[250px_repeat(21,60px)] gap-1 mb-2">
-                <div className="font-semibold text-sm p-2">Room / Department / Time</div>
+              {/* Fixed grid structure with proper alignment - Time on X-axis, Rooms on Y-axis */}
+              <div className="grid grid-cols-[200px_repeat(21,60px)] gap-1">
+                {/* Header row - Time slots on X-axis */}
+                <div className="font-semibold text-sm p-2 bg-muted rounded-md flex items-center">
+                  Room / Department
+                </div>
                 {timeSlots.map((time) => (
-                  <div key={time} className="text-xs font-medium text-center p-1 text-muted-foreground">
+                  <div key={time} className="text-xs font-medium text-center p-1 text-muted-foreground bg-muted rounded-md">
                     {time}
                   </div>
                 ))}
-              </div>
 
-              {/* Room rows */}
-              {filteredRooms.map((room) => {
-                const bookingBars = getBookingBars(room.id, timeSlots)
+                {/* Room rows - Each room gets its own row */}
+                {filteredRooms.map((room) => {
+                  const bookingBars = getBookingBars(room.id, timeSlots)
 
-                return (
-                  <div key={room.id} className="grid grid-cols-[250px_repeat(21,60px)] gap-1 mb-1">
-                    <div className="p-3 bg-muted rounded-md">
-                      <div className="font-medium text-sm truncate">{room.name}</div>
-                      <Badge
-                        variant="secondary"
-                        className="text-xs mt-1 mb-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                      >
-                        {room.department}
-                      </Badge>
-                      <div className="text-xs text-muted-foreground">{room.capacity} seats</div>
-                    </div>
-
-                    <div className="col-span-21 relative">
-                      {/* Background grid */}
-                      <div className="grid grid-cols-21 gap-1 h-16">
-                        {timeSlots.map((time) => (
-                          <div
-                            key={`${room.id}-${time}-bg`}
-                            className="bg-white border border-border rounded-md hover:bg-gray-50 transition-colors"
-                            title={`${room.name} - ${time} (Available)`}
-                          />
-                        ))}
+                  return (
+                    <React.Fragment key={room.id}>
+                      {/* Room info column - Y-axis */}
+                      <div className="p-3 bg-muted rounded-md flex flex-col justify-center">
+                        <div className="font-medium text-sm truncate">{room.name}</div>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs mt-1 mb-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 w-fit"
+                        >
+                          {room.department}
+                        </Badge>
+                        <div className="text-xs text-muted-foreground">{room.capacity} seats</div>
                       </div>
 
-                      {bookingBars.map((bar, index) => (
-                        <div
-                          key={`${room.id}-bar-${index}`}
-                          className={`absolute top-0 h-16 rounded-md cursor-pointer transition-all duration-200 flex items-center px-2 text-white font-medium text-xs shadow-sm ${
-                            bar.booking.status === "approved"
-                              ? "bg-green-500 hover:bg-green-600"
-                              : "bg-purple-500 hover:bg-purple-600"
-                          }`}
-                          style={{
-                            left: `${bar.startIndex * 64 + bar.leftOffset * 0.64}px`, // 64px = 60px width + 4px gap
-                            width: `${bar.width * 0.64}px`,
-                            zIndex: 10,
-                          }}
-                          title={`${bar.booking.title} (${bar.booking.startTime} - ${bar.booking.endTime}) - ${getStatusText(bar.booking.status)}`}
-                        >
-                          <div className="truncate">
-                            <div className="font-semibold">{bar.booking.title}</div>
-                            <div className="text-xs opacity-90">
-                              {bar.booking.startTime} - {bar.booking.endTime}
-                            </div>
-                          </div>
+                      {/* Time slots row - X-axis */}
+                      <div className="col-span-[21] relative h-16">
+                        {/* Background grid for time slots */}
+                        <div className="grid grid-cols-21 h-full">
+                          {timeSlots.map((time) => (
+                            <div
+                              key={`${room.id}-${time}`}
+                              className="border border-border rounded-md hover:bg-gray-50 transition-colors"
+                              title={`${room.name} - ${time} (Available)`}
+                            />
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
+
+                        {/* Booking bars overlay - positioned horizontally across time */}
+                        {bookingBars.map((bar, idx) => (
+                          <div
+                            key={idx}
+                            className={`absolute top-1 h-12 rounded-md text-xs text-white flex items-center px-2 shadow cursor-pointer ${getStatusColor(
+                              bar.booking.status,
+                            )}`}
+                            style={{
+                              left: `calc(${bar.startIndex * 100}% / 21 + ${bar.leftOffset}%)`,
+                              width: `calc(${bar.width}% / 21)`,
+                            }}
+                            title={`${bar.booking.title} (${bar.booking.startTime} - ${bar.booking.endTime})`}
+                          >
+                            {bar.booking.title}
+                          </div>
+                        ))}
+                      </div>
+                    </React.Fragment>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </CardContent>
