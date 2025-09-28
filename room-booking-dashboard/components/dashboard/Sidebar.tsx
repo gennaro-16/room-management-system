@@ -23,19 +23,16 @@ const getSidebarItems = (isAdmin: boolean) => [
   { icon: Building2, label: 'Salles', id: 'rooms' },
   { icon: BookOpen, label: 'Réservations', id: 'bookings' },
   { icon: Calendar, label: 'Calendrier', id: 'calendar' },
-  { icon: BookOpen, label: 'Vue complète des réservations', id: 'bookings-full' },
+  
    
   ...(isAdmin ? [
      { icon: UsersRound, label: 'Visiteurs', id: 'Visiteurs' },
      { icon: BarChart3, label: 'statistiques', id: 'statistiques' },
     { icon: Building2, label: 'Départements', id: 'departments' },
-    { icon: Users, label: 'Gestion des utilisateurs', id: 'users' },
-    { icon: BarChart3, label: 'Rapports', id: 'reports' },
+    { icon: Users, label: 'Gestion des utilisateurs', id: 'users' }
   ] : []),
   { icon: UserCircle, label: 'Profil', id: 'profile' },
-  { icon: FileText, label: 'Documentation', id: 'documentation' },
-  { icon: Settings, label: 'Paramètres', id: 'settings' },
-];
+  { icon: FileText, label: 'Documentation', id: 'documentation' }];
 
 interface SidebarProps {
   activeSection: string;
