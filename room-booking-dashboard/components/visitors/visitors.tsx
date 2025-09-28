@@ -241,7 +241,7 @@ export default function VisitorsPage() {
 
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col py-9 px-4 min-h-screen">
+    <div className=" mx-auto flex flex-col py-9 px-4 min-h-screen">
       {/* <h1 className="text-4xl font-bold text-center mb-10 text-foreground">Visitor & Visit Management</h1>
 
       {/* Stats cards */}
