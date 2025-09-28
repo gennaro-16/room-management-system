@@ -102,7 +102,8 @@ if (visitorName) {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { checkedIn: 'desc' },
+
     }),
     this.prisma.visit.count({ where }),
   ]);

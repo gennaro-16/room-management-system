@@ -983,7 +983,7 @@ export const visitorsApi = {
 
     const json = await apiRequest<PaginatedVisitsResponse>(`/visits?${params.toString()}`);
     const visits = json.data;
-
+console.log("visits",visits);
     const visitorMap: Record<number, VisitorItem> = {};
     for (const visit of visits) {
       const v = visit.visitor;

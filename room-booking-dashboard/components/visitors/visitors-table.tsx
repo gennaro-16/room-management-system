@@ -83,7 +83,9 @@ export function VisitorsTable({
                 </td>
               </tr>
             )}
-            {visits.map((visit) => (
+            {visits.slice() // copy to avoid mutating props
+  .sort((a, b) => new Date(b.checkedIn).getTime() - new Date(a.checkedIn).getTime())
+  .map((visit) => (
               <tr
                 key={visit.id}
                 className="hover:bg-accent/50 cursor-pointer transition-colors border-b border-border"
