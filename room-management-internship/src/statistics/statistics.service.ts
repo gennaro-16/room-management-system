@@ -24,7 +24,6 @@ export class VisitorStatisticsService {
     let start: Date;
     let end: Date = now;
 
-    // Clear semantics:
     if (timeRange === 'day') {
       start = startOfDay(now);
       end = endOfDay(now);
@@ -32,16 +31,13 @@ export class VisitorStatisticsService {
       start = startOfMonth(now);
       end = endOfMonth(now);
     } else {
-      // 'year'
       start = startOfYear(now);
       end = endOfYear(now);
     }
 
-    // override with custom range if provided
     if (startDate) start = startOfDay(new Date(startDate));
     if (endDate) end = endOfDay(new Date(endDate));
 
-    // fetch visits whose checkedIn is inside the window
     const visits = await this.prisma.visit.findMany({
       where: { checkedIn: { gte: start, lte: end } },
       include: {
@@ -50,7 +46,6 @@ export class VisitorStatisticsService {
       },
     });
 
-    // defensive filter by checkedIn
     const inRangeVisits = visits.filter(v => {
       const ci = new Date(v.checkedIn);
       return ci >= start && ci <= end;
@@ -79,8 +74,7 @@ export class VisitorStatisticsService {
         completedVisitsCount += 1;
       }
 
-      // use format to avoid UTC shifts
-      const dateKey = format(checkedIn, 'yyyy-MM-dd'); // local date bucket
+      const dateKey = format(checkedIn, 'yyyy-MM-dd');
       const monthKey = format(checkedIn, 'yyyy-MM');
       const yearKey = format(checkedIn, 'yyyy');
 
@@ -112,14 +106,14 @@ export class VisitorStatisticsService {
       purposeMap.set(purpose, (purposeMap.get(purpose) || 0) + 1);
     }
 
-    // Build arrays (IMPORTANT: dailyMap.entries() to get the key date)
+    // evolution over time
     const dailyStats = Array.from(dailyMap.entries())
       .map(([date, e]) => ({
         date,
         visitors: e.visitors,
         avgDuration: e.completed > 0 ? this.round(e.totalDuration / e.completed) : 0,
       }))
-      .sort((a, b) => b.date.localeCompare(a.date)); // latest first
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     const monthlyStats = Array.from(monthlyMap.entries())
       .map(([month, e]) => ({
@@ -127,7 +121,7 @@ export class VisitorStatisticsService {
         visitors: e.visitors,
         avgDuration: e.completed > 0 ? this.round(e.totalDuration / e.completed) : 0,
       }))
-      .sort((a, b) => b.month.localeCompare(a.month));
+      .sort((a, b) => a.month.localeCompare(b.month));
 
     const yearlyStats = Array.from(yearlyMap.entries())
       .map(([year, e]) => ({
@@ -135,7 +129,7 @@ export class VisitorStatisticsService {
         visitors: e.visitors,
         avgDuration: e.completed > 0 ? this.round(e.totalDuration / e.completed) : 0,
       }))
-      .sort((a, b) => b.year.localeCompare(a.year));
+      .sort((a, b) => a.year.localeCompare(b.year));
 
     const peakHours = Array.from(hourMap.entries())
       .map(([hour, visitors]) => ({ hour, visitors }))
@@ -175,7 +169,14 @@ export class VisitorStatisticsService {
       departmentStats,
       roomStats,
       purposeStats,
-      summary: { totalVisitors, avgVisitDuration, avgDailyVisitors, peakHour, mostVisitedDepartment, mostVisitedRoom },
+      summary: {
+        totalVisitors,
+        avgVisitDuration,
+        avgDailyVisitors,
+        peakHour,
+        mostVisitedDepartment,
+        mostVisitedRoom,
+      },
     };
   }
 }

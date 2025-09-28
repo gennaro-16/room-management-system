@@ -25,6 +25,7 @@ export default function StatisticsPage() {
     try {
       const data = await statisticsApi.getVisitorStats({ timeRange, startDate, endDate })
       setStatsData(data)
+      console.log("stats",data)
     } catch (error) {
       console.error(error)
       setStatsData(null)
@@ -176,22 +177,21 @@ export default function StatisticsPage() {
           <div className="bg-card p-6 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Visiteurs au fil du temps</h3>
             <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={timeRange === 'day' ? statsData.dailyStats : 
-                               timeRange === 'month' ? statsData.monthlyStats : 
-                               statsData.yearlyStats}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={timeRange === 'day' ? 'date' : timeRange === 'month' ? 'month' : 'year'} />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="visitors" stroke="#0088FE" strokeWidth={2} />
-                </LineChart>
+              
+  <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={statsData.dailyStats}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="date" />
+      <YAxis />
+      <Tooltip />
+      <Line type="monotone" dataKey="visitors" stroke="#8884d8" />
+    </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Peak Hours */}
-          <div className="bg-card p-6 rounded-lg shadow-sm">
+          <div className="bg-card p-6  rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold mb-4">Heures de visite les plus fréquentées</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
