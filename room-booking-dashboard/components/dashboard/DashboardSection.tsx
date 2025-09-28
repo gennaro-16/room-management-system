@@ -23,7 +23,8 @@ export function DashboardSection() {
     totalRooms: overview.totalRooms,
     totalBookings: overview.totalBookings,
     activeBookings: overview.activeBookings,
-    maintenanceRooms: overview.roomsByStatus.find(r => r.status === 'MAINTENANCE')?.count || 0,
+    availableRooms: overview.availableRooms,
+    maintenanceRooms: overview.maintenanceRooms,
   } : undefined;
 
   const loading = overviewLoading || roomsLoading || bookingsLoading;

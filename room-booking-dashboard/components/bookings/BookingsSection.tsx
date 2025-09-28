@@ -45,12 +45,32 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
     return booking.organizerId === user.id;
   };
 
+  // Helper function to check if current user can delete a booking (more restrictive than modify)
+  const canDeleteBooking = (booking: Booking): boolean => {
+    if (!user) return false;
+    
+    // Only pending and approved bookings can be deleted (same as backend logic)
+    if (booking.status !== 'PENDING' && booking.status !== 'APPROVED') {
+      return false;
+    }
+    
+    // Admins can delete any deletable booking
+    if (isAdmin()) return true;
+    // Employees can only delete their own deletable bookings
+    return booking.organizerId === user.id;
+  };
+
   // Debug logging
   console.log('BookingsSection Debug:', {
     user: user?.username,
     isAdmin: isAdmin(),
     bookingsCount: bookings?.length,
-    cancellableBookings: bookings?.filter(b => b.status === 'PENDING' || b.status === 'APPROVED' || b.status === 'ONGOING').length
+    modifiableBookings: bookings?.filter(b => canModifyBooking(b)).length,
+    deletableBookings: bookings?.filter(b => canDeleteBooking(b)).length,
+    statusBreakdown: bookings?.reduce((acc, b) => {
+      acc[b.status] = (acc[b.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
   });
 
   // Filter bookings based on search and filters - show all booking states
@@ -89,8 +109,8 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
     const booking = bookings?.find(b => b.id === bookingId);
     if (!booking) return;
     
-    // Check authorization
-    if (!canModifyBooking(booking)) {
+    // Check authorization using the more restrictive delete check
+    if (!canDeleteBooking(booking)) {
       let errorMessage = 'Vous n\'êtes pas autorisé à supprimer cette réservation.';
       if (booking.status === 'COMPLETED') {
         errorMessage = 'Impossible de supprimer une réservation terminée.';
@@ -98,6 +118,8 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
         errorMessage = 'Impossible de supprimer une réservation déjà annulée.';
       } else if (booking.status === 'REJECTED') {
         errorMessage = 'Impossible de supprimer une réservation rejetée.';
+      } else if (booking.status === 'ONGOING') {
+        errorMessage = 'Impossible de supprimer une réservation en cours.';
       } else if (booking.organizerId !== user?.id) {
         errorMessage = 'Vous ne pouvez supprimer que vos propres réservations.';
       }
@@ -350,7 +372,7 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
                             Modifier
                           </Button>
                         )}
-                        {canModifyBooking(booking) ? (
+                        {canDeleteBooking(booking) ? (
                           <Button
                             variant="outline"
                             size="sm"
@@ -364,7 +386,7 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground" title={`Cannot modify: ${booking.status}`}>
+                          <span className="text-xs text-muted-foreground" title={`Cannot delete: ${booking.status} - Only PENDING and APPROVED bookings can be deleted`}>
                             {booking.status}
                           </span>
                         )}

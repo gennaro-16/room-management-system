@@ -220,6 +220,8 @@ export interface DashboardOverview {
   totalRooms: number;
   totalBookings: number;
   activeBookings: number;
+  availableRooms: number;
+  maintenanceRooms: number;
   roomsByStatus: Array<{
     status: RoomStatus;
     count: number;

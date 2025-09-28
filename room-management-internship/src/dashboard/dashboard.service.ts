@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@prisma/prisma.service';
+import { RoomStatus, BookingStatus } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
@@ -8,20 +9,39 @@ export class DashboardService {
   async getOverview() {
     const totalRooms = await this.prisma.room.count();
     const totalBookings = await this.prisma.booking.count();
+    
+    // Get active bookings (currently ongoing)
     const activeBookings = await this.prisma.booking.count({
       where: {
-        status: 'APPROVED',
+        status: BookingStatus.ONGOING,
+        startTime: {
+          lte: new Date()
+        },
         endTime: {
           gte: new Date()
         }
       }
     });
 
-    // Get rooms by maintenance status
-    const roomsByMaintenance = await this.prisma.room.groupBy({
-      by: ['isUnderMaintenance'],
+    // Get rooms by status using the new status field
+    const roomsByStatus = await this.prisma.room.groupBy({
+      by: ['status'],
       _count: {
-        isUnderMaintenance: true
+        status: true
+      }
+    });
+
+    // Get available rooms (FREE status)
+    const availableRooms = await this.prisma.room.count({
+      where: {
+        status: RoomStatus.FREE
+      }
+    });
+
+    // Get rooms under maintenance
+    const maintenanceRooms = await this.prisma.room.count({
+      where: {
+        status: RoomStatus.MAINTENANCE
       }
     });
 
@@ -36,9 +56,11 @@ export class DashboardService {
       totalRooms,
       totalBookings,
       activeBookings,
-      roomsByStatus: roomsByMaintenance.map(item => ({
-        status: item.isUnderMaintenance ? 'MAINTENANCE' : 'AVAILABLE',
-        count: item._count.isUnderMaintenance
+      availableRooms,
+      maintenanceRooms,
+      roomsByStatus: roomsByStatus.map(item => ({
+        status: item.status,
+        count: item._count.status
       })),
       bookingsByStatus: bookingsByStatus.map(item => ({
         status: item.status,
@@ -49,20 +71,12 @@ export class DashboardService {
 
   async getRoomsSummary() {
     const rooms = await this.prisma.room.findMany({
-      include: {
-        bookings: {
-          where: {
-            status: {
-              in: ['APPROVED', 'ONGOING']
-            },
-            startTime: {
-              lte: new Date()
-            },
-            endTime: {
-              gte: new Date()
-            }
-          }
-        }
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        status: true,
+        isUnderMaintenance: true
       },
       orderBy: { name: 'asc' }
     });
@@ -71,10 +85,8 @@ export class DashboardService {
       id: room.id,
       name: room.name,
       capacity: room.capacity,
-      status: room.isUnderMaintenance ? 'MAINTENANCE' : 
-              room.bookings.length > 0 ? 'BUSY' : 'AVAILABLE',
-      currentBookings: room.bookings.length,
-      isAvailable: !room.isUnderMaintenance && room.bookings.length === 0
+      status: room.status,
+      isAvailable: room.status === RoomStatus.FREE
     }));
   }
 
@@ -99,7 +111,7 @@ export class DashboardService {
 
     const upcomingBookings = await this.prisma.booking.findMany({
       where: {
-        status: 'APPROVED',
+        status: BookingStatus.APPROVED,
         startTime: {
           gte: new Date()
         }

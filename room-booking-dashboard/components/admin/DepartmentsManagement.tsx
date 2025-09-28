@@ -31,8 +31,8 @@ export default function DepartmentsManagement() {
     try {
       const payload = {
         name: form.name.trim(),
-        description: form.description?.trim() || null,
-        floor: form.floor ? Number(form.floor) : null,
+        description: form.description?.trim() || undefined,
+        floor: form.floor ? Number(form.floor) : undefined,
       };
       if (!payload.name) {
         setFormError('Name is required');

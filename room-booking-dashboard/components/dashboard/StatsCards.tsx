@@ -11,6 +11,7 @@ interface StatsCardsProps {
     totalRooms: number;
     totalBookings: number;
     activeBookings: number;
+    availableRooms: number;
     maintenanceRooms: number;
   };
   loading: boolean;
@@ -39,8 +40,6 @@ export function StatsCards({ data, loading, error, onRetry }: StatsCardsProps) {
 
   if (!data) return null;
 
-  const availableRooms = data.totalRooms - data.activeBookings - data.maintenanceRooms;
-
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       <Card className="card-albaraka group hover:shadow-lg transition-all duration-300">
@@ -64,7 +63,7 @@ export function StatsCards({ data, loading, error, onRetry }: StatsCardsProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-green-600 mb-1">{availableRooms}</div>
+          <div className="text-3xl font-bold text-green-600 mb-1">{data.availableRooms}</div>
           <p className="text-sm text-muted-foreground">Prêtes à réserver</p>
         </CardContent>
       </Card>
