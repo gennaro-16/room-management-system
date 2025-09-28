@@ -52,7 +52,9 @@ export class DashboardService {
       include: {
         bookings: {
           where: {
-            status: 'APPROVED',
+            status: {
+              in: ['APPROVED', 'ONGOING']
+            },
             startTime: {
               lte: new Date()
             },
@@ -69,7 +71,8 @@ export class DashboardService {
       id: room.id,
       name: room.name,
       capacity: room.capacity,
-      status: room.isUnderMaintenance ? 'MAINTENANCE' : 'AVAILABLE',
+      status: room.isUnderMaintenance ? 'MAINTENANCE' : 
+              room.bookings.length > 0 ? 'BUSY' : 'AVAILABLE',
       currentBookings: room.bookings.length,
       isAvailable: !room.isUnderMaintenance && room.bookings.length === 0
     }));

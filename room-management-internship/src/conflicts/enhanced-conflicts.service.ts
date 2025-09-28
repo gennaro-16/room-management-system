@@ -333,7 +333,9 @@ export class EnhancedConflictsService {
     const conflictingBookings = await this.prisma.booking.findMany({
       where: {
         roomId,
-        status: BookingStatus.APPROVED,
+        status: {
+          in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+        },
         OR: [
           {
             AND: [

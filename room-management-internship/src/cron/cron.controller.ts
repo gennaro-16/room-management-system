@@ -16,4 +16,12 @@ export class CronController {
     await this.bookingStatusCronService.triggerStatusUpdate();
     return { message: 'Booking status update triggered successfully' };
   }
+
+  @Post('trigger-room-status-update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async triggerRoomStatusUpdate() {
+    await this.bookingStatusCronService.updateRoomStatuses();
+    return { message: 'Room status update triggered successfully' };
+  }
 }

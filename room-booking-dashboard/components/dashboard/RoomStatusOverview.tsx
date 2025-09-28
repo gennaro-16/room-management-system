@@ -72,12 +72,14 @@ export function RoomStatusOverview({ rooms, loading, error, onRetry }: RoomStatu
                 </div>
               )}
             </div>
-            <Badge className={
-              room.isUnderMaintenance ? 'status-maintenance' :
-              room.isAvailable === false ? 'status-busy' :
+            <Badge variant="outline" className={
+              room.status === 'MAINTENANCE' || room.isUnderMaintenance ? 'status-maintenance' :
+              room.status === 'BUSY' || (room.isAvailable === false && !room.isUnderMaintenance) ? 'status-busy' :
               'status-free'
             }>
-              {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'OCCUPÉ' : 'LIBRE'}
+              {room.status === 'MAINTENANCE' || room.isUnderMaintenance ? 'MAINTENANCE' : 
+               room.status === 'BUSY' || (room.isAvailable === false && !room.isUnderMaintenance) ? 'OCCUPÉ' : 
+               'LIBRE'}
             </Badge>
           </div>
         ))}

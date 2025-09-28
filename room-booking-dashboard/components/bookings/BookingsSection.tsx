@@ -160,8 +160,7 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
 
   const getStatusText = (status: BookingStatus) => {
     switch (status) {
-      case 'PENDING':
-        return 'En attente';
+    
       case 'APPROVED':
         return 'Approuvée';
       case 'ONGOING':
@@ -254,7 +253,7 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="PENDING">En attente</SelectItem>
+             
                 <SelectItem value="APPROVED">Approuvée</SelectItem>
                 <SelectItem value="ONGOING">En cours</SelectItem>
                 <SelectItem value="REJECTED">Refusée</SelectItem>

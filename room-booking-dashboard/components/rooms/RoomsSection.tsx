@@ -48,9 +48,9 @@ export function RoomsSection() {
       
       // Status filter
       const matchesStatus = statusFilter === 'all' || 
-        (statusFilter === 'MAINTENANCE' && room.isUnderMaintenance) ||
-        (statusFilter === 'BUSY' && room.isAvailable === false) ||
-        (statusFilter === 'FREE' && !room.isUnderMaintenance && room.isAvailable !== false);
+        (statusFilter === 'MAINTENANCE' && room.status === 'MAINTENANCE') ||
+        (statusFilter === 'BUSY' && room.status === 'BUSY') ||
+        (statusFilter === 'FREE' && room.status === 'FREE');
       
       // Department filter
       const matchesDepartment = departmentFilter === 'all' || room.departmentId === departmentFilter;

@@ -278,7 +278,9 @@ export class ConflictsService {
     const conflictingBooking = await this.prisma.booking.findFirst({
       where: {
         roomId,
-        status: BookingStatus.APPROVED,
+        status: {
+          in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+        },
         id: excludeBookingId ? { not: excludeBookingId } : undefined,
         OR: [
           {

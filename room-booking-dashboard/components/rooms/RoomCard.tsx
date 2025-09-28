@@ -24,6 +24,7 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
     apiUtils.isBookingActive(booking.startTime, booking.endTime)
   );
 
+
   return (
     <Card className="card-albaraka group hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-4">
@@ -49,12 +50,14 @@ export function RoomCard({ room, onEdit, onBook, onDelete, onToggleMaintenance, 
               )}
             </div>
           </div>
-          <Badge className={
-            room.isUnderMaintenance ? 'status-maintenance' :
-            room.isAvailable === false ? 'status-busy' :
+          <Badge variant="outline" className={
+            room.status === 'MAINTENANCE' || room.isUnderMaintenance ? 'status-maintenance' :
+            room.status === 'BUSY' || (room.isAvailable === false && !room.isUnderMaintenance) ? 'status-busy' :
             'status-free'
           }>
-            {room.isUnderMaintenance ? 'MAINTENANCE' : room.isAvailable === false ? 'OCCUPÉ' : 'LIBRE'}
+            {room.status === 'MAINTENANCE' || room.isUnderMaintenance ? 'MAINTENANCE' : 
+             room.status === 'BUSY' || (room.isAvailable === false && !room.isUnderMaintenance) ? 'OCCUPÉ' : 
+             'LIBRE'}
           </Badge>
         </div>
       </CardHeader>

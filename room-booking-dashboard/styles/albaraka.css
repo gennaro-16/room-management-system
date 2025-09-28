@@ -102,28 +102,26 @@
 }
 
 .status-free {
-  background-color: rgba(218, 83, 52, 0.1);
-  color: var(--albaraka-secondary);
-  border: 1px solid rgba(218, 83, 52, 0.2);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%) !important;
+  color: rgb(22, 163, 74) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  font-weight: 600;
 }
 
 .status-busy {
-  background-color: rgba(83, 88, 94, 0.1);
-  color: var(--albaraka-primary);
-  border: 1px solid rgba(83, 88, 94, 0.2);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%) !important;
+  color: rgb(185, 28, 28) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  font-weight: 600;
 }
 
 .status-maintenance {
-  background-color: rgba(127, 73, 54, 0.1);
-  color: var(--albaraka-dark);
-  border: 1px solid rgba(127, 73, 54, 0.2);
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(107, 114, 128, 0.05) 100%) !important;
+  color: rgb(75, 85, 99) !important;
+  border: 1px solid rgba(107, 114, 128, 0.3) !important;
+  font-weight: 600;
 }
 
-.status-reserved {
-  background-color: rgba(151, 141, 132, 0.1);
-  color: var(--albaraka-neutral);
-  border: 1px solid rgba(151, 141, 132, 0.2);
-}
 
 /* Sidebar enhancements */
 .sidebar-albaraka {
@@ -405,26 +403,6 @@
   font-weight: 600;
 }
 
-.status-free {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
-  color: rgb(22, 163, 74);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  font-weight: 600;
-}
-
-.status-busy {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-  color: rgb(185, 28, 28);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  font-weight: 600;
-}
-
-.status-maintenance {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
-  color: rgb(180, 83, 9);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  font-weight: 600;
-}
 
 .status-reserved {
   background: linear-gradient(135deg, rgba(151, 141, 132, 0.1) 0%, rgba(151, 141, 132, 0.05) 100%);

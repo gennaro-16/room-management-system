@@ -176,7 +176,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
     }));
   };
 
-  const availableRooms = (rooms || []).filter(room => !room.isUnderMaintenance && room.isAvailable !== false);
+  const availableRooms = (rooms || []).filter(room => room.status === 'FREE');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

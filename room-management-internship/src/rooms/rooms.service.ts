@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ForbiddenException 
 import { PrismaService } from '@prisma/prisma.service';
 import { CreateRoomDto } from '../dto/create-room.dto';
 import { UpdateRoomDto } from '../dto/update-room.dto';
-import { User, UserRole, BookingStatus } from '@prisma/client';
+import { User, UserRole, BookingStatus, RoomStatus } from '@prisma/client';
 
 @Injectable()
 export class RoomsService {
@@ -44,6 +44,7 @@ export class RoomsService {
         height: true,
         departmentId: true,
         department: true,
+        status: true,
         isUnderMaintenance: true,
         maintenanceNotes: true,
         createdAt: true,
@@ -99,6 +100,7 @@ export class RoomsService {
         height: true,
         departmentId: true,
         department: true,
+        status: true,
         isUnderMaintenance: true,
         maintenanceNotes: true,
         createdAt: true,
@@ -242,6 +244,7 @@ export class RoomsService {
         height: true,
         departmentId: true,
         department: true,
+        status: true,
         isUnderMaintenance: true,
         maintenanceNotes: true,
         createdAt: true,
@@ -263,11 +266,13 @@ export class RoomsService {
       };
     }
 
-    // Check for conflicting approved bookings
+    // Check for conflicting approved or ongoing bookings
     const conflictingBooking = await this.prisma.booking.findFirst({
       where: {
         roomId,
-        status: BookingStatus.APPROVED,
+        status: {
+          in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+        },
         OR: [
           {
             startTime: {

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '@prisma/prisma.service';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus, RoomStatus } from '@prisma/client';
 
 @Injectable()
 export class BookingStatusCronService {
@@ -74,8 +74,78 @@ export class BookingStatusCronService {
         this.logger.log(`Updated ${approvedToCompletedResult.count} APPROVED bookings to COMPLETED status`);
       }
 
+      // Update room statuses based on active bookings
+      await this.updateRoomStatuses();
+
     } catch (error) {
       this.logger.error('Error updating booking statuses:', error);
+    }
+  }
+
+  /**
+   * Update room statuses based on current bookings
+   */
+  async updateRoomStatuses() {
+    const now = new Date();
+    
+    try {
+      // Get all rooms with their current bookings
+      const rooms = await this.prisma.room.findMany({
+        include: {
+          bookings: {
+            where: {
+              status: {
+                in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+              },
+              OR: [
+                // Ongoing bookings (current time is within booking interval)
+                {
+                  startTime: { lte: now },
+                  endTime: { gte: now }
+                }
+              ]
+            }
+          }
+        }
+      });
+
+      // Update room statuses
+      for (const room of rooms) {
+        let newStatus: RoomStatus;
+
+        if (room.isUnderMaintenance) {
+          newStatus = RoomStatus.MAINTENANCE;
+        } else if (room.bookings.length > 0) {
+          // Check if any booking is currently ongoing
+          const hasOngoingBooking = room.bookings.some(booking => 
+            booking.startTime <= now && booking.endTime >= now
+          );
+          
+          if (hasOngoingBooking) {
+            newStatus = RoomStatus.BUSY;
+          } else {
+            // Has approved bookings but not currently ongoing - keep as FREE
+            // (future bookings don't make room BUSY until they start)
+            newStatus = RoomStatus.FREE;
+          }
+        } else {
+          newStatus = RoomStatus.FREE;
+        }
+
+        // Update room status if it has changed
+        if (room.status !== newStatus) {
+          await this.prisma.room.update({
+            where: { id: room.id },
+            data: { status: newStatus }
+          });
+          
+          this.logger.debug(`Updated room ${room.name} status from ${room.status} to ${newStatus}`);
+        }
+      }
+
+      this.logger.debug('Room status update completed');
+    } catch (error) {
+      this.logger.error('Error updating room statuses:', error);
     }
   }
 

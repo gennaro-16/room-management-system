@@ -40,11 +40,13 @@ export class BookingsService {
       throw new BadRequestException('Cannot book rooms in the past');
     }
 
-    // Check for conflicting approved bookings; if conflict, return user-facing error (no suggestions)
+    // Check for conflicting approved or ongoing bookings; if conflict, return user-facing error (no suggestions)
     const conflictingBooking = await this.prisma.booking.findFirst({
       where: {
         roomId,
-        status: BookingStatus.APPROVED,
+        status: {
+          in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+        },
         OR: [
           {
             startTime: {
@@ -193,7 +195,9 @@ export class BookingsService {
     const conflictingBooking = await this.prisma.booking.findFirst({
       where: {
         roomId: booking.roomId,
-        status: BookingStatus.APPROVED,
+        status: {
+          in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+        },
         id: { not: id },
         OR: [
           {
@@ -390,7 +394,9 @@ export class BookingsService {
       where: {
         roomId: targetRoomId,
         id: { not: id },
-        status: BookingStatus.APPROVED,
+        status: {
+          in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+        },
         OR: [
           {
             startTime: { lt: newEnd },
@@ -666,7 +672,9 @@ export class BookingsService {
       where: {
         roomId: dto.newRoomId,
         id: { not: id },
-        status: BookingStatus.APPROVED,
+        status: {
+          in: [BookingStatus.APPROVED, BookingStatus.ONGOING]
+        },
         OR: [
           {
             startTime: { lt: end },

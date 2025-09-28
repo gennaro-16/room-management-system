@@ -146,10 +146,9 @@ export const statusColors = {
  * Room status colors
  */
 export const roomStatusColors = {
-  FREE: alBarakaColors.secondary[600], // Red/orange for free
-  BUSY: alBarakaColors.primary[600], // Dark gray for busy
-  MAINTENANCE: alBarakaColors.dark[600], // Brown for maintenance
-  RESERVED: alBarakaColors.neutral[600], // Beige for reserved
+  FREE: '#16a34a', // Green for free
+  BUSY: '#dc2626', // Red for busy
+  MAINTENANCE: '#6b7280', // Grey for maintenance
 } as const;
 
 /**

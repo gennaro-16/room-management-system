@@ -26,7 +26,7 @@ export interface User {
 }
 
 export type UserRole = 'ADMIN' | 'EMPLOYEE' | 'GUEST';
-export type RoomStatus = 'FREE' | 'BUSY' | 'MAINTENANCE' | 'RESERVED';
+export type RoomStatus = 'FREE' | 'BUSY' | 'MAINTENANCE';
 
 export interface LoginDto {
   email: string;
@@ -66,6 +66,7 @@ export interface Room {
   y?: number;
   width?: number;
   height?: number;
+  status: RoomStatus;
   isUnderMaintenance: boolean;
   maintenanceNotes?: string;
   isAvailable?: boolean;
