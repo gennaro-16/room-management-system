@@ -45,6 +45,14 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
     return booking.organizerId === user.id;
   };
 
+  // Debug logging
+  console.log('BookingsSection Debug:', {
+    user: user?.username,
+    isAdmin: isAdmin(),
+    bookingsCount: bookings?.length,
+    cancellableBookings: bookings?.filter(b => b.status === 'PENDING' || b.status === 'APPROVED' || b.status === 'ONGOING').length
+  });
+
   // Filter bookings based on search and filters - show all booking states
   const filteredBookings = useMemo(() => {
     if (!bookings) return [];
@@ -100,9 +108,11 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
     try {
       await cancelBooking(bookingId);
       refetch();
+      console.log('Booking cancelled successfully');
     } catch (error) {
       console.error('Error deleting booking:', error);
-      // Error is handled by the cancelBooking hook
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      alert(`Erreur lors de la suppression: ${errorMessage}`);
     }
   };
 
@@ -340,15 +350,23 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
                             Modifier
                           </Button>
                         )}
-                        {canModifyBooking(booking) && (
+                        {canModifyBooking(booking) ? (
                           <Button
                             variant="outline"
                             size="sm"
                             className="text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteBooking(booking.id)}
+                            onClick={() => {
+                              console.log('Delete button clicked for booking:', booking.id, booking.status);
+                              handleDeleteBooking(booking.id);
+                            }}
+                            title={`Supprimer la réservation (${booking.status})`}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground" title={`Cannot modify: ${booking.status}`}>
+                            {booking.status}
+                          </span>
                         )}
                       </div>
                     </div>
