@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UpdateBookingDto, Booking, BookingStatus, User } from '@/lib/api';
+import { UpdateBookingDto, Booking, BookingStatus, User, roomsApi } from '@/lib/api';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { useUsers, useRooms } from '@/hooks/useApi';
@@ -56,6 +56,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
   const [externalInput, setExternalInput] = useState('');
   const [internalInput, setInternalInput] = useState('');
   const [amenitiesInput, setAmenitiesInput] = useState('');
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   // No longer using IDs for internal attendees; handled as names (string[])
 
   const isAdminRole = hasRole(['ADMIN']);
@@ -94,9 +95,29 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
     e.preventDefault();
     if (!booking) return;
     
+    setFormErrors({});
+    
     try {
       const startDateTime = new Date(`${selectedDate}T${startTime}`).toISOString();
       const endDateTime = new Date(`${selectedDate}T${endTime}`).toISOString();
+      const roomId = selectedRoomId ?? booking.roomId;
+
+      // Check room availability before updating booking
+      try {
+        const availability = await roomsApi.getAvailability(roomId, startDateTime, endDateTime);
+        if (!availability.isAvailable) {
+          setFormErrors({
+            roomId: `Cette salle est déjà réservée à cette heure. ${availability.reason}`
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking room availability:', error);
+        setFormErrors({
+          roomId: 'Erreur lors de la vérification de la disponibilité de la salle'
+        });
+        return;
+      }
 
       await onSubmit(booking.id, {
         ...formData,
@@ -188,6 +209,9 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
                   ))}
                 </SelectContent>
               </Select>
+              {formErrors.roomId && (
+                <p className="text-sm text-destructive">{formErrors.roomId}</p>
+              )}
             </div>
           </div>
 

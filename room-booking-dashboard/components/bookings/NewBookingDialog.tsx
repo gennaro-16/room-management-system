@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreateBookingDto, Room, BookingStatus } from '@/lib/api';
+import { CreateBookingDto, Room, BookingStatus, roomsApi } from '@/lib/api';
 import { useRooms } from '@/hooks/useApi';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
@@ -104,6 +104,25 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
     try {
       const startDateTime = new Date(`${selectedDate}T${startTime}`).toISOString();
       const endDateTime = new Date(`${selectedDate}T${endTime}`).toISOString();
+
+      // Check room availability before creating booking
+      if (formData.roomId) {
+        try {
+          const availability = await roomsApi.getAvailability(formData.roomId, startDateTime, endDateTime);
+          if (!availability.isAvailable) {
+            setFormErrors({
+              roomId: `Cette salle est déjà réservée à cette heure. ${availability.reason}`
+            });
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking room availability:', error);
+          setFormErrors({
+            roomId: 'Erreur lors de la vérification de la disponibilité de la salle'
+          });
+          return;
+        }
+      }
 
       await onSubmit({
         ...formData,
