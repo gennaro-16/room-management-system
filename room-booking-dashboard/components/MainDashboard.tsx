@@ -119,6 +119,19 @@ export function MainDashboard() {
       case 'profile':
         return <DashboardProfile />;
       case 'documentation':
+        if (!isAdmin) {
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle>Accès refusé</CardTitle>
+                <CardDescription>Vous n'avez pas la permission d'accéder à cette section</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Seuls les administrateurs peuvent accéder à la documentation.</p>
+              </CardContent>
+            </Card>
+          );
+        }
         return <DocumentationPage />;
       case 'settings':
         return (

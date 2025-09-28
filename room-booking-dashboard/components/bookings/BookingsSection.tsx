@@ -13,6 +13,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { NewBookingDialog } from './NewBookingDialog';
 import { EditBookingDialog } from './EditBookingDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
@@ -22,11 +23,27 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [expandedBookings, setExpandedBookings] = useState<Set<number>>(new Set());
 
+  const { user, isAdmin } = useAuth();
   const { data: bookings, loading, error, refetch } = useBookings();
   console.log('Bookings data:', bookings);
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
   const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
   const { cancelBooking, loading: deleteLoading, error: deleteError } = useCancelBooking();
+
+  // Helper function to check if current user can modify a booking
+  const canModifyBooking = (booking: Booking): boolean => {
+    if (!user) return false;
+    
+    // Cannot modify completed, cancelled, or rejected bookings
+    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED' || booking.status === 'REJECTED') {
+      return false;
+    }
+    
+    // Admins can modify any non-final booking
+    if (isAdmin()) return true;
+    // Employees can only modify their own bookings
+    return booking.organizerId === user.id;
+  };
 
   // Filter bookings based on search and filters - show all booking states
   const filteredBookings = useMemo(() => {
@@ -61,11 +78,51 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   };
 
   const handleDeleteBooking = async (bookingId: number) => {
-    await cancelBooking(bookingId);
-    refetch();
+    const booking = bookings?.find(b => b.id === bookingId);
+    if (!booking) return;
+    
+    // Check authorization
+    if (!canModifyBooking(booking)) {
+      let errorMessage = 'Vous n\'êtes pas autorisé à supprimer cette réservation.';
+      if (booking.status === 'COMPLETED') {
+        errorMessage = 'Impossible de supprimer une réservation terminée.';
+      } else if (booking.status === 'CANCELLED') {
+        errorMessage = 'Impossible de supprimer une réservation déjà annulée.';
+      } else if (booking.status === 'REJECTED') {
+        errorMessage = 'Impossible de supprimer une réservation rejetée.';
+      } else if (booking.organizerId !== user?.id) {
+        errorMessage = 'Vous ne pouvez supprimer que vos propres réservations.';
+      }
+      alert(errorMessage);
+      return;
+    }
+    
+    try {
+      await cancelBooking(bookingId);
+      refetch();
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      // Error is handled by the cancelBooking hook
+    }
   };
 
   const handleEditClick = (booking: Booking) => {
+    // Check authorization
+    if (!canModifyBooking(booking)) {
+      let errorMessage = 'Vous n\'êtes pas autorisé à modifier cette réservation.';
+      if (booking.status === 'COMPLETED') {
+        errorMessage = 'Impossible de modifier une réservation terminée.';
+      } else if (booking.status === 'CANCELLED') {
+        errorMessage = 'Impossible de modifier une réservation annulée.';
+      } else if (booking.status === 'REJECTED') {
+        errorMessage = 'Impossible de modifier une réservation rejetée.';
+      } else if (booking.organizerId !== user?.id) {
+        errorMessage = 'Vous ne pouvez modifier que vos propres réservations.';
+      }
+      alert(errorMessage);
+      return;
+    }
+    
     setSelectedBooking(booking);
     setIsEditBookingOpen(true);
   };
@@ -167,10 +224,7 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
           <p className="text-muted-foreground">View and manage all room reservations</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => onOpenFull && onOpenFull()}>
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Open full bookings view
-          </Button>
+ 
           <Button onClick={() => setIsNewBookingOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Nouvelle réservation
@@ -277,22 +331,26 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
                           )}
                           {isExpanded ? 'Moins de détails' : 'Détails'}
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEditClick(booking)}
-                        >
-                          <Edit className="h-3 w-3 mr-1" />
-                          Modifier
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => handleDeleteBooking(booking.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                        {canModifyBooking(booking) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditClick(booking)}
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Modifier
+                          </Button>
+                        )}
+                        {canModifyBooking(booking) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteBooking(booking.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
 

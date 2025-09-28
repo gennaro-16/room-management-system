@@ -29,10 +29,10 @@ const getSidebarItems = (isAdmin: boolean) => [
      { icon: UsersRound, label: 'Visiteurs', id: 'Visiteurs' },
      { icon: BarChart3, label: 'statistiques', id: 'statistiques' },
     { icon: Building2, label: 'Départements', id: 'departments' },
-    { icon: Users, label: 'Gestion des utilisateurs', id: 'users' }
+    { icon: Users, label: 'Gestion des utilisateurs', id: 'users' },
+    { icon: FileText, label: 'Documentation', id: 'documentation' }
   ] : []),
-  { icon: UserCircle, label: 'Profil', id: 'profile' },
-  { icon: FileText, label: 'Documentation', id: 'documentation' }];
+  { icon: UserCircle, label: 'Profil', id: 'profile' }];
 
 interface SidebarProps {
   activeSection: string;

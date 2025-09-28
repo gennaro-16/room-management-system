@@ -31,8 +31,8 @@ export default function DepartmentsManagement() {
     try {
       const payload = {
         name: form.name.trim(),
-        description: form.description?.trim() || undefined,
-        floor: form.floor ? Number(form.floor) : undefined,
+        description: form.description?.trim() || null,
+        floor: form.floor ? Number(form.floor) : null,
       };
       if (!payload.name) {
         setFormError('Name is required');
@@ -45,7 +45,10 @@ export default function DepartmentsManagement() {
       }
       resetForm();
       refetch();
-    } catch {}
+    } catch (error) {
+      console.error('Error submitting department:', error);
+      setFormError(error instanceof Error ? error.message : 'An error occurred');
+    }
   };
 
   const onEdit = (dept: any) => {

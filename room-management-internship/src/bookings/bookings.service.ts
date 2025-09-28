@@ -347,8 +347,8 @@ export class BookingsService {
       if (!isOwner) {
         throw new ForbiddenException('Insufficient permissions');
       }
-      if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED) {
-        throw new BadRequestException('Cannot update rejected or cancelled bookings');
+      if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED || existingBooking.status === BookingStatus.COMPLETED) {
+        throw new BadRequestException('Cannot update rejected, cancelled, or completed bookings');
       }
       // Keep bookings as APPROVED when updated (no re-approval needed)
       if (existingBooking.status === BookingStatus.APPROVED) {
@@ -362,8 +362,8 @@ export class BookingsService {
       }
     } else if (isAdminRole) {
       // Admins, Super Admins, and Directors can update approved bookings
-      if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED) {
-        throw new BadRequestException('Cannot update rejected or cancelled bookings');
+      if (existingBooking.status === BookingStatus.REJECTED || existingBooking.status === BookingStatus.CANCELLED || existingBooking.status === BookingStatus.COMPLETED) {
+        throw new BadRequestException('Cannot update rejected, cancelled, or completed bookings');
       }
     } else {
       throw new ForbiddenException('Insufficient permissions');

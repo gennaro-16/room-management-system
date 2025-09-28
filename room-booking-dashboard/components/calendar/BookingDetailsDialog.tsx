@@ -10,6 +10,7 @@ import { Clock, Users, MapPin, Calendar, User, FileText, Trash2, Edit, MoveRight
 import { format, parseISO } from 'date-fns';
 import { Booking, Room } from '@/lib/api';
 import { CalendarUtils } from './CalendarUtils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BookingDetailsDialogProps {
   booking: Booking | null;
@@ -30,7 +31,24 @@ export function BookingDetailsDialog({
   onDelete,
   onMove
 }: BookingDetailsDialogProps) {
+  const { user, isAdmin } = useAuth();
+  
   if (!booking) return null;
+
+  // Helper function to check if current user can modify a booking
+  const canModifyBooking = (booking: Booking): boolean => {
+    if (!user) return false;
+    
+    // Cannot modify completed, cancelled, or rejected bookings
+    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED' || booking.status === 'REJECTED') {
+      return false;
+    }
+    
+    // Admins can modify any non-final booking
+    if (isAdmin()) return true;
+    // Employees can only modify their own bookings
+    return booking.organizerId === user.id;
+  };
 
   const startTime = parseISO(booking.startTime);
   const endTime = parseISO(booking.endTime);
@@ -201,19 +219,19 @@ export function BookingDetailsDialog({
             <Button variant="outline" onClick={onClose} className="flex-1 order-last sm:order-first bg-transparent">
               Fermer
             </Button>
-            {onEdit && (
+            {onEdit && canModifyBooking(booking) && (
               <Button variant="outline" onClick={handleEdit} className="flex-1 bg-transparent">
                 <Edit className="h-4 w-4 mr-2" />
                 <span className="truncate">Modifier</span>
               </Button>
             )}
-            {onMove && (
+            {onMove && canModifyBooking(booking) && (
               <Button variant="secondary" onClick={handleMove} className="flex-1">
                 <MoveRight className="h-4 w-4 mr-2" />
                 <span className="truncate">Déplacer</span>
               </Button>
             )}
-            {onDelete && (
+            {onDelete && canModifyBooking(booking) && (
               <Button variant="destructive" onClick={handleDelete} className="flex-1">
                 <Trash2 className="h-4 w-4 mr-2" />
                 <span className="truncate">Supprimer</span>

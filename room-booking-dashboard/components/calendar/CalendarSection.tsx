@@ -34,7 +34,7 @@ interface CalendarEvent {
 }
 
 export function CalendarSection() {
-  const { hasRole } = useAuth();
+  const { hasRole, user, isAdmin } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -55,6 +55,21 @@ export function CalendarSection() {
   const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
 
   const isAdminRole = hasRole(['ADMIN']);
+
+  // Helper function to check if current user can modify a booking
+  const canModifyBooking = (booking: Booking): boolean => {
+    if (!user) return false;
+    
+    // Cannot modify completed, cancelled, or rejected bookings
+    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED' || booking.status === 'REJECTED') {
+      return false;
+    }
+    
+    // Admins can modify any non-final booking
+    if (isAdmin()) return true;
+    // Employees can only modify their own bookings
+    return booking.organizerId === user.id;
+  };
 
   // Load data
   useEffect(() => {
@@ -207,11 +222,53 @@ export function CalendarSection() {
   };
 
   const handleEditBooking = (booking: Booking) => {
+    // Check authorization
+    if (!canModifyBooking(booking)) {
+      let errorMessage = "Vous n'êtes pas autorisé à modifier cette réservation.";
+      if (booking.status === 'COMPLETED') {
+        errorMessage = "Impossible de modifier une réservation terminée.";
+      } else if (booking.status === 'CANCELLED') {
+        errorMessage = "Impossible de modifier une réservation annulée.";
+      } else if (booking.status === 'REJECTED') {
+        errorMessage = "Impossible de modifier une réservation rejetée.";
+      } else if (booking.organizerId !== user?.id) {
+        errorMessage = "Vous ne pouvez modifier que vos propres réservations.";
+      }
+      
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSelectedBooking(booking);
     setIsEditBookingOpen(true);
   };
 
   const handleDeleteBooking = async (booking: Booking) => {
+    // Check authorization
+    if (!canModifyBooking(booking)) {
+      let errorMessage = "Vous n'êtes pas autorisé à supprimer cette réservation.";
+      if (booking.status === 'COMPLETED') {
+        errorMessage = "Impossible de supprimer une réservation terminée.";
+      } else if (booking.status === 'CANCELLED') {
+        errorMessage = "Impossible de supprimer une réservation déjà annulée.";
+      } else if (booking.status === 'REJECTED') {
+        errorMessage = "Impossible de supprimer une réservation rejetée.";
+      } else if (booking.organizerId !== user?.id) {
+        errorMessage = "Vous ne pouvez supprimer que vos propres réservations.";
+      }
+      
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       await bookingsApi.cancel(booking.id);
       toast({
