@@ -6,7 +6,7 @@ import { Header } from './dashboard/Header';
 import { DashboardSection } from './dashboard/DashboardSection';
 import { RoomsSection } from './rooms/RoomsSection';
 import { BookingsSection } from './bookings/BookingsSection';
-import BookingGrid from '@/app/bookings/bookings-grid';
+// import BookingGrid from '@/app/bookings/bookings-grid';
 import { CalendarSection } from './calendar/CalendarSection';
 import { UserManagement } from './admin/UserManagement';
 import { DashboardProfile } from './dashboard/DashboardProfile';
@@ -45,7 +45,7 @@ export function MainDashboard() {
       case 'calendar':
         return <CalendarSection />;
       case 'bookings-full':
-        return <BookingGrid />;
+        return <BookingsSection onOpenFull={() => setActiveSection('bookings-full')} />;
       case 'conflicts':
         if (!isAdmin) {
           return (

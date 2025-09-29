@@ -65,7 +65,7 @@ export function Header({ activeSection, onSidebarToggle }: HeaderProps) {
           <div
             role="button"
             className="rounded-full overflow-hidden cursor-pointer"
-            onClick={() => router.push('/profile')}
+            onClick={() => { /* profile route removed */ }}
           >
             <UserProfile />
           </div>

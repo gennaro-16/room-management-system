@@ -87,7 +87,7 @@ export function UserProfile() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/profile')}>
+        <DropdownMenuItem onClick={() => { /* profile route removed */ }}>
           <UserCircle className="mr-2 h-4 w-4" />
           <span>Voir le profil</span>
         </DropdownMenuItem>
