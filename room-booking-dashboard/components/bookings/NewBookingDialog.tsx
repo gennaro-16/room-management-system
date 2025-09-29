@@ -18,6 +18,16 @@ import { useRooms } from '@/hooks/useApi';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorAlert } from '@/components/ErrorAlert';
 import { emitBookingsChanged } from '@/lib/events';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface NewBookingDialogProps {
   open: boolean;
@@ -51,6 +61,8 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
   const [internalInput, setInternalInput] = useState('');
   const [amenitiesInput, setAmenitiesInput] = useState('');
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [confirmCapacityOpen, setConfirmCapacityOpen] = useState(false);
+  const [suggestedRooms, setSuggestedRooms] = useState<Room[]>([]);
 
   useEffect(() => {
     // Set default date to today
@@ -58,49 +70,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
     setSelectedDate(today);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormErrors({});
-
-    const errors: { [key: string]: string } = {};
-
-    // Basic validations
-    if (!formData.roomId) {
-      errors.roomId = 'Veuillez sélectionner une salle';
-    }
-    if (!selectedDate) {
-      errors.selectedDate = 'Veuillez sélectionner une date';
-    } else {
-      const todayStr = new Date().toISOString().split('T')[0];
-      if (selectedDate < todayStr) {
-        errors.selectedDate = 'La date ne peut pas être dans le passé';
-      }
-    }
-    if (!startTime) {
-      errors.startTime = "L'heure de début est requise";
-    }
-    if (!endTime) {
-      errors.endTime = "L'heure de fin est requise";
-    }
-    if (selectedDate && startTime && endTime) {
-      const start = new Date(`${selectedDate}T${startTime}`);
-      const end = new Date(`${selectedDate}T${endTime}`);
-      if (end <= start) {
-        errors.endTime = "L'heure de fin doit être après l'heure de début";
-      }
-    }
-    if (!formData.title.trim()) {
-      errors.title = 'Le titre est requis';
-    }
-    if (!formData.purpose.trim()) {
-      errors.purpose = "L'objectif est requis";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-
+  const performSubmit = async () => {
     try {
       const startDateTime = new Date(`${selectedDate}T${startTime}`).toISOString();
       const endDateTime = new Date(`${selectedDate}T${endTime}`).toISOString();
@@ -169,6 +139,70 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormErrors({});
+
+    const errors: { [key: string]: string } = {};
+
+    // Basic validations
+    if (!formData.roomId) {
+      errors.roomId = 'Veuillez sélectionner une salle';
+    }
+    if (!selectedDate) {
+      errors.selectedDate = 'Veuillez sélectionner une date';
+    } else {
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (selectedDate < todayStr) {
+        errors.selectedDate = 'La date ne peut pas être dans le passé';
+      }
+    }
+    if (!startTime) {
+      errors.startTime = "L'heure de début est requise";
+    }
+    if (!endTime) {
+      errors.endTime = "L'heure de fin est requise";
+    }
+    if (selectedDate && startTime && endTime) {
+      const start = new Date(`${selectedDate}T${startTime}`);
+      const end = new Date(`${selectedDate}T${endTime}`);
+      if (end <= start) {
+        errors.endTime = "L'heure de fin doit être après l'heure de début";
+      }
+    }
+    if (!formData.title.trim()) {
+      errors.title = 'Le titre est requis';
+    }
+    if (!formData.purpose.trim()) {
+      errors.purpose = "L'objectif est requis";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    // Capacity underutilization check
+    const selectedRoom = (rooms || []).find(r => r.id === formData.roomId);
+    if (selectedRoom && formData.expectedAttendees > 0) {
+      const ratio = formData.expectedAttendees / selectedRoom.capacity;
+      if (ratio < 0.5) {
+        // Suggest rooms closer to attendees count
+        const suggestions = (rooms || [])
+          .filter(r => r.status === 'FREE')
+          .filter(r => r.capacity >= formData.expectedAttendees)
+          .filter(r => r.capacity <= Math.max(formData.expectedAttendees + 5, Math.ceil(formData.expectedAttendees * 1.5)))
+          .sort((a, b) => a.capacity - b.capacity)
+          .slice(0, 5);
+        setSuggestedRooms(suggestions);
+        setConfirmCapacityOpen(true);
+        return;
+      }
+    }
+
+    await performSubmit();
+  };
+
   const handleInputChange = (field: keyof CreateBookingDto, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -179,6 +213,7 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
   const availableRooms = (rooms || []).filter(room => room.status === 'FREE');
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
@@ -413,5 +448,48 @@ export function NewBookingDialog({ open, onOpenChange, onSubmit, loading, error 
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Capacity fit confirmation */}
+    <AlertDialog open={confirmCapacityOpen} onOpenChange={setConfirmCapacityOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Capacité de la salle trop élevée</AlertDialogTitle>
+          <AlertDialogDescription>
+            Le nombre de participants est bien inférieur à la capacité de la salle choisie. Voulez-vous continuer ou choisir une salle plus adaptée ?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {suggestedRooms.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Salles suggérées (capacité plus proche) :</div>
+            <div className="flex flex-wrap gap-2">
+              {suggestedRooms.map((room) => (
+                <Button
+                  key={room.id}
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, roomId: room.id }));
+                  }}
+                >
+                  {room.name} — {room.capacity}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogCancel>Choisir une autre salle</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={async () => {
+              setConfirmCapacityOpen(false);
+              await performSubmit();
+            }}
+          >
+            Continuer quand même
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

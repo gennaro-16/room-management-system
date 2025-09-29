@@ -14,6 +14,16 @@ import { ErrorAlert } from '@/components/ErrorAlert';
 import { NewBookingDialog } from './NewBookingDialog';
 import { EditBookingDialog } from './EditBookingDialog';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   const [isNewBookingOpen, setIsNewBookingOpen] = useState(false);
@@ -22,6 +32,8 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
   const [expandedBookings, setExpandedBookings] = useState<Set<number>>(new Set());
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const { user, isAdmin } = useAuth();
   const { data: bookings, loading, error, refetch } = useBookings();
@@ -379,7 +391,8 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
                             className="text-destructive hover:text-destructive"
                             onClick={() => {
                               console.log('Delete button clicked for booking:', booking.id, booking.status);
-                              handleDeleteBooking(booking.id);
+                              setPendingDeleteId(booking.id);
+                              setConfirmDeleteOpen(true);
                             }}
                             title={`Supprimer la réservation (${booking.status})`}
                           >
@@ -765,6 +778,39 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
         loading={updateLoading}
         error={updateError}
       />
+
+      {/* Confirm Delete Dialog */}
+      <AlertDialog
+        open={confirmDeleteOpen}
+        onOpenChange={(open) => {
+          setConfirmDeleteOpen(open)
+          if (!open) setPendingDeleteId(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette réservation ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Êtes-vous sûr de vouloir supprimer cette réservation ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (pendingDeleteId != null) {
+                  await handleDeleteBooking(pendingDeleteId);
+                }
+                setConfirmDeleteOpen(false);
+                setPendingDeleteId(null);
+              }}
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

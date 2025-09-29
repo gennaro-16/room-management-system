@@ -19,6 +19,16 @@ import { ErrorAlert } from '@/components/ErrorAlert';
 import { useUsers, useRooms } from '@/hooks/useApi';
 import { emitBookingsChanged } from '@/lib/events';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface EditBookingDialogProps {
   open: boolean;
@@ -57,6 +67,8 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
   const [internalInput, setInternalInput] = useState('');
   const [amenitiesInput, setAmenitiesInput] = useState('');
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [confirmCapacityOpen, setConfirmCapacityOpen] = useState(false);
+  const [suggestedRooms, setSuggestedRooms] = useState<any[]>([]);
   // No longer using IDs for internal attendees; handled as names (string[])
 
   const isAdminRole = hasRole(['ADMIN']);
@@ -91,12 +103,8 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
     }
   }, [booking]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const performSubmit = async () => {
     if (!booking) return;
-    
-    setFormErrors({});
-    
     try {
       const startDateTime = new Date(`${selectedDate}T${startTime}`).toISOString();
       const endDateTime = new Date(`${selectedDate}T${endTime}`).toISOString();
@@ -143,6 +151,31 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!booking) return;
+    setFormErrors({});
+
+    // Capacity underutilization check
+    const room = (rooms || []).find(r => r.id === (selectedRoomId ?? booking.roomId));
+    if (room && (formData.expectedAttendees || 0) > 0) {
+      const ratio = (formData.expectedAttendees || 0) / room.capacity;
+      if (ratio < 0.5) {
+        const suggestions = (rooms || [])
+          .filter(r => r.status === 'FREE')
+          .filter(r => r.capacity >= (formData.expectedAttendees || 0))
+          .filter(r => r.capacity <= Math.max((formData.expectedAttendees || 0) + 5, Math.ceil((formData.expectedAttendees || 0) * 1.5)))
+          .sort((a, b) => a.capacity - b.capacity)
+          .slice(0, 5);
+        setSuggestedRooms(suggestions);
+        setConfirmCapacityOpen(true);
+        return;
+      }
+    }
+
+    await performSubmit();
+  };
+
   const handleInputChange = (field: keyof UpdateBookingDto, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
@@ -159,6 +192,7 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
   if (!booking) return null;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
@@ -332,5 +366,48 @@ export function EditBookingDialog({ open, onOpenChange, booking, onSubmit, loadi
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Capacity fit confirmation */}
+    <AlertDialog open={confirmCapacityOpen} onOpenChange={setConfirmCapacityOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Capacité de la salle trop élevée</AlertDialogTitle>
+          <AlertDialogDescription>
+            Le nombre de participants est bien inférieur à la capacité de la salle choisie. Voulez-vous continuer ou choisir une salle plus adaptée ?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {suggestedRooms.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Salles suggérées (capacité plus proche) :</div>
+            <div className="flex flex-wrap gap-2">
+              {suggestedRooms.map((room) => (
+                <Button
+                  key={room.id}
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedRoomId(room.id);
+                  }}
+                >
+                  {room.name} — {room.capacity}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogCancel>Choisir une autre salle</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={async () => {
+              setConfirmCapacityOpen(false);
+              await performSubmit();
+            }}
+          >
+            Continuer quand même
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

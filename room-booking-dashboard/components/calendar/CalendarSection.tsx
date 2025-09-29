@@ -551,7 +551,7 @@ export function CalendarSection() {
           bookings={getBookingsForSelectedDate()} 
           rooms={rooms} 
           isAdmin={isAdminRole}
-          onBookingClick={(b) => handleBookingClick(b)}
+          onBookingClick={(b) => handleEditBooking(b)}
           onApprove={(b) => handleApproveBookingFromTimeline(b)}
         />
       </div>
@@ -575,10 +575,6 @@ export function CalendarSection() {
         onOpenChange={setIsEditBookingOpen}
         booking={selectedBooking}
         onSubmit={async (id: number, data: UpdateBookingDto) => {
-          // If user edits an approved booking, set back to PENDING (re-approval flow)
-          if (selectedBooking?.status === 'APPROVED') {
-            data = { ...data, status: 'PENDING' };
-          }
           await updateBooking(id, data);
           setIsEditBookingOpen(false);
           setIsBookingDetailsOpen(false);
