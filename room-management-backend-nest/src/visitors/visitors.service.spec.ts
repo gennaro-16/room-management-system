@@ -1,11 +1,19 @@
-import { Module } from '@nestjs/common';
-import { VisitorService } from './visitors.service'
-import { VisitorController } from './visitors.controller';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { VisitorService } from './visitors.service';
+import { mockPrismaProvider } from '../../test/mocks/prisma.mock';
 
-@Module({
-  controllers: [VisitorController],
-  providers: [VisitorService, PrismaService],
-  exports: [VisitorService],
-})
-export class VisitorModule {}
+describe('VisitorService', () => {
+  let service: VisitorService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [VisitorService, mockPrismaProvider],
+    }).compile();
+
+    service = module.get<VisitorService>(VisitorService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});

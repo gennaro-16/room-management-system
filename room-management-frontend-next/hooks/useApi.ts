@@ -33,15 +33,12 @@ function useApiCall<T>(
 
   const execute = useCallback(async () => {
     if (!enabled) {
-      console.log('API call disabled, skipping...');
       return;
     }
     try {
-      console.log('Making API call...');
       setLoading(true);
       setError(null);
       const result = await apiCall();
-      console.log('API call result:', result);
       setData(result);
     } catch (err) {
       const errorMessage = err instanceof ApiError ? err.message : 'An unexpected error occurred';

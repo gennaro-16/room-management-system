@@ -107,7 +107,6 @@ export class BookingStatusInterceptor implements NestInterceptor {
             where: { id: room.id },
             data: { status: newStatus }
           });
-          console.log(`🔄 Room ${room.name} status updated: ${room.status} → ${newStatus}`);
         }
       }
     } catch (error) {

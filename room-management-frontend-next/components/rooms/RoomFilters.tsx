@@ -215,7 +215,7 @@ export function RoomFilters({
                 <span className="text-sm text-muted-foreground">Filtres actifs:</span>
                 {searchTerm && (
                   <Badge variant="secondary" className="text-xs">
-                    Recherche: "{searchTerm}"
+                    Recherche: &ldquo;{searchTerm}&rdquo;
                   </Badge>
                 )}
                 {statusFilter !== 'all' && (

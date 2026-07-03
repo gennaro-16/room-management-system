@@ -37,7 +37,6 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
 
   const { user, isAdmin } = useAuth();
   const { data: bookings, loading, error, refetch } = useBookings();
-  console.log('Bookings data:', bookings);
   const { createBooking, loading: createLoading, error: createError } = useCreateBooking();
   const { updateBooking, loading: updateLoading, error: updateError } = useUpdateBooking();
   const { cancelBooking, loading: deleteLoading, error: deleteError } = useCancelBooking();
@@ -71,19 +70,6 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
     // Employees can only delete their own deletable bookings
     return booking.organizerId === user.id;
   };
-
-  // Debug logging
-  console.log('BookingsSection Debug:', {
-    user: user?.username,
-    isAdmin: isAdmin(),
-    bookingsCount: bookings?.length,
-    modifiableBookings: bookings?.filter(b => canModifyBooking(b)).length,
-    deletableBookings: bookings?.filter(b => canDeleteBooking(b)).length,
-    statusBreakdown: bookings?.reduce((acc, b) => {
-      acc[b.status] = (acc[b.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>)
-  });
 
   // Filter bookings based on search and filters - show all booking states
   const filteredBookings = useMemo(() => {
@@ -142,7 +128,6 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
     try {
       await cancelBooking(bookingId);
       refetch();
-      console.log('Booking cancelled successfully');
     } catch (error) {
       console.error('Error deleting booking:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
@@ -390,7 +375,6 @@ export function BookingsSection({ onOpenFull }: { onOpenFull?: () => void }) {
                             size="sm"
                             className="text-destructive hover:text-destructive"
                             onClick={() => {
-                              console.log('Delete button clicked for booking:', booking.id, booking.status);
                               setPendingDeleteId(booking.id);
                               setConfirmDeleteOpen(true);
                             }}

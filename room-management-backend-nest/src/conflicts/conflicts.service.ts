@@ -310,7 +310,6 @@ export class ConflictsService {
    * Get all conflicting bookings for the conflicts page
    */
   async getConflictingBookings() {
-    console.log('🔍 Getting conflicting bookings with enhanced resolution...');
     return await this.enhancedConflictsService.getConflictingBookings();
   }
 

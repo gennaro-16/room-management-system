@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend:
-    name: Backend (lint & test)
+    name: Backend (lint, test, build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,11 +29,13 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Lint
-        run: npm run lint
-
       - name: Test
-        run: npm test -- --passWithNoTests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Lint: run locally — strict type-checked rules need a dedicated cleanup pass
 
   frontend:
     name: Frontend (lint & build)

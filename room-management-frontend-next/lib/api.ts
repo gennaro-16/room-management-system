@@ -506,8 +506,6 @@ export const conflictsApi = {
 export const authApi = {
   // Login
   login: (data: LoginDto): Promise<AuthResponse> => {
-    console.log('authApi.login called with data:', data);
-    console.log('Sending to backend:', JSON.stringify(data));
     return apiRequest<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -982,11 +980,8 @@ export const visitorsApi = {
     if (room) params.append("room", room);
     if (department) params.append("department", department);
 
-    console.log("Fetching visits with params:", params.toString());
-
     const json = await apiRequest<PaginatedVisitsResponse>(`/visits?${params.toString()}`);
     const visits = json.data;
-console.log("visits",visits);
     const visitorMap: Record<number, VisitorItem> = {};
     for (const visit of visits) {
       const v = visit.visitor;

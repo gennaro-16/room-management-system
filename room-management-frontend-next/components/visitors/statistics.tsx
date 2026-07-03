@@ -25,7 +25,6 @@ export default function StatisticsPage() {
     try {
       const data = await statisticsApi.getVisitorStats({ timeRange, startDate, endDate })
       setStatsData(data)
-      console.log("stats",data)
     } catch (error) {
       console.error(error)
       setStatsData(null)

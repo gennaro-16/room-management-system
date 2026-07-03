@@ -100,8 +100,6 @@ export default function VisitorsPage() {
       setVisitors(data)
       
       setPagination(paginationData)
-      console.log('Pagination data:', paginationData)
-      console.log('Visitors data:', data)      // Stats
       let today = 0, active = 0, checkedOut = 0
       const todayDate = new Date().toDateString()
       data.forEach((v) => {
@@ -160,7 +158,6 @@ export default function VisitorsPage() {
 
   
   const handleEditVisitor = async (visitor: VisitorItem, editForm: UpdateVisitorDtoFront) => {
-  console.log("visitor data",visitor,editForm);
     setEditLoading(true)
     setShowVisitorDetails(null)
     setEditError(null)
@@ -179,7 +176,6 @@ export default function VisitorsPage() {
 
 
     const { data: bookings, error, refetch } = useBookings();
-    console.log('Bookings data:', bookings);
   
   // Open Add Visit modal for existing visitor
   const handleShowAddVisitForExisting = (visitor: VisitorItem) => {

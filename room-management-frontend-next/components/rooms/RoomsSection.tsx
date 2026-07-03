@@ -221,7 +221,7 @@ export function RoomsSection() {
             <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">Aucune salle trouvée</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Aucune salle ne correspond à vos filtres actuels. Essayez d'ajuster vos critères de recherche.
+              Aucune salle ne correspond à vos filtres actuels. Essayez d&apos;ajuster vos critères de recherche.
             </p>
             <Button
               variant="outline"

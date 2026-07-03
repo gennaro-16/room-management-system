@@ -50,8 +50,6 @@ export class EnhancedConflictsService {
     endTime: string,
     requiredCapacity: number
   ): Promise<ConflictResolutionResult> {
-    console.log(`🔄 Processing conflict for booking ${bookingId}`);
-    
     // Step 1: Check for conflicts
     const conflictInfo = await this.checkBookingConflicts(roomId, startTime, endTime, bookingId);
     
@@ -64,7 +62,6 @@ export class EnhancedConflictsService {
     }
 
     // Step 2: Search for solutions
-    console.log('🔍 Searching for alternative solutions...');
     const alternatives = await this.findComprehensiveAlternatives(
       roomId,
       startTime,
@@ -75,7 +72,6 @@ export class EnhancedConflictsService {
 
     // Step 3: Build results
     if (alternatives.length > 0) {
-      console.log(`✅ Found ${alternatives.length} alternative solutions`);
       return {
         bookingId,
         status: 'CONFLICT',
@@ -83,7 +79,6 @@ export class EnhancedConflictsService {
         conflictInfo
       };
     } else {
-      console.log('❌ No suitable alternatives found - marking for rejection');
       return {
         bookingId,
         status: 'REJECTED',
@@ -169,12 +164,7 @@ export class EnhancedConflictsService {
     const start = new Date(startTime);
     const end = new Date(endTime);
 
-    console.log(`🔍 Comprehensive search for booking ${bookingId || 'new'}`);
-    console.log(`📅 Original: ${startTime} - ${endTime}`);
-    console.log(`🏢 Room: ${originalRoomId}, Capacity: ${requiredCapacity}`);
-
     // Step A: Search Other Rooms (Same Time Slot)
-    console.log('Step A: Searching other rooms for same time slot...');
     const sameTimeAlternatives = await this.findRoomsAvailableAtTime(
       startTime,
       endTime,
@@ -198,7 +188,6 @@ export class EnhancedConflictsService {
     });
 
     // Step B1: Search Nearby Slots - Same Room First
-    console.log('Step B1: Searching nearby time slots for same room...');
     const timeShifts = [-30, 30, -60, 60, -90, 90]; // minutes
     for (const shift of timeShifts) {
       const shiftedStart = new Date(start.getTime() + shift * 60 * 1000);
@@ -232,7 +221,6 @@ export class EnhancedConflictsService {
     }
 
     // Step B2: Search Other Rooms with Time Shifts
-    console.log('Step B2: Searching other rooms with time shifts...');
     for (const shift of timeShifts) {
       const shiftedStart = new Date(start.getTime() + shift * 60 * 1000);
       const shiftedEnd = new Date(end.getTime() + shift * 60 * 1000);
@@ -283,7 +271,6 @@ export class EnhancedConflictsService {
       return reasonOrder[a.reason] - reasonOrder[b.reason];
     });
 
-    console.log(`✅ Found ${uniqueAlternatives.length} unique alternatives`);
     return uniqueAlternatives;
   }
 

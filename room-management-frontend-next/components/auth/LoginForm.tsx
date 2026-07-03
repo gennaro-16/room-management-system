@@ -35,10 +35,6 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      console.log('Form submitted with data:', data);
-      console.log('Data type check - email:', typeof data.email, 'password:', typeof data.password);
-      console.log('Data values - email:', data.email, 'password:', data.password);
-      
       if (!data.email || !data.password) {
         console.error('Missing required fields:', { email: !!data.email, password: !!data.password });
         return;

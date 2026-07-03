@@ -52,13 +52,9 @@ export function ConflictsSection() {
     try {
       setLoading(true)
       setError(null)
-      console.log('🔍 Loading conflicts...')
       const response = await conflictsApi.getConflictingBookings()
-      console.log('📊 Conflicts response:', response)
       setConflictingBookings(response.conflictingBookings || [])
       setRejectedBookings(response.rejectedBookings || [])
-      console.log(`✅ Loaded ${response.conflictingBookings?.length || 0} conflicting bookings`)
-      console.log(`✅ Loaded ${response.rejectedBookings?.length || 0} rejected bookings`)
     } catch (err) {
       console.error('❌ Error loading conflicts:', err)
       setError(err instanceof Error ? err.message : 'Failed to load conflicts')
@@ -141,9 +137,7 @@ export function ConflictsSection() {
   const getEnhancedAnalysis = async (bookingId: number) => {
     try {
       setAnalyzing(true)
-      console.log('🔍 Getting enhanced conflict analysis for booking:', bookingId)
       const analysis = await conflictsApi.getEnhancedConflictAnalysis(bookingId)
-      console.log('📊 Enhanced analysis result:', analysis)
       setEnhancedAnalysis(analysis)
       return analysis
     } catch (err) {
@@ -174,13 +168,11 @@ export function ConflictsSection() {
 
   const handleApproveAlternative = async (bookingId: number, alternative: any) => {
     try {
-      console.log('🔄 Resolving conflict for booking:', bookingId, 'with alternative:', alternative)
       await conflictsApi.resolveConflict(bookingId, {
         alternativeRoomId: alternative.roomId,
         alternativeStartTime: alternative.suggestedStartTime,
         alternativeEndTime: alternative.suggestedEndTime,
       })
-      console.log('✅ Conflict resolved successfully')
       await loadConflicts()
       setIsModalOpen(false)
     } catch (err) {
