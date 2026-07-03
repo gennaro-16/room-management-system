@@ -22,7 +22,7 @@ services:
   # NestJS Backend
   backend:
     build:
-      context: ./room-management-internship
+      context: ./room-management-backend-nest
       dockerfile: Dockerfile
     ports:
       - "${BACKEND_PORT:-3000}:3000"
@@ -40,7 +40,7 @@ services:
     networks:
       - app-network
     volumes:
-      - ./room-management-internship/public:/app/public
+      - ./room-management-backend-nest/public:/app/public
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/hii || exit 1"]
       interval: 30s
@@ -51,7 +51,7 @@ services:
   # Next.js Frontend
   frontend:
     build:
-      context: ./room-booking-dashboard
+      context: ./room-management-frontend-next
       dockerfile: Dockerfile
     ports:
       - "${FRONTEND_PORT:-3001}:3000"

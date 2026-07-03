@@ -1,0 +1,539 @@
+/* Brand Custom Styles */
+
+/* Brand colors as CSS custom properties */
+:root {
+  --brand-primary: rgb(83, 88, 94);
+  --brand-secondary: rgb(218, 83, 52);
+  --brand-accent: rgb(224, 225, 224);
+  --brand-muted: rgb(169, 169, 170);
+  --brand-dark: rgb(127, 73, 54);
+  --brand-neutral: rgb(151, 141, 132);
+}
+
+/* Custom button styles with brand colors */
+.btn-brand-primary {
+  background-color: var(--brand-secondary);
+  color: white;
+  border: 1px solid var(--brand-secondary);
+}
+
+.btn-brand-primary:hover {
+  background-color: rgb(200, 70, 40);
+  border-color: rgb(200, 70, 40);
+}
+
+.btn-brand-secondary {
+  background-color: var(--brand-primary);
+  color: white;
+  border: 1px solid var(--brand-primary);
+}
+
+.btn-brand-secondary:hover {
+  background-color: rgb(70, 75, 80);
+  border-color: rgb(70, 75, 80);
+}
+
+/* Calendar specific styles */
+.calendar-day-brand {
+  border: 1px solid var(--brand-accent);
+}
+
+.calendar-day-brand:hover {
+  background-color: var(--brand-accent);
+}
+
+.calendar-day-today {
+  background-color: var(--brand-secondary);
+  color: white;
+}
+
+.calendar-day-selected {
+  background-color: var(--brand-primary);
+  color: white;
+}
+
+/* Booking card styles */
+.booking-card-brand {
+  background-color: var(--brand-accent);
+  border: 1px solid var(--brand-muted);
+  border-radius: 8px;
+}
+
+.booking-card-brand:hover {
+  background-color: var(--brand-muted);
+  border-color: var(--brand-primary);
+}
+
+/* Status badges with brand colors */
+.status-pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: rgb(133, 100, 4);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.status-approved {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: rgb(20, 108, 67);
+  border: 1px solid rgba(25, 135, 84, 0.2);
+}
+
+.status-rejected {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: rgb(176, 42, 55);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.status-cancelled {
+  background-color: rgba(83, 88, 94, 0.1);
+  color: var(--brand-primary);
+  border: 1px solid rgba(83, 88, 94, 0.2);
+}
+
+.status-completed {
+  background-color: rgba(13, 110, 253, 0.1);
+  color: rgb(10, 88, 202);
+  border: 1px solid rgba(13, 110, 253, 0.2);
+}
+
+.status-active {
+  background-color: rgba(218, 83, 52, 0.1);
+  color: var(--brand-secondary);
+  border: 1px solid rgba(218, 83, 52, 0.2);
+}
+
+.status-free {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%) !important;
+  color: rgb(22, 163, 74) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  font-weight: 600;
+}
+
+.status-busy {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%) !important;
+  color: rgb(185, 28, 28) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  font-weight: 600;
+}
+
+.status-maintenance {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(107, 114, 128, 0.05) 100%) !important;
+  color: rgb(75, 85, 99) !important;
+  border: 1px solid rgba(107, 114, 128, 0.3) !important;
+  font-weight: 600;
+}
+
+
+/* Sidebar enhancements */
+.sidebar-brand {
+  background: linear-gradient(180deg, var(--brand-primary) 0%, rgb(70, 75, 80) 100%);
+}
+
+.sidebar-logo-container {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* Header enhancements */
+.header-brand {
+  background: linear-gradient(90deg, var(--brand-accent) 0%, white 100%);
+  border-bottom: 2px solid var(--brand-secondary);
+}
+
+/* Card enhancements */
+.card-brand {
+  border: 1px solid var(--brand-accent);
+  box-shadow: 0 2px 4px rgba(83, 88, 94, 0.1);
+}
+
+.card-brand:hover {
+  box-shadow: 0 4px 8px rgba(83, 88, 94, 0.15);
+  border-color: var(--brand-muted);
+}
+
+/* Form elements */
+.input-brand {
+  border: 1px solid var(--brand-muted);
+  border-radius: 6px;
+}
+
+.input-brand:focus {
+  border-color: var(--brand-secondary);
+  box-shadow: 0 0 0 3px rgba(218, 83, 52, 0.1);
+}
+
+/* Navigation enhancements */
+.nav-item-brand {
+  color: var(--brand-primary);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.nav-item-brand:hover {
+  background-color: var(--brand-accent);
+  color: var(--brand-secondary);
+}
+
+.nav-item-brand.active {
+  background-color: var(--brand-secondary);
+  color: white;
+}
+
+/* Loading spinner with brand colors */
+.spinner-brand {
+  border: 3px solid var(--brand-accent);
+  border-top: 3px solid var(--brand-secondary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Authentication pages styling */
+.auth-page-brand {
+  background: linear-gradient(135deg, var(--brand-accent) 0%, white 100%);
+  min-height: 100vh;
+}
+
+.auth-card-brand {
+  background: white;
+  border: 1px solid var(--brand-accent);
+  box-shadow: 0 8px 32px rgba(83, 88, 94, 0.1);
+  border-radius: 12px;
+}
+
+.auth-title-brand {
+  color: var(--brand-primary);
+  font-weight: 700;
+}
+
+.auth-subtitle-brand {
+  color: var(--brand-muted);
+}
+
+/* Button enhancements */
+.btn-brand-primary {
+  background: linear-gradient(135deg, var(--brand-secondary) 0%, rgb(200, 70, 40) 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-brand-primary:hover {
+  background: linear-gradient(135deg, rgb(200, 70, 40) 0%, var(--brand-secondary) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(218, 83, 52, 0.3);
+}
+
+.btn-brand-secondary {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, rgb(70, 75, 80) 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-brand-secondary:hover {
+  background: linear-gradient(135deg, rgb(70, 75, 80) 0%, var(--brand-primary) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(83, 88, 94, 0.3);
+}
+
+/* Input enhancements */
+.input-brand {
+  border: 2px solid var(--brand-accent);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.input-brand:focus {
+  border-color: var(--brand-secondary);
+  box-shadow: 0 0 0 3px rgba(218, 83, 52, 0.1);
+  outline: none;
+}
+
+/* Badge enhancements */
+.badge-brand {
+  background: var(--brand-accent);
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-muted);
+  font-weight: 500;
+}
+
+/* Loading states */
+.loading-brand {
+  color: var(--brand-secondary);
+}
+
+/* Success/Error states */
+.success-brand {
+  background: rgba(25, 135, 84, 0.1);
+  color: rgb(20, 108, 67);
+  border: 1px solid rgba(25, 135, 84, 0.2);
+}
+
+.error-brand {
+  background: rgba(220, 53, 69, 0.1);
+  color: rgb(176, 42, 55);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+/* Enhanced card styles */
+.card-brand {
+  border: 1px solid var(--brand-accent);
+  box-shadow: 0 1px 3px rgba(83, 88, 94, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-brand:hover {
+  box-shadow: 0 4px 12px rgba(83, 88, 94, 0.15);
+  border-color: var(--brand-muted);
+  transform: translateY(-1px);
+}
+
+/* Enhanced form styles */
+.input-brand {
+  border: 2px solid var(--brand-accent);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: var(--background);
+}
+
+.input-brand:focus {
+  border-color: var(--brand-secondary);
+  box-shadow: 0 0 0 3px rgba(218, 83, 52, 0.1);
+  outline: none;
+}
+
+.input-brand:hover {
+  border-color: var(--brand-muted);
+}
+
+/* Enhanced button styles */
+.btn-brand-primary {
+  background: linear-gradient(135deg, var(--brand-secondary) 0%, rgb(200, 70, 40) 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(218, 83, 52, 0.2);
+}
+
+.btn-brand-primary:hover {
+  background: linear-gradient(135deg, rgb(200, 70, 40) 0%, var(--brand-secondary) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(218, 83, 52, 0.3);
+}
+
+.btn-brand-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(218, 83, 52, 0.2);
+}
+
+.btn-brand-secondary {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, rgb(70, 75, 80) 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(83, 88, 94, 0.2);
+}
+
+.btn-brand-secondary:hover {
+  background: linear-gradient(135deg, rgb(70, 75, 80) 0%, var(--brand-primary) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(83, 88, 94, 0.3);
+}
+
+/* Enhanced badge styles */
+.badge-brand {
+  background: var(--brand-accent);
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-muted);
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Enhanced status badges */
+.status-pending {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+  color: rgb(133, 100, 4);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  font-weight: 600;
+}
+
+.status-approved {
+  background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.05) 100%);
+  color: rgb(20, 108, 67);
+  border: 1px solid rgba(25, 135, 84, 0.3);
+  font-weight: 600;
+}
+
+.status-rejected {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);
+  color: rgb(176, 42, 55);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  font-weight: 600;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, rgba(83, 88, 94, 0.1) 0%, rgba(83, 88, 94, 0.05) 100%);
+  color: var(--brand-primary);
+  border: 1px solid rgba(83, 88, 94, 0.3);
+  font-weight: 600;
+}
+
+.status-completed {
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
+  color: rgb(10, 88, 202);
+  border: 1px solid rgba(13, 110, 253, 0.3);
+  font-weight: 600;
+}
+
+.status-active {
+  background: linear-gradient(135deg, rgba(218, 83, 52, 0.1) 0%, rgba(218, 83, 52, 0.05) 100%);
+  color: var(--brand-secondary);
+  border: 1px solid rgba(218, 83, 52, 0.3);
+  font-weight: 600;
+}
+
+
+.status-reserved {
+  background: linear-gradient(135deg, rgba(151, 141, 132, 0.1) 0%, rgba(151, 141, 132, 0.05) 100%);
+  color: var(--brand-neutral);
+  border: 1px solid rgba(151, 141, 132, 0.3);
+  font-weight: 600;
+}
+
+/* Enhanced sidebar styles */
+.sidebar-brand {
+  background: linear-gradient(180deg, var(--brand-primary) 0%, rgb(70, 75, 80) 100%);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-logo-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced header styles */
+.header-brand {
+  background: linear-gradient(90deg, var(--brand-accent) 0%, white 100%);
+  border-bottom: 2px solid var(--brand-secondary);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading states */
+.loading-brand {
+  color: var(--brand-secondary);
+}
+
+/* Success/Error states */
+.success-brand {
+  background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.05) 100%);
+  color: rgb(20, 108, 67);
+  border: 1px solid rgba(25, 135, 84, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.error-brand {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);
+  color: rgb(176, 42, 55);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar-brand {
+    background: var(--brand-primary);
+  }
+  
+  .header-brand {
+    background: white;
+    border-bottom: 1px solid var(--brand-accent);
+  }
+  
+  .auth-card-brand {
+    margin: 1rem;
+    border-radius: 8px;
+  }
+
+  .card-brand {
+    margin: 0.5rem;
+  }
+
+  .btn-brand-primary,
+  .btn-brand-secondary {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Dark mode enhancements */
+.dark .card-brand {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.dark .input-brand {
+  background: var(--input);
+  border-color: var(--border);
+}
+
+.dark .input-brand:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(218, 83, 52, 0.2);
+}
+
+/* Animation improvements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-brand {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Focus improvements */
+.focus-visible {
+  outline: 2px solid var(--brand-secondary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--brand-accent);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--brand-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}

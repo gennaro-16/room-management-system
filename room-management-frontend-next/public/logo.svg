@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Room Booking System logo">
+  <rect x="4" y="4" width="40" height="40" rx="10" fill="#53585e"/>
+  <rect x="14" y="13" width="20" height="22" rx="2" fill="#e0e1e0"/>
+  <rect x="18" y="17" width="5" height="5" rx="1" fill="#da5334"/>
+  <rect x="25" y="17" width="5" height="5" rx="1" fill="#da5334"/>
+  <rect x="18" y="24" width="5" height="5" rx="1" fill="#da5334"/>
+  <rect x="25" y="24" width="5" height="7" rx="1" fill="#da5334"/>
+</svg>

@@ -20,7 +20,7 @@ fi
 # Create environment file if it doesn't exist
 if [ ! -f .env ]; then
     echo "📝 Creating .env file from template..."
-    cp env.production .env
+    cp .env.example .env
     echo "⚠️  Please edit .env file with your production values before continuing."
     echo "   Important: Change JWT_SECRET and POSTGRES_PASSWORD!"
     read -p "Press Enter to continue after editing .env file..."

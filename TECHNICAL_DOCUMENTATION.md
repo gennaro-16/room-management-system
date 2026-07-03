@@ -567,7 +567,7 @@ ADMIN > EMPLOYEE > GUEST
 
 ### Project Structure
 ```
-room-booking-dashboard/
+room-management-frontend-next/
 ├── app/                    # Next.js App Router
 │   ├── bookings/          # Booking pages
 │   ├── dashboard/         # Dashboard pages
@@ -952,7 +952,7 @@ services:
       - "5432:5432"
 
   backend:
-    build: ./room-management-internship
+    build: ./room-management-backend-nest
     ports:
       - "3000:3000"
     environment:
@@ -961,7 +961,7 @@ services:
       - postgres
 
   frontend:
-    build: ./room-booking-dashboard
+    build: ./room-management-frontend-next
     ports:
       - "3001:3000"
     environment:
@@ -993,7 +993,7 @@ volumes:
 
 ### Backend Setup
 ```bash
-cd room-management-internship
+cd room-management-backend-nest
 npm install
 cp .env.example .env
 # Configure .env with your database URL
@@ -1004,7 +1004,7 @@ npm run start:dev
 
 ### Frontend Setup
 ```bash
-cd room-booking-dashboard
+cd room-management-frontend-next
 npm install
 cp .env.example .env.local
 # Configure .env.local with your API URL

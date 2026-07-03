@@ -16,7 +16,7 @@
 
 ## System Overview
 
-The **Room Management System** is a comprehensive full-stack application designed for Al Baraka Bank to manage meeting room bookings, user access, and resource allocation within the organization. The system provides real-time booking capabilities, conflict resolution, and administrative oversight with a modern, responsive user interface.
+The **Room Management System** is a comprehensive full-stack application designed to manage meeting room bookings, user access, and resource allocation within an organization. The system provides real-time booking capabilities, conflict resolution, and administrative oversight with a modern, responsive user interface.
 
 ### Key Business Features
 - **Auto-Approval System**: All bookings are automatically approved upon creation
@@ -899,7 +899,7 @@ Mark notification as read.
 ### Project Structure
 
 ```
-room-booking-dashboard/
+room-management-frontend-next/
 ├── app/                          # Next.js 14 App Router
 │   ├── bookings/                 # Booking pages
 │   │   ├── page.tsx             # Bookings list page
@@ -954,7 +954,7 @@ room-booking-dashboard/
 │   └── colors.ts                # Color definitions
 └── styles/                      # Global styles
     ├── globals.css
-    └── albaraka.css
+    └── brand.css
 ```
 
 ### Key Components
@@ -1688,7 +1688,7 @@ FRONTEND_URL="http://localhost:3001"
 
 1. **Install Dependencies:**
 ```bash
-cd room-management-internship
+cd room-management-backend-nest
 npm install
 ```
 
@@ -1724,7 +1724,7 @@ npm run start:prod
 
 1. **Install Dependencies:**
 ```bash
-cd room-booking-dashboard
+cd room-management-frontend-next
 npm install
 ```
 
@@ -1782,7 +1782,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./room-management-internship
+    build: ./room-management-backend-nest
     ports:
       - "3000:3000"
     environment:
@@ -1791,7 +1791,7 @@ services:
       - database
 
   frontend:
-    build: ./room-booking-dashboard
+    build: ./room-management-frontend-next
     ports:
       - "3001:3000"
     environment:
@@ -1824,7 +1824,7 @@ volumes:
 **Clone and Setup:**
 ```bash
 git clone <repository-url>
-cd room-management-system/room-management-internship
+cd room-management-system/room-management-backend-nest
 npm install
 ```
 
@@ -1864,7 +1864,7 @@ npx prisma generate
 
 **Setup and Install:**
 ```bash
-cd ../room-booking-dashboard
+cd ../room-management-frontend-next
 npm install
 ```
 

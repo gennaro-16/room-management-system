@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "tw-animate-css";
+@import "../styles/brand.css";
+
+:root {
+  /* Brand Color Scheme */
+  /* Color 1 (Primary) - rgb(83, 88, 94) - Dark gray - Most used */
+  --background: oklch(0.95 0.01 85); /* Light background */
+  --foreground: oklch(0.35 0.01 85); /* Dark gray text (Color 1) */
+  --card: oklch(0.98 0.01 85); /* Light card background */
+  --card-foreground: oklch(0.35 0.01 85); /* Dark gray text on cards (Color 1) */
+  --popover: oklch(0.98 0.01 85); /* Light popover background */
+  --popover-foreground: oklch(0.35 0.01 85); /* Dark gray text in popovers (Color 1) */
+  
+  /* Color 2 (Secondary) - rgb(218, 83, 52) - Red/orange */
+  --primary: oklch(0.6 0.15 25); /* Red/orange primary color (Color 2) */
+  --primary-foreground: oklch(0.98 0.01 85); /* Light text on primary */
+  --secondary: oklch(0.6 0.15 25); /* Red/orange secondary color (Color 2) */
+  --secondary-foreground: oklch(0.98 0.01 85); /* Light text on secondary */
+  
+  /* Color 3 (Accent) - rgb(224, 225, 224) - Light gray */
+  --muted: oklch(0.9 0.01 85); /* Light gray muted background (Color 3) */
+  --muted-foreground: oklch(0.5 0.01 85); /* Medium gray muted text */
+  --accent: oklch(0.9 0.01 85); /* Light gray accent color (Color 3) */
+  --accent-foreground: oklch(0.35 0.01 85); /* Dark text on accent (Color 1) */
+  
+  /* Color 4 (Muted) - rgb(169, 169, 170) - Medium gray */
+  --destructive: oklch(0.5 0.01 85); /* Medium gray destructive color (Color 4) */
+  --destructive-foreground: oklch(0.98 0.01 85); /* Light text on destructive */
+  --border: oklch(0.85 0.01 85); /* Light border color */
+  --input: oklch(0.95 0.01 85); /* Light input background */
+  --ring: oklch(0.6 0.15 25 / 0.3); /* Red/orange focus ring (Color 2) */
+  
+  /* Chart colors using the palette */
+  --chart-1: oklch(0.6 0.15 25); /* Red/orange chart color (Color 2) */
+  --chart-2: oklch(0.35 0.01 85); /* Dark gray chart color (Color 1) */
+  --chart-3: oklch(0.5 0.01 85); /* Medium gray chart color (Color 4) */
+  --chart-4: oklch(0.9 0.01 85); /* Light gray chart color (Color 3) */
+  --chart-5: oklch(0.4 0.05 35); /* Brown chart color (Color 5) */
+  
+  --radius: 0.625rem;
+  
+  /* Sidebar using Color 1 (Primary) as base */
+  --sidebar: oklch(0.35 0.01 85); /* Dark gray sidebar background (Color 1) */
+  --sidebar-foreground: oklch(0.9 0.01 85); /* Light gray sidebar text (Color 3) */
+  --sidebar-primary: oklch(0.6 0.15 25); /* Red/orange sidebar primary (Color 2) */
+  --sidebar-primary-foreground: oklch(0.98 0.01 85); /* Light sidebar primary text */
+  --sidebar-accent: oklch(0.5 0.01 85); /* Medium gray sidebar accent (Color 4) */
+  --sidebar-accent-foreground: oklch(0.9 0.01 85); /* Light sidebar accent text (Color 3) */
+  --sidebar-border: oklch(0.4 0.01 85); /* Darker sidebar border */
+  --sidebar-ring: oklch(0.6 0.15 25 / 0.3); /* Red/orange sidebar focus ring (Color 2) */
+}
+
+.dark {
+  /* Brand Dark Mode - Using Color 1 (Dark gray) as base */
+  --background: oklch(0.15 0.01 85); /* Very dark background (darker Color 1) */
+  --foreground: oklch(0.9 0.01 85); /* Light text (Color 3) */
+  --card: oklch(0.2 0.01 85); /* Dark card background */
+  --card-foreground: oklch(0.9 0.01 85); /* Light text on cards (Color 3) */
+  --popover: oklch(0.2 0.01 85); /* Dark popover background */
+  --popover-foreground: oklch(0.9 0.01 85); /* Light text in popovers (Color 3) */
+  
+  /* Color 2 (Red/orange) - Brighter for dark mode */
+  --primary: oklch(0.7 0.15 25); /* Brighter red/orange for dark mode (Color 2) */
+  --primary-foreground: oklch(0.15 0.01 85); /* Dark text on primary */
+  --secondary: oklch(0.7 0.15 25); /* Brighter red/orange secondary (Color 2) */
+  --secondary-foreground: oklch(0.15 0.01 85); /* Dark text on secondary */
+  
+  /* Color 3 (Light gray) - Adjusted for dark mode */
+  --muted: oklch(0.25 0.01 85); /* Dark muted background */
+  --muted-foreground: oklch(0.7 0.01 85); /* Medium light muted text */
+  --accent: oklch(0.3 0.01 85); /* Dark accent color */
+  --accent-foreground: oklch(0.9 0.01 85); /* Light text on accent (Color 3) */
+  
+  /* Color 4 (Medium gray) - For destructive actions */
+  --destructive: oklch(0.6 0.01 85); /* Medium gray destructive (Color 4) */
+  --destructive-foreground: oklch(0.9 0.01 85); /* Light text on destructive (Color 3) */
+  --border: oklch(0.3 0.01 85); /* Dark border */
+  --input: oklch(0.25 0.01 85); /* Dark input background */
+  --ring: oklch(0.7 0.15 25 / 0.4); /* Red/orange focus ring for dark mode (Color 2) */
+  
+  /* Chart colors for dark mode */
+  --chart-1: oklch(0.7 0.15 25); /* Brighter red/orange chart (Color 2) */
+  --chart-2: oklch(0.9 0.01 85); /* Light gray chart (Color 3) */
+  --chart-3: oklch(0.6 0.01 85); /* Medium gray chart (Color 4) */
+  --chart-4: oklch(0.4 0.01 85); /* Darker gray chart */
+  --chart-5: oklch(0.5 0.05 35); /* Brown chart color (Color 5) */
+  
+  /* Sidebar for dark mode */
+  --sidebar: oklch(0.12 0.01 85); /* Very dark sidebar background */
+  --sidebar-foreground: oklch(0.9 0.01 85); /* Light sidebar text (Color 3) */
+  --sidebar-primary: oklch(0.7 0.15 25); /* Brighter red/orange sidebar primary (Color 2) */
+  --sidebar-primary-foreground: oklch(0.15 0.01 85); /* Dark sidebar primary text */
+  --sidebar-accent: oklch(0.3 0.01 85); /* Dark sidebar accent */
+  --sidebar-accent-foreground: oklch(0.9 0.01 85); /* Light sidebar accent text (Color 3) */
+  --sidebar-border: oklch(0.25 0.01 85); /* Dark sidebar border */
+  --sidebar-ring: oklch(0.7 0.15 25 / 0.4); /* Red/orange sidebar focus ring (Color 2) */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

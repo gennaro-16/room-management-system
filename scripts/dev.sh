@@ -23,7 +23,7 @@ sleep 10
 
 # Run database setup
 echo "🗄️  Setting up database..."
-cd room-management-internship
+cd room-management-backend-nest
 npm install
 npx prisma migrate dev
 npx prisma db seed
@@ -36,10 +36,10 @@ echo "   Database: localhost:5432"
 echo "   Redis: localhost:6379"
 echo ""
 echo "📝 To start backend development server:"
-echo "   cd room-management-internship && npm run start:dev"
+echo "   cd room-management-backend-nest && npm run start:dev"
 echo ""
 echo "📝 To start frontend development server:"
-echo "   cd room-booking-dashboard && npm run dev"
+echo "   cd room-management-frontend-next && npm run dev"
 echo ""
 echo "🛑 To stop services:"
 echo "   docker-compose down"

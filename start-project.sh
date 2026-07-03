@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# alBaraka Room Booking System - Start Script
-echo "🚀 Starting alBaraka Room Booking System..."
+# Room Booking System - Start Script
+echo "🚀 Starting Room Booking System..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -21,8 +21,8 @@ check_port() {
 }
 
 # Check if we're in the right directory
-if [ ! -d "room-management-internship" ] || [ ! -d "room-booking-dashboard" ]; then
-    echo -e "${RED}❌ Please run this script from the internship-banque directory${NC}"
+if [ ! -d "room-management-backend-nest" ] || [ ! -d "room-management-frontend-next" ]; then
+    echo -e "${RED}❌ Please run this script from the project root directory${NC}"
     echo "Current directory: $(pwd)"
     exit 1
 fi
@@ -31,7 +31,7 @@ echo -e "${BLUE}📁 Project structure found${NC}"
 
 # Start Backend API
 echo -e "${YELLOW}🔧 Starting Backend API...${NC}"
-cd room-management-internship
+cd room-management-backend-nest
 
 if [ ! -d "node_modules" ]; then
     echo -e "${YELLOW}📦 Installing backend dependencies...${NC}"
@@ -54,7 +54,7 @@ sleep 3
 
 # Start Frontend Dashboard
 echo -e "${YELLOW}🎨 Starting Frontend Dashboard...${NC}"
-cd ../room-booking-dashboard
+cd ../room-management-frontend-next
 
 if [ ! -d "node_modules" ]; then
     echo -e "${YELLOW}📦 Installing frontend dependencies...${NC}"
@@ -79,7 +79,7 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}🎉 alBaraka Room Booking System is starting up!${NC}"
+echo -e "${GREEN}🎉 Room Booking System is starting up!${NC}"
 echo ""
 echo -e "${BLUE}📊 Backend API:${NC} http://localhost:3000"
 echo -e "${BLUE}🎨 Frontend Dashboard:${NC} http://localhost:3001 (or 3002)"

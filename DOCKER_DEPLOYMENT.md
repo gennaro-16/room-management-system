@@ -18,11 +18,11 @@ This guide explains how to deploy the Room Management System using Docker.
 ./scripts/dev.sh
 
 # Start backend development server
-cd room-management-internship
+cd room-management-backend-nest
 npm run start:dev
 
 # Start frontend development server (in another terminal)
-cd room-booking-dashboard
+cd room-management-frontend-next
 npm run dev
 ```
 
@@ -42,14 +42,14 @@ npm run dev
 docker-compose up -d db redis
 
 # Run migrations and seed data
-cd room-management-internship
+cd room-management-backend-nest
 npm install
 npx prisma migrate dev
 npx prisma db seed
 
 # Start development servers
 npm run start:dev  # Backend
-cd ../room-booking-dashboard && npm run dev  # Frontend
+cd ../room-management-frontend-next && npm run dev  # Frontend
 ```
 
 ### 2. Production Setup
